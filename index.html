@@ -180,6 +180,13 @@
   .sheet>*{position:relative;z-index:1}
   @keyframes up{from{transform:translateY(36px)}to{transform:none}}
   .grab{width:42px;height:5px;background:#dfe4f0;border-radius:99px;margin:8px auto 8px}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .modal-head h2{margin:0}
+  .modal-head-actions{display:flex;gap:6px}
+  .img-view-overlay{background:rgba(10,12,20,.92)}
+  .img-view-overlay .sheet{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .img-view-overlay img{max-width:100%;max-height:80vh;border-radius:14px;box-shadow:var(--shadow-lg)}
+  .img-view-close{margin-top:16px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
   .sheet h2{font-size:17px;font-weight:800;margin:4px 2px 14px;letter-spacing:-.4px}
   .field{margin-bottom:12px}
   .field label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin:0 2px 5px}
@@ -291,7 +298,13 @@
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
   <div class="sheet">
     <div class="grab"></div>
-    <h2 id="modalTitle">티켓 추가</h2>
+    <div class="modal-head">
+      <h2 id="modalTitle">티켓 추가</h2>
+      <span class="modal-head-actions" id="modalHeadActions" style="display:none">
+        <button type="button" class="icon-btn" id="modalImgBtn" onclick="viewCurrentImage()" title="첨부 사진 보기" style="display:none">🖼️</button>
+        <button type="button" class="icon-btn" onclick="shareCurrent()" title="공유">📤</button>
+      </span>
+    </div>
 
     <div class="field">
       <label>예매처</label>
@@ -399,6 +412,14 @@
     <div class="grab"></div>
     <h2 id="dayTitle">날짜</h2>
     <div id="dayBody"></div>
+  </div>
+</div>
+
+<!-- Image viewer -->
+<div class="overlay img-view-overlay" id="imgViewOverlay" onclick="if(event.target===this)closeImgView()">
+  <div class="sheet">
+    <img id="imgViewImg" alt="예매내역 사진">
+    <button type="button" class="img-view-close" onclick="closeImgView()">닫기</button>
   </div>
 </div>
 
@@ -766,6 +787,7 @@ function openModal(){
   document.getElementById('fTransfer').checked=false; toggleTransfer();
   document.getElementById('seatBox').innerHTML=''; addSeatRow();
   document.getElementById('delBtn').style.display='none';
+  document.getElementById('modalHeadActions').style.display='none';
   syncVendorBtn();
   openOv('overlay');
 }
@@ -788,9 +810,22 @@ function edit(id){
   const box=document.getElementById('seatBox'); box.innerHTML='';
   (t.seats&&t.seats.length?t.seats:[null]).forEach(s=>addSeatRow(s));
   document.getElementById('delBtn').style.display='block';
+  document.getElementById('modalHeadActions').style.display='flex';
+  document.getElementById('modalImgBtn').style.display=t.hasImg?'flex':'none';
   syncVendorBtn();
   openOv('overlay');
 }
+function shareCurrent(){ if(!editingId)return; const id=editingId; closeModal(); openShare(id); }
+function viewCurrentImage(){
+  if(!editingId||!(mode==='cloud'&&sb))return;
+  const id=editingId;
+  sb.from('tickets').select('img').eq('id',id).single().then(({data})=>{
+    if(!data||!data.img){ toast('사진을 불러올 수 없어요'); return; }
+    document.getElementById('imgViewImg').src='data:image/jpeg;base64,'+data.img;
+    openOv('imgViewOverlay');
+  });
+}
+function closeImgView(){ closeOv('imgViewOverlay'); }
 async function save(){
   const name=document.getElementById('fName').value.trim();
   if(!name){toast('공연명을 입력해 주세요');return;}
@@ -894,7 +929,7 @@ function ticketText(t){
 function b64ToFile(b64,name){ const bin=atob(b64), a=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i); return new File([a],name,{type:'image/jpeg'}); }
 async function openShare(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
-  shareId=id; shareImgB64=null;
+  shareId=id; shareImgB64=null; shareStep=0; resetShareBtn();
   document.getElementById('sharePrev').textContent=ticketText(t);
   const wrap=document.getElementById('shImgWrap'), thumb=document.getElementById('shareThumb');
   thumb.style.display='none'; thumb.removeAttribute('src');
@@ -908,7 +943,9 @@ async function openShare(id){
   } else { wrap.style.display='none'; }
   openOv('shareOverlay');
 }
-function closeShare(){ closeOv('shareOverlay'); }
+function closeShare(){ shareStep=0; resetShareBtn(); closeOv('shareOverlay'); }
+function resetShareBtn(){ const b=document.getElementById('shareGo'); if(b)b.textContent='📤 공유하기'; }
+let shareStep=0;
 async function doShare(){
   const t=tickets.find(x=>String(x.id)===String(shareId)); if(!t)return;
   const wantTxt=document.getElementById('shTxt').checked;
@@ -917,32 +954,37 @@ async function doShare(){
   const title=t.name||'티켓', text=ticketText(t);
   const fname=(t.name||'예매내역').replace(/[\\/:*?"<>|]/g,'')+'.jpg';
   const imgFile=wantImg?b64ToFile(shareImgB64,fname):null;
+  const canShareImg=wantImg&&navigator.share&&navigator.canShare&&navigator.canShare({files:[imgFile]});
   try{
-    // 텍스트+사진을 동시에 공유하면 대부분 앱(카톡/문자 등)이 사진만 받고 텍스트를 버려서,
-    // 둘 다 선택 시 텍스트 먼저 → 사진 순서로 공유 시트를 두 번 띄운다.
-    if(wantTxt&&wantImg){
-      if(navigator.share){
+    // 텍스트+사진을 한 번의 navigator.share() 호출에 같이 넘기면 카톡/문자 등 대부분 앱이 사진만 받고
+    // 텍스트를 버린다. 그렇다고 코드에서 곧바로 두 번 연달아 share()를 부르면, 두 번째 호출은 모바일 브라우저의
+    // "사용자 제스처" 요건을 잃어서 조용히 실패한다 → 반드시 버튼을 두 번 눌러(제스처 2회) 순서대로 보낸다.
+    if(wantTxt&&wantImg&&navigator.share){
+      if(shareStep===0){
         await navigator.share({title,text});
-        toast('텍스트 공유됨 · 이어서 사진 공유');
-        if(navigator.canShare&&navigator.canShare({files:[imgFile]})){
-          await navigator.share({files:[imgFile]});
+        if(canShareImg){
+          shareStep=1;
+          document.getElementById('shareGo').textContent='📷 이어서 사진 공유하기 (탭)';
+          toast('텍스트 공유됨 · 아래 버튼을 한 번 더 눌러 사진도 보내세요');
+          return; // 팝업 유지, 다음 탭에서 사진 전송
         }else{
           const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
           toast('사진은 파일로 저장했어요 (이 기기는 사진 공유 미지원)');
         }
       }else{
-        if(navigator.clipboard)await navigator.clipboard.writeText(text);
-        const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
-        toast('이 기기는 공유 시트 미지원 · 텍스트 복사/사진 저장했어요');
-      }
-    }else if(wantImg){
-      if(navigator.share && navigator.canShare && navigator.canShare({files:[imgFile]})){
         await navigator.share({files:[imgFile]});
-      }else{
+      }
+    }else if(wantTxt&&wantImg){
+      if(navigator.clipboard)await navigator.clipboard.writeText(text);
+      const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
+      toast('이 기기는 공유 시트 미지원 · 텍스트 복사/사진 저장했어요');
+    }else if(wantImg){
+      if(canShareImg){ await navigator.share({files:[imgFile]}); }
+      else{
         const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
         toast('이 기기는 사진 공유 미지원 · 파일로 저장했어요');
       }
-    }else{
+    }else if(wantTxt){
       if(navigator.share){ await navigator.share({title,text}); }
       else{ if(navigator.clipboard)await navigator.clipboard.writeText(text); toast('이 기기는 공유 시트 미지원 · 텍스트 복사했어요'); }
     }
