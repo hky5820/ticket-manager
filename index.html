@@ -109,8 +109,12 @@
   .cal-cell.today .cal-day{background:var(--accent);color:#fff;border-radius:6px}
   .cal-day{font-size:11px;font-weight:700;color:var(--ink-soft);width:19px;height:17px;display:flex;align-items:center;justify-content:center}
   .cal-cell.sun .cal-day{color:#ff8a8a}.cal-cell.sat .cal-day{color:#8aa5ff}
-  .cal-chip{display:block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:1px 4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
-  .cal-more{font-size:9px;color:var(--ink-faint);font-weight:700;margin-top:1px;padding-left:2px}
+  .cal-chip{display:block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:1px 4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5;pointer-events:none}
+  .cal-more{font-size:9px;color:var(--ink-faint);font-weight:700;margin-top:1px;padding-left:2px;pointer-events:none}
+  .cal-cell.has{cursor:pointer}
+  .cal-cell.has:active{background:var(--accent-soft)}
+  .cal-grid{touch-action:pan-y}
+  .cal-hint{text-align:center;font-size:10.5px;color:var(--ink-faint);margin-top:8px;user-select:none}
   .cal-daylist{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:7px}
   .cal-daylist .dl-title{font-size:12.5px;font-weight:800;color:var(--ink-soft);margin:0 2px 2px}
   .cal-empty{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:14px 0}
@@ -337,6 +341,15 @@
   </div>
 </div>
 
+<!-- Day tickets popup -->
+<div class="overlay" id="dayOverlay" onclick="if(event.target===this)closeDay()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 id="dayTitle">날짜</h2>
+    <div id="dayBody"></div>
+  </div>
+</div>
+
 <!-- Sync sheet -->
 <div class="overlay" id="syncOverlay" onclick="if(event.target===this)closeSync()">
   <div class="sheet"><div class="grab"></div><div id="syncBody"></div></div>
@@ -477,28 +490,31 @@ function renderCalendar(){
     const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const wd=(start+d-1)%7;
     const list=byDay[ds]||[];
-    const chips=list.slice(0,2).map(t=>`<span class="cal-chip" style="background:${colorFor(t.vendor)}" onclick="event.stopPropagation();edit('${t.id}')">${esc(t.name||'공연')}</span>`).join('');
+    const chips=list.slice(0,2).map(t=>`<span class="cal-chip" style="background:${colorFor(t.vendor)}">${esc(t.name||'공연')}</span>`).join('');
     const more=list.length>2?`<div class="cal-more">+${list.length-2}</div>`:'';
-    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${ds===selDay?'sel':''}" onclick="calSelect('${ds}')">
+    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''}" onclick="calOpen('${ds}')">
       <div class="cal-day">${d}</div>${chips}${more}</div>`;
   }
   const wdh=WD.map((w,i)=>`<div class="cal-wd ${i===0?'sun':''} ${i===6?'sat':''}">${w}</div>`).join('');
-  // selected day list
-  const sel=byDay[selDay]||[];
-  const selTitle=(()=>{const p=selDay.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);return `${p[1]}월 ${p[2]}일 (${WD[dt.getDay()]})`;})();
-  const dayList = sel.length? byDate(sel).map(listRow).join('') : `<div class="cal-empty">이 날 등록된 티켓이 없어요</div>`;
-  // undated
   const undated=tickets.filter(t=>!t.date);
   const undHTML=undated.length?`<div class="undated"><div class="u-t">📌 날짜 미정 ${undated.length}건</div><div class="list">${undated.map(listRow).join('')}</div></div>`:'';
   return `<div class="cal">
     <div class="cal-head"><button onclick="calMove(-1)">‹</button><div class="mon">${calY}년 ${calM+1}월</div><button onclick="calMove(1)">›</button></div>
     <div class="cal-grid">${wdh}${cells}</div>
-    <div class="cal-daylist"><div class="dl-title">${selTitle}</div>${dayList}</div>
+    <div class="cal-hint">← 좌우로 넘겨 월 이동 →</div>
     ${undHTML}
   </div>`;
 }
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}render();}
-function calSelect(ds){selDay=ds;render();}
+function calOpen(ds){
+  const list=tickets.filter(t=>String(t.date)===ds);
+  if(!list.length)return;
+  const p=ds.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
+  document.getElementById('dayTitle').textContent=`${p[1]}월 ${p[2]}일 (${WD[dt.getDay()]}) · ${list.length}건`;
+  document.getElementById('dayBody').innerHTML=`<div class="list">${byDate(list).map(listRow).join('')}</div>`;
+  openOv('dayOverlay');
+}
+function closeDay(){ closeOv('dayOverlay'); }
 
 /* ===== vendor picker ===== */
 function openVendorPicker(){ renderVendorList(); openOv('vendorOverlay'); }
@@ -733,6 +749,7 @@ function initSheetDrag(){
 
 /* ===== long-press action menu ===== */
 let actionId=null, lpTimer=null, lpFired=false, lpX=0, lpY=0;
+let calSX=0, calSY=0, calSwiped=false, calTrack=false;
 function openActions(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
   actionId=id; document.getElementById('actTitle').textContent=t.name||'티켓';
@@ -764,12 +781,19 @@ function initLongPress(){
   root.addEventListener('pointermove',e=>{ if(Math.hypot(e.clientX-lpX,e.clientY-lpY)>12)clearTimeout(lpTimer); });
   ['pointerup','pointercancel','pointerleave'].forEach(ev=>root.addEventListener(ev,()=>clearTimeout(lpTimer)));
   root.addEventListener('scroll',()=>clearTimeout(lpTimer),true);
-  root.addEventListener('click',e=>{ if(lpFired){ e.preventDefault(); e.stopPropagation(); lpFired=false; } },true);
+  root.addEventListener('click',e=>{ if(lpFired||calSwiped){ e.preventDefault(); e.stopPropagation(); lpFired=false; calSwiped=false; } },true);
   root.addEventListener('contextmenu',e=>{ const el=e.target.closest('[data-id]'); if(el&&!e.target.closest('.cal-chip')){ e.preventDefault(); openActions(el.dataset.id); } });
+}
+function initCalSwipe(){
+  const root=document.getElementById('viewRoot');
+  root.addEventListener('touchstart',e=>{ const g=e.target.closest('.cal-grid'); if(!g){calTrack=false;return;} const t=e.touches[0]; calSX=t.clientX; calSY=t.clientY; calTrack=true; calSwiped=false; },{passive:true});
+  root.addEventListener('touchmove',e=>{ if(!calTrack)return; const t=e.touches[0]; if(Math.abs(t.clientX-calSX)>Math.abs(t.clientY-calSY)&&Math.abs(t.clientX-calSX)>12)calSwiped=true; },{passive:true});
+  root.addEventListener('touchend',e=>{ if(calTrack&&calSwiped){ const dx=e.changedTouches[0].clientX-calSX; if(Math.abs(dx)>45)calMove(dx<0?1:-1); } calTrack=false; });
 }
 
 boot();
 initLongPress();
+initCalSwipe();
 initSheetDrag();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
 </script>
