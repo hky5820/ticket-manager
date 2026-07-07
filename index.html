@@ -3,9 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0f1219" media="(prefers-color-scheme: dark)">
+<meta id="metaTheme" name="theme-color" content="#f4f6fb">
 <title>티켓 보관함</title>
+<script>
+  // 첫 페인트 전에 테마 지정(깜빡임 방지)
+  (function(){try{var s=localStorage.getItem('tm_theme')||'auto';var d=s==='dark'||(s!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.getElementById('metaTheme');if(m)m.content=d?'#0b0e15':'#f4f6fb';}catch(e){}})();
+</script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -344,64 +347,65 @@
   .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:60;background:#1f2637;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
 
-  /* ===== 다크모드 ===== */
-  @media (prefers-color-scheme: dark){
-    :root{
-      --card:#1b2130; --ink:#e8ebf3; --ink-soft:#a6adbe; --ink-faint:#727b90;
-      --line:#2c3345; --accent:#7d97ff; --accent-ink:#a9bcff; --accent-soft:rgba(109,140,255,.18);
-      --danger:#ff6b7a; --danger-ink:#ff96a1; --danger-soft:rgba(255,107,122,.15); --danger-bd:rgba(255,107,122,.4); --ok:#3ecf8e; --warn:#f5b544;
-      --shadow-sm:0 1px 3px rgba(0,0,0,.4);
-      --shadow:0 8px 20px -8px rgba(0,0,0,.55),0 2px 6px -3px rgba(0,0,0,.4);
-      --shadow-lg:0 20px 44px -18px rgba(0,0,0,.7);
-      --inset:inset 0 1px 0 rgba(255,255,255,.05);
-      --glass:rgba(44,52,72,.6); --glass2:rgba(34,41,58,.85); --card-solid:#232b3e; --glass-bd:rgba(255,255,255,.14);
-      --surf:#2b344a; /* 입력/리스트 표면 */
-    }
-    body{background:#0b0e15}
-    body::before{background:
-      radial-gradient(38% 32% at 12% 8%, rgba(90,110,220,.28), transparent 70%),
-      radial-gradient(32% 28% at 90% 14%, rgba(200,90,140,.20), transparent 70%),
-      radial-gradient(44% 40% at 84% 90%, rgba(50,150,120,.18), transparent 70%),
-      radial-gradient(40% 38% at 6% 88%, rgba(130,90,210,.20), transparent 70%),
-      linear-gradient(160deg,#10131b,#0d1017)}
-    /* 흰색·밝은 표면 → 다크 표면 */
-    .field input,.field textarea,.vbtn,.gbtn,.vadd input,.switch-row,.vitem,.chk,.seat-edit{background:var(--surf)}
-    .field input:focus,.field textarea:focus{background:#283043}
-    .vitem:active,.vitem.sel{background:var(--accent-soft)}
-    .share-prev{background:#171c28}
-    .share-thumb,.pend-thumb{background:#171c28}
-    .cal-cell{background:#20273a;border-color:var(--line)}
-    .cal-cell.has{background:rgba(109,140,255,.16);border-color:rgba(109,140,255,.32)}
-    .cal-head button,.sb-btn,.seg button.on{background:var(--surf);color:var(--ink)}
-    .pill.on{background:var(--accent-soft);border-color:rgba(109,140,255,.4)}
-    .tk-check{background:var(--surf);border-color:#3a445c}
-    .tk-share{background:var(--accent-soft)}
-    .save-row .cancel{background:var(--surf);color:var(--ink-soft)}
-    .act-btn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
-    .transfer-box{background:rgba(245,181,68,.1);border-color:rgba(245,181,68,.28)}
-    .pend-card{background:linear-gradient(145deg,#2a2618,#211d12);border-color:#4a4021;color:#e6c878}
-    .pend-card b{color:#f0d68a}
-    .pend-card.err{background:rgba(255,107,122,.12);border-color:rgba(255,107,122,.3);color:var(--danger-ink)}
-    .tk.is-transfer{background:linear-gradient(180deg,#4a3d1c,#3c3115);border-color:#75612e}
-    .tk.is-transfer .tk-when{color:#ffd464}
-    .tk.is-transfer .tk-name{color:#f4e2a8}
-    .lrow.is-transfer{background:linear-gradient(90deg,#3c3115,#2b3245);border-color:#6b5a2c}
-    .lrow.is-transfer .nm{color:#f4e2a8}
-    /* 부분취소: 슬레이트 톤(밝은 분홍 대신) */
-    .tk.is-cancel{background:linear-gradient(180deg,#2c3242,#262b38);border-color:#3d4557}
-    .tk.is-cancel .tk-name{color:#c3cad8}
-    .lrow.is-cancel{background:linear-gradient(90deg,#262b38,#232b3e);border-color:#3d4557}
-    .lrow.is-cancel .nm{color:#c3cad8}
-    .tk-ribbon.cancel{background:linear-gradient(145deg,#8a93a6,#5c6578)}
-    .xtag.cancel{background:#5c6578}
-    .statusbox.good{background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.3);color:#5fdca2}
-    .statusbox.warn{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.3);color:#f0c775}
-    .month-head .mh-count,.up-h span{background:var(--surf)}
-    .sheet{background:linear-gradient(180deg,rgba(28,33,46,.97),rgba(20,24,34,.95));border-top-color:rgba(255,255,255,.08)}
-    .grab{background:#3a445c}
-    .switch .track:before{background:#e8ebf3}
-    .badge{color:#0f1219}
+  /* ===== 다크모드 (data-theme='dark' 일 때. JS가 자동/라이트/다크 설정에 따라 지정) ===== */
+  :root[data-theme="dark"]{
+    --card:#1b2130; --ink:#e8ebf3; --ink-soft:#a6adbe; --ink-faint:#727b90;
+    --line:#2c3345; --accent:#7d97ff; --accent-ink:#a9bcff; --accent-soft:rgba(109,140,255,.18);
+    --danger:#ff6b7a; --danger-ink:#ff96a1; --danger-soft:rgba(255,107,122,.15); --danger-bd:rgba(255,107,122,.4); --ok:#3ecf8e; --warn:#f5b544;
+    --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+    --shadow:0 8px 20px -8px rgba(0,0,0,.55),0 2px 6px -3px rgba(0,0,0,.4);
+    --shadow-lg:0 20px 44px -18px rgba(0,0,0,.7);
+    --inset:inset 0 1px 0 rgba(255,255,255,.05);
+    --glass:rgba(44,52,72,.6); --glass2:rgba(34,41,58,.85); --card-solid:#232b3e; --glass-bd:rgba(255,255,255,.14);
+    --surf:#2b344a;
   }
+  :root[data-theme="dark"] body{background:#0b0e15}
+  :root[data-theme="dark"] body::before{background:
+    radial-gradient(38% 32% at 12% 8%, rgba(90,110,220,.28), transparent 70%),
+    radial-gradient(32% 28% at 90% 14%, rgba(200,90,140,.20), transparent 70%),
+    radial-gradient(44% 40% at 84% 90%, rgba(50,150,120,.18), transparent 70%),
+    radial-gradient(40% 38% at 6% 88%, rgba(130,90,210,.20), transparent 70%),
+    linear-gradient(160deg,#10131b,#0d1017)}
+  :root[data-theme="dark"] .field input,:root[data-theme="dark"] .field textarea,:root[data-theme="dark"] .vbtn,:root[data-theme="dark"] .gbtn,:root[data-theme="dark"] .vadd input,:root[data-theme="dark"] .switch-row,:root[data-theme="dark"] .vitem,:root[data-theme="dark"] .chk,:root[data-theme="dark"] .seat-edit{background:var(--surf)}
+  :root[data-theme="dark"] .field input:focus,:root[data-theme="dark"] .field textarea:focus{background:#283043}
+  :root[data-theme="dark"] .vitem:active,:root[data-theme="dark"] .vitem.sel{background:var(--accent-soft)}
+  :root[data-theme="dark"] .share-prev,:root[data-theme="dark"] .share-thumb,:root[data-theme="dark"] .pend-thumb{background:#171c28}
+  :root[data-theme="dark"] .cal-cell{background:#20273a;border-color:var(--line)}
+  :root[data-theme="dark"] .cal-cell.has{background:rgba(109,140,255,.16);border-color:rgba(109,140,255,.32)}
+  :root[data-theme="dark"] .cal-head button,:root[data-theme="dark"] .sb-btn,:root[data-theme="dark"] .seg button.on{background:var(--surf);color:var(--ink)}
+  :root[data-theme="dark"] .pill.on{background:var(--accent-soft);border-color:rgba(109,140,255,.4)}
+  :root[data-theme="dark"] .icon-btn{background:var(--surf)}
+  :root[data-theme="dark"] .tk-check{background:var(--surf);border-color:#3a445c}
+  :root[data-theme="dark"] .tk-share{background:var(--accent-soft)}
+  :root[data-theme="dark"] .save-row .cancel{background:var(--surf);color:var(--ink-soft)}
+  :root[data-theme="dark"] .act-btn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+  :root[data-theme="dark"] .transfer-box{background:rgba(245,181,68,.1);border-color:rgba(245,181,68,.28)}
+  :root[data-theme="dark"] .pend-card{background:linear-gradient(145deg,#2a2618,#211d12);border-color:#4a4021;color:#e6c878}
+  :root[data-theme="dark"] .pend-card b{color:#f0d68a}
+  :root[data-theme="dark"] .pend-card.err{background:rgba(255,107,122,.12);border-color:rgba(255,107,122,.3);color:var(--danger-ink)}
+  :root[data-theme="dark"] .tk.is-transfer{background:linear-gradient(180deg,#4a3d1c,#3c3115);border-color:#75612e}
+  :root[data-theme="dark"] .tk.is-transfer .tk-when{color:#ffd464}
+  :root[data-theme="dark"] .tk.is-transfer .tk-name{color:#f4e2a8}
+  :root[data-theme="dark"] .lrow.is-transfer{background:linear-gradient(90deg,#3c3115,#2b3245);border-color:#6b5a2c}
+  :root[data-theme="dark"] .lrow.is-transfer .nm{color:#f4e2a8}
+  :root[data-theme="dark"] .tk.is-cancel{background:linear-gradient(180deg,#2c3242,#262b38);border-color:#3d4557}
+  :root[data-theme="dark"] .tk.is-cancel .tk-name{color:#c3cad8}
+  :root[data-theme="dark"] .lrow.is-cancel{background:linear-gradient(90deg,#262b38,#232b3e);border-color:#3d4557}
+  :root[data-theme="dark"] .lrow.is-cancel .nm{color:#c3cad8}
+  :root[data-theme="dark"] .tk-ribbon.cancel{background:linear-gradient(145deg,#8a93a6,#5c6578)}
+  :root[data-theme="dark"] .xtag.cancel{background:#5c6578}
+  :root[data-theme="dark"] .statusbox.good{background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.3);color:#5fdca2}
+  :root[data-theme="dark"] .statusbox.warn{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.3);color:#f0c775}
+  :root[data-theme="dark"] .month-head .mh-count,:root[data-theme="dark"] .up-h span{background:var(--surf)}
+  :root[data-theme="dark"] .sheet{background:linear-gradient(180deg,rgba(28,33,46,.97),rgba(20,24,34,.95));border-top-color:rgba(255,255,255,.08)}
+  :root[data-theme="dark"] .grab{background:#3a445c}
+  :root[data-theme="dark"] .switch .track:before{background:#e8ebf3}
+  :root[data-theme="dark"] .badge{color:#0f1219}
+
+  /* 테마 세그먼트(설정) */
+  .theme-seg{display:flex;gap:6px;background:var(--surf,#f2f4fa);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:10px}
+  .theme-seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:10px;font-size:13.5px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit}
+  .theme-seg button.on{background:var(--card);color:var(--accent-ink);box-shadow:var(--shadow-sm)}
 </style>
 </head>
 <body>
@@ -412,7 +416,7 @@
       <button data-v="tile" onclick="setView('tile')">▦ 타일</button>
       <button data-v="list" onclick="setView('list')">☰ 리스트</button>
     </div>
-    <button class="icon-btn" id="selBtn" onclick="toggleSelectMode()" title="선택 삭제">🗑️</button>
+    <button class="icon-btn" id="settingsBtn" onclick="openSettings()" title="설정">⚙️</button>
     <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
   </div>
 
@@ -538,6 +542,27 @@
   </div>
 </div>
 
+<!-- Settings -->
+<div class="overlay" id="settingsOverlay" onclick="if(event.target===this)closeSettings()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2>설정</h2>
+    <div class="field"><label>테마</label>
+      <div class="theme-seg" id="themeSeg">
+        <button data-th="auto" onclick="setTheme('auto')">자동</button>
+        <button data-th="light" onclick="setTheme('light')">라이트</button>
+        <button data-th="dark" onclick="setTheme('dark')">다크</button>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:0"><label>관리</label>
+      <button class="btn-ghost" style="margin-top:0" onclick="closeSettings();toggleSelectMode()">🗑️ 여러 개 선택 삭제</button>
+      <button class="btn-ghost" onclick="exportData()">💾 백업 내보내기</button>
+      <button class="btn-ghost" onclick="document.getElementById('importFile').click()">📥 백업 불러오기</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+
 <!-- Vendor color picker -->
 <div class="overlay" id="colorOverlay" onclick="if(event.target===this)closeColorPicker()">
   <div class="sheet">
@@ -651,9 +676,9 @@ const DEFAULT_GRADES=['VIP','R','S','A'];
 const DEFAULT_PLATFORMS=['티켓베이','중고나라','당근마켓','번개장터','트위터/X','지인','기타'];
 const PALETTE=['#6c8cff','#ff8fb1','#ffa94d','#4dd4ac','#b088ff','#5bc0eb','#ff6b7a','#7bc86c','#f4a259','#5d9cec'];
 // 예매처 브랜드 색(파비콘에서 영감). 사용자가 컬러 피커로 덮어쓸 수 있음.
-const VENDOR_COLORS={'티켓링크':'#E03E3E','멜론티켓':'#00A33F','세종문화회관':'#F9A825','YES24':'#1D6FD6','샤롯데씨어터':'#E0457A','클립서비스':'#8B5CF6','NOL 인터파크':'#FF4D8D','LG아트센터':'#B00046'};
+const VENDOR_COLORS={'티켓링크':'#E03E3E','멜론티켓':'#00A33F','세종문화회관':'#F9A825','YES24':'#1565D8','샤롯데씨어터':'#E0457A','클립서비스':'#35C0F0','NOL 인터파크':'#4B79FF','LG아트센터':'#B00046'};
 const LS_VCOLORS='tm_vcolors_v1';
-const PICK_PALETTE=['#E03E3E','#FF4D8D','#F9A825','#00A33F','#1D6FD6','#8B5CF6','#E0457A','#B00046','#4dd4ac','#5bc0eb','#6c8cff','#7c8598'];
+const PICK_PALETTE=['#E03E3E','#FF6B6B','#FF4D8D','#F0629E','#B00046','#F9A825','#FF8C42','#FFC24B','#00A33F','#2FBF71','#12B886','#35C0F0','#38BDF8','#1565D8','#4B79FF','#5B6EF5','#8B5CF6','#E0457A','#7c8598','#495a70'];
 const WD=['일','월','화','수','목','금','토'];
 const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
 
@@ -829,7 +854,7 @@ function renderSelectBar(){
   const bar=document.getElementById('selectBar'); if(!bar)return;
   bar.classList.toggle('on',selectMode);
   document.body.classList.toggle('selecting',selectMode);
-  document.getElementById('selBtn').classList.toggle('on',selectMode);
+  const sb2=document.getElementById('settingsBtn'); if(sb2)sb2.classList.toggle('on',selectMode);
   if(!selectMode)return;
   document.getElementById('selectCount').textContent=`${selectedIds.size}개 선택`;
   const ids=byDate(filtered()).map(t=>String(t.id));
@@ -904,8 +929,8 @@ function renderUpcoming(){
   const up=tickets.filter(t=>t.date && t.date>=today && t.date<=endStr)
                   .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:(a.time||'')<(b.time||'')?-1:1));
   if(!up.length){ el.innerHTML=''; return; }
-  const cards=up.map(t=>{ const dd=ddayInfo(t.date,today);
-    return `<div class="up-card" onclick="edit('${t.id}')">
+  const cards=up.map(t=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
+    return `<div class="up-card" onclick="edit('${t.id}')" style="background:linear-gradient(135deg,${hexA(c,.18)},${hexA(c,.02)} 60%),var(--card-solid)">
       <span class="up-dday ${dd.soon?'soon':''}">${dd.label}</span>
       <span class="up-name">${esc(t.name||'공연')}</span>
       <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
@@ -975,7 +1000,8 @@ function listRow(t){
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}">
+  const tint=(!xf&&!xc)?` style="background:linear-gradient(100deg,${hexA(c,.14)},${hexA(c,.02)} 60%),var(--card-solid)"`:'';
+  return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
@@ -1068,6 +1094,15 @@ function resetVendorColor(){
   delete vcolors[colorTargetVendor]; localStorage.setItem(LS_VCOLORS,JSON.stringify(vcolors));
   renderVendorList(); syncVendorBtn(); render(); closeColorPicker(); toast('기본색으로 되돌림');
 }
+
+/* ===== 테마 / 설정 ===== */
+function resolveTheme(){ const s=localStorage.getItem('tm_theme')||'auto'; if(s==='dark')return 'dark'; if(s==='light')return 'light'; return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'; }
+function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#0b0e15':'#f4f6fb'; }
+function setTheme(s){ localStorage.setItem('tm_theme',s); applyTheme(); renderThemeSeg(); }
+function renderThemeSeg(){ const s=localStorage.getItem('tm_theme')||'auto'; document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.th===s)); }
+function openSettings(){ renderThemeSeg(); openOv('settingsOverlay'); }
+function closeSettings(){ closeOv('settingsOverlay'); }
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if((localStorage.getItem('tm_theme')||'auto')==='auto')applyTheme(); }); }catch(e){}
 function selectVendor(v){ formVendor=v; syncVendorBtn(); closeVendor(); }
 function syncVendorBtn(){
   const btn=document.getElementById('fVendorBtn'), dot=document.getElementById('fVendorDot'), txt=document.getElementById('fVendorText');
