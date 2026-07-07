@@ -133,6 +133,8 @@
   .util button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm)}
   .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:40;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border:none;padding:13px 24px;border-radius:999px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 12px 26px -8px rgba(67,97,238,.6),var(--inset);display:flex;align-items:center;gap:7px;font-family:inherit}
   .fab:active{transform:translateX(-50%) scale(.96)}
+  .fab-ai{position:fixed;right:16px;bottom:22px;z-index:40;width:54px;height:54px;border-radius:50%;border:none;background:linear-gradient(145deg,#ffd873,#ffb020);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 12px 26px -8px rgba(255,160,0,.6),var(--inset)}
+  .fab-ai:active{transform:scale(.94)}
 
   /* sheets / overlays */
   .overlay{position:fixed;inset:0;background:rgba(26,31,52,.30);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);z-index:50;display:none;align-items:flex-end;justify-content:center}
@@ -235,6 +237,8 @@
   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
   추가
 </button>
+<button class="fab-ai" onclick="document.getElementById('aiFile').click()" title="예매내역 캡처로 AI 자동 추가">🤖</button>
+<input type="file" id="aiFile" accept="image/*" style="display:none" onchange="aiUpload(event)">
 
 <!-- Ticket modal -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
@@ -706,6 +710,33 @@ async function importData(e){
     toast('불러오기 완료');
   }catch(err){toast('올바른 백업 파일이 아니에요');}};
   r.readAsText(f);e.target.value='';
+}
+
+/* ===== AI 캡처 업로드 (예매내역 자동 인식 대기열) ===== */
+function fileToB64(file){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const max=1400; let w=img.naturalWidth,h=img.naturalHeight;
+      const s=Math.min(1,max/Math.max(w,h)); w=Math.round(w*s); h=Math.round(h*s);
+      const c=document.createElement('canvas'); c.width=w; c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',0.82).split(',')[1]);
+    };
+    img.onerror=rej;
+    const fr=new FileReader(); fr.onload=()=>{img.src=fr.result;}; fr.onerror=rej; fr.readAsDataURL(file);
+  });
+}
+async function aiUpload(e){
+  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f)return;
+  if(mode!=='cloud'||!sb){ toast('오프라인이라 지금은 안 돼요'); return; }
+  toast('캡처 처리 중…');
+  try{
+    const b64=await fileToB64(f);
+    const {error}=await sb.from('pending_uploads').insert({image_b64:b64,status:'pending'});
+    if(error)throw error;
+    toast('접수됐어요 · AI가 곧 인식해서 추가해요 🤖');
+  }catch(err){ toast('업로드 실패: '+(err.message||err)); }
 }
 
 /* ===== toast ===== */
