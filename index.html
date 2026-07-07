@@ -323,7 +323,7 @@ let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
 let editingId=null;
 
 /* cloud state */
-let sb=null, user=null, mode='local', loading=false, authTab='in';
+let sb=null, mode='local', loading=false;
 
 function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def;}catch(e){return def;}}
 function saveLocal(){localStorage.setItem(LS_TICKETS,JSON.stringify(tickets));localStorage.setItem(LS_VENDORS,JSON.stringify(vendors));}
@@ -346,11 +346,10 @@ async function boot(){
   const cfg=getCfg();
   if(cfg.url && cfg.key && window.supabase){
     try{
-      sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
-      sb.auth.onAuthStateChange((_e,session)=>{ user=session?.user||null; });
-      const {data:{session}}=await sb.auth.getSession();
-      if(session){ user=session.user; mode='cloud'; await refresh(); }
-    }catch(e){ console.error(e); mode='local'; }
+      sb=window.supabase.createClient(cfg.url,cfg.key);
+      mode='cloud';
+      await refresh();
+    }catch(e){ console.error(e); mode='local'; tickets=load(LS_TICKETS,[]); render(); }
   }
   updateSyncPill();
 }
@@ -368,8 +367,8 @@ async function refresh(){
 function updateSyncPill(){
   const pill=document.getElementById('syncPill');
   const txt=document.getElementById('syncPillTxt');
-  if(mode==='cloud'&&user){ pill.classList.add('on'); txt.textContent='동기화 켜짐'; }
-  else{ pill.classList.remove('on'); txt.textContent='로컬 저장'; }
+  if(mode==='cloud'){ pill.classList.add('on'); txt.textContent='동기화 켜짐'; }
+  else{ pill.classList.remove('on'); txt.textContent='오프라인'; }
 }
 
 /* ================= render ================= */
@@ -537,125 +536,23 @@ async function del(id){
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
 }
 
-/* ================= sync sheet ================= */
+/* ================= sync status sheet ================= */
 function openSync(){ renderSync(); document.getElementById('syncOverlay').classList.add('on'); document.body.style.overflow='hidden'; }
 function closeSync(){ document.getElementById('syncOverlay').classList.remove('on'); document.body.style.overflow=''; }
 
-const SETUP_GUIDE=`<details class="guide"><summary>⚙️ 처음이라면 — Supabase 5분 설정법</summary>
-<ol>
-<li><a href="https://supabase.com" target="_blank">supabase.com</a> 가입 후 <b>New project</b> 생성 (Region은 <code>Northeast Asia (Seoul)</code> 추천)</li>
-<li>왼쪽 <b>SQL Editor</b> → 아래 코드 붙여넣고 <b>Run</b>:
-<pre>create table if not exists public.tickets (
-  id uuid primary key default gen_random_uuid(),
-  user_id uuid not null default auth.uid()
-    references auth.users(id) on delete cascade,
-  vendor text, name text, show_date text,
-  qty int, price bigint, memo text,
-  seats jsonb not null default '[]'::jsonb,
-  created_at timestamptz not null default now()
-);
-alter table public.tickets enable row level security;
-create policy "owner only" on public.tickets
-  for all to authenticated
-  using (auth.uid() = user_id)
-  with check (auth.uid() = user_id);</pre></li>
-<li><b>Authentication → Sign In / Providers → Email</b>에서 <b>Confirm email</b>을 꺼두면 가입 즉시 로그인돼요(개인용 권장).</li>
-<li><b>Project Settings → API</b>에서 <b>Project URL</b>과 <b>anon public</b> 키를 복사해 아래에 붙여넣기.</li>
-</ol></details>`;
-
 function renderSync(){
-  const cfg=getCfg();
   const box=document.getElementById('syncBody');
-
-  if(mode==='cloud'&&user){
-    box.innerHTML=`<h2>클라우드 동기화</h2>
-      <div class="statusbox good">✅ <b>${esc(user.email||'로그인됨')}</b> 계정으로 연결되어 있어요.<br>이제 어느 기기에서든 같은 목록이 보이고 자동 저장됩니다.</div>
-      <button class="btn-ghost btn-danger-ghost" onclick="signOut()">로그아웃</button>`;
-    return;
+  if(mode==='cloud'){
+    box.innerHTML=`<h2>동기화 상태</h2>
+      <div class="statusbox good">✅ 클라우드에 <b>자동 저장</b> 중이에요.<br>폰·PC 어디서 열어도 같은 목록이 보입니다. 로그인 필요 없어요.</div>
+      <button class="btn-ghost" onclick="refresh().then(()=>toast('새로고침됨'))">🔄 지금 새로고침</button>
+      <button class="btn-ghost" onclick="closeSync()">닫기</button>`;
+  }else{
+    box.innerHTML=`<h2>동기화 상태</h2>
+      <div class="statusbox warn">⚠️ 지금은 <b>오프라인</b>이라 이 기기에 임시 저장돼요.<br>인터넷 연결 후 새로고침하면 다시 동기화됩니다.</div>
+      <button class="btn-primary" onclick="location.reload()">새로고침</button>
+      <button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }
-
-  if(!window.supabase){
-    box.innerHTML=`<h2>클라우드 동기화</h2><div class="statusbox warn">⚠️ 동기화 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요. (설정 전까지는 이 기기에 로컬로 저장됩니다.)</div>`;
-    return;
-  }
-
-  if(!cfg.url || !cfg.key){
-    box.innerHTML=`<h2>클라우드 동기화 설정</h2>
-      <p class="hint">무료 Supabase 프로젝트를 연결하면 폰·PC 어디서나 같은 목록을 볼 수 있어요.</p>
-      ${SETUP_GUIDE}
-      <div class="field" style="margin-top:14px"><label>Project URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
-      <div class="field"><label>anon public key</label><input id="cfgKey" placeholder="eyJhbGci..."></div>
-      <button class="btn-primary" onclick="saveCfg()">연결하기</button>`;
-    return;
-  }
-
-  // configured, logged out -> auth
-  box.innerHTML=`<h2>로그인</h2>
-    <p class="hint">가입한 이메일로 로그인하면 이 기기에도 목록이 동기화돼요.</p>
-    <div class="seg">
-      <button class="${authTab==='in'?'on':''}" onclick="setAuthTab('in')">로그인</button>
-      <button class="${authTab==='up'?'on':''}" onclick="setAuthTab('up')">회원가입</button>
-    </div>
-    <div class="field"><label>이메일</label><input id="auEmail" type="email" placeholder="you@example.com"></div>
-    <div class="field"><label>비밀번호</label><input id="auPass" type="password" placeholder="6자 이상"></div>
-    <button class="btn-primary" id="auBtn" onclick="doAuth()">${authTab==='in'?'로그인':'회원가입'}</button>
-    <button class="btn-ghost" onclick="changeServer()">서버 설정 변경</button>`;
-}
-function setAuthTab(t){authTab=t;renderSync();}
-
-function saveCfg(){
-  const url=document.getElementById('cfgUrl').value.trim().replace(/\/+$/,'');
-  const key=document.getElementById('cfgKey').value.trim();
-  if(!/^https:\/\/.+\.supabase\.co$/.test(url)){toast('Project URL을 확인해 주세요');return;}
-  if(key.length<20){toast('anon key를 확인해 주세요');return;}
-  setCfg({url,key});
-  try{
-    sb=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
-    sb.auth.onAuthStateChange((_e,session)=>{ user=session?.user||null; });
-    toast('연결됨 · 로그인해 주세요');
-    renderSync();
-  }catch(e){toast('연결 실패: '+(e.message||e));}
-}
-function changeServer(){ setCfg({url:'',key:''}); sb=null; user=null; mode='local'; updateSyncPill(); renderSync(); }
-
-async function doAuth(){
-  const email=document.getElementById('auEmail').value.trim();
-  const pass=document.getElementById('auPass').value;
-  if(!email||pass.length<6){toast('이메일과 6자 이상 비밀번호를 입력해 주세요');return;}
-  const btn=document.getElementById('auBtn');btn.disabled=true;
-  try{
-    if(authTab==='up'){
-      const {data,error}=await sb.auth.signUp({email,password:pass});
-      if(error)throw error;
-      if(!data.session){ toast('확인 메일을 열어 인증한 뒤 로그인해 주세요'); btn.disabled=false; return; }
-    }else{
-      const {error}=await sb.auth.signInWithPassword({email,password:pass});
-      if(error)throw error;
-    }
-    const {data:{session}}=await sb.auth.getSession();
-    user=session.user; mode='cloud';
-    await maybeUploadLocal();
-    await refresh();
-    updateSyncPill(); closeSync();
-    toast('동기화 켜짐 ☁️');
-  }catch(e){ toast('실패: '+(e.message||e)); btn.disabled=false; }
-}
-
-async function maybeUploadLocal(){
-  const localT=load(LS_TICKETS,[]);
-  if(!localT.length) return;
-  if(!confirm(`이 기기에 저장된 티켓 ${localT.length}개를 클라우드 계정으로 올릴까요?`)) return;
-  const rows=localT.map(ticketToDB);
-  const {error}=await sb.from('tickets').insert(rows);
-  if(error){ toast('업로드 일부 실패: '+error.message); return; }
-  localStorage.removeItem(LS_TICKETS);
-  toast('로컬 데이터를 클라우드로 옮겼어요');
-}
-
-async function signOut(){
-  try{ await sb.auth.signOut(); }catch(e){}
-  user=null; mode='local'; tickets=load(LS_TICKETS,[]);
-  updateSyncPill(); render(); closeSync(); toast('로그아웃됨 (로컬 저장으로 전환)');
 }
 
 /* ================= backup ================= */
