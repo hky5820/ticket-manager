@@ -307,11 +307,7 @@
   .seat-edit .seat-x:last-child input{accent-color:var(--warn)}
   .seat-edit.canceled{background:var(--danger-soft);border-color:var(--danger-bd)}
   .seat-edit.xferred{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.4)}
-  .seat-edit.canceled .sgrid2,.seat-edit.canceled .sgrid3,.seat-edit.xferred>.sgrid2,.seat-edit.xferred>.sgrid3{opacity:.55}
-  .seat-xfer{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(245,181,68,.5)}
-  .seat-edit.xferred .seat-xfer{display:block}
-  .seat-xfer .sx-t{font-size:11.5px;font-weight:800;color:var(--warn);margin-bottom:7px}
-  .seat-xfer .sgrid3{opacity:1;margin-top:0}
+  .seat-edit.canceled .sgrid2,.seat-edit.canceled .sgrid3,.seat-edit.xferred .sgrid2,.seat-edit.xferred .sgrid3{opacity:.55}
   .cn-tag{font-size:10px;color:#fff;background:var(--danger);padding:1px 6px;border-radius:99px}
   .cn-tag.xf{background:var(--warn)}
   .seat-edit .rm{position:absolute;top:7px;right:8px;border:1px solid var(--danger-bd);background:var(--danger-soft);color:var(--danger-ink);border-radius:8px;height:24px;padding:0 10px;font-size:12px;font-weight:700;cursor:pointer;line-height:22px}
@@ -338,6 +334,14 @@
   .switch input:checked+.track:before{transform:translateX(19px)}
   .transfer-box{margin-top:10px;padding:12px;border-radius:12px;background:#fffaf0;border:1px solid #f3e6c4;display:none}
   .transfer-box.on{display:block}
+  #seatXferList .sxl-t{font-size:12px;font-weight:800;color:var(--warn);margin-bottom:8px}
+  .sxl-item{border:1px solid rgba(245,181,68,.4);border-radius:10px;padding:9px 10px;margin-bottom:8px;background:rgba(255,255,255,.55)}
+  .sxl-item:last-child{margin-bottom:0}
+  .sxl-item .sxl-seat{font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:7px}
+  .sxl-item .sgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .sxl-item label{font-size:11px}
+  .sxl-item input{padding:9px 10px;font-size:14px;width:100%}
+  :root[data-theme="dark"] .sxl-item{background:rgba(255,255,255,.05)}
   /* save row */
   .save-row{display:flex;gap:9px;margin-top:16px}
   .save-row button{flex:1;border:none;border-radius:13px;padding:14px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit}
@@ -533,16 +537,19 @@
         <label class="switch"><input type="checkbox" id="fTransfer" onchange="toggleTransfer()"><span class="track"></span></label>
       </div>
       <div class="transfer-box" id="transferBox">
-        <div class="two">
-          <div class="field" style="margin-bottom:10px"><label>양도 금액 (원)</label><input id="fTPrice" type="number" inputmode="numeric" placeholder="0"></div>
-          <div class="field" style="margin-bottom:10px"><label>양도한 곳(플랫폼)</label>
-            <button type="button" class="vbtn placeholder" id="fPlatformBtn" onclick="openPlatformPicker()">
-              <span class="vlabel"><span class="vdot" id="fPlatformDot" style="display:none"></span><span id="fPlatformText">플랫폼 선택</span></span>
-              <span class="chev">▾</span>
-            </button>
+        <div id="wholeXfer">
+          <div class="two">
+            <div class="field" style="margin-bottom:10px"><label>양도 금액 (원)</label><input id="fTPrice" type="number" inputmode="numeric" placeholder="0"></div>
+            <div class="field" style="margin-bottom:10px"><label>양도한 곳(플랫폼)</label>
+              <button type="button" class="vbtn placeholder" id="fPlatformBtn" onclick="openPlatformPicker()">
+                <span class="vlabel"><span class="vdot" id="fPlatformDot" style="display:none"></span><span id="fPlatformText">플랫폼 선택</span></span>
+                <span class="chev">▾</span>
+              </button>
+            </div>
           </div>
+          <div class="field" style="margin-bottom:0"><label>누구에게 (대상)</label><input id="fTTo" type="text" placeholder="예: 홍길동 / @아이디"></div>
         </div>
-        <div class="field" style="margin-bottom:0"><label>누구에게 (대상)</label><input id="fTTo" type="text" placeholder="예: 홍길동 / @아이디"></div>
+        <div id="seatXferList"></div>
       </div>
     </div>
 
@@ -1219,10 +1226,10 @@ function addGradeInline(){ const inp=document.getElementById('newGrade'); const 
 function deleteGrade(g){ if(!confirm(`등급 "${g}"를 목록에서 지울까요?`))return; grades=grades.filter(x=>x!==g); localStorage.setItem(LS_GRADES,JSON.stringify(grades)); renderGradeList(); }
 
 /* ===== seats ===== */
-function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''} ${s.t?'xferred':''}"><button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
+function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''} ${s.t?'xferred':''}" data-tp="${s.tp!=null?esc(String(s.tp)):''}" data-tvia="${esc(s.tvia||'')}" data-tto="${esc(s.tto||'')}"><button class="rm" type="button" onclick="this.parentNode.remove();syncTransferUI()">×</button>
   <span class="seat-flags">
     <label class="seat-x"><input type="checkbox" class="s-x" ${s.x?'checked':''} onchange="this.closest('.seat-edit').classList.toggle('canceled',this.checked)"> 취소</label>
-    <label class="seat-x"><input type="checkbox" class="s-t" ${s.t?'checked':''} onchange="this.closest('.seat-edit').classList.toggle('xferred',this.checked)"> 양도</label>
+    <label class="seat-x"><input type="checkbox" class="s-t" ${s.t?'checked':''} onchange="onSeatXfer(this)"> 양도</label>
   </span>
   <div class="sgrid2">
     <div class="gwrap"><label>등급</label>
@@ -1235,14 +1242,6 @@ function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''} ${
     <div><label>구역</label><input class="s-zone" value="${esc(s.zone||'')}" placeholder="A / 가"></div>
     <div><label>열</label><input class="s-row" value="${esc(s.row||'')}" placeholder="3"></div>
     <div><label>번호(석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="12"></div>
-  </div>
-  <div class="seat-xfer">
-    <div class="sx-t">↗ 이 좌석 양도 내역</div>
-    <div class="sgrid3">
-      <div><label>양도 금액(원)</label><input class="s-tp" type="number" inputmode="numeric" value="${s.tp!=null?esc(String(s.tp)):''}" placeholder="0"></div>
-      <div><label>어디서</label><input class="s-tvia" value="${esc(s.tvia||'')}" placeholder="티켓베이 등"></div>
-      <div><label>누구에게</label><input class="s-tto" value="${esc(s.tto||'')}" placeholder="홍길동 / @아이디"></div>
-    </div>
   </div></div>`;}
 function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
 // 등급에서 끝의 "석" 제거(VIP석→VIP, R석→R). 단 "지정석 P"처럼 끝이 석이 아니면 그대로.
@@ -1257,7 +1256,7 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
   if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }
   const o={grade,floor,zone,row,no}; if(x)o.x=true;
   if(tr){ o.t=true;
-    const tp=el.querySelector('.s-tp').value.trim(), tvia=el.querySelector('.s-tvia').value.trim(), tto=el.querySelector('.s-tto').value.trim();
+    const tp=(el.dataset.tp||'').trim(), tvia=(el.dataset.tvia||'').trim(), tto=(el.dataset.tto||'').trim();
     if(tp!=='')o.tp=Number(tp); if(tvia)o.tvia=tvia; if(tto)o.tto=tto;
   }
   return o;
@@ -1281,11 +1280,45 @@ function restoreCanceled(i){
 }
 
 /* ===== transfer ===== */
+// 좌석 라벨(등급 층 구역 열 번호)을 편집 중인 좌석 요소에서 만든다
+function seatLabelFromEl(el){
+  const g=el.querySelector('.s-grade').value.trim(), f=el.querySelector('.s-floor').value.trim(),
+        z=el.querySelector('.s-zone').value.trim(), r=el.querySelector('.s-row').value.trim(),
+        n=el.querySelector('.s-no').value.trim();
+  const no=n?(/^\d+$/.test(n)?n+'번':n):'';
+  return [g,(f?f+'층':''),(z?z+'구역':''),(r?r+'열':''),no].filter(Boolean).join(' ')||'좌석';
+}
+// 좌석의 '양도' 체크 토글 → 그 좌석을 양도 표시하고 하단 양도 영역 동기화
+function onSeatXfer(cb){ cb.closest('.seat-edit').classList.toggle('xferred',cb.checked); syncTransferUI(); }
+// 좌석별 양도 입력값을 해당 좌석 요소(dataset)에 되써서 보관 → 재렌더/저장에 반영
+function setSeatXfer(inp,key){ const el=document.querySelectorAll('#seatBox .seat-edit')[+inp.dataset.si]; if(el)el.dataset[key]=inp.value; }
+function renderSeatXferList(){
+  const box=document.getElementById('seatXferList'); if(!box)return;
+  const items=[...document.querySelectorAll('#seatBox .seat-edit')].map((el,i)=>({el,i})).filter(o=>o.el.querySelector('.s-t').checked);
+  if(!items.length){ box.innerHTML=''; return; }
+  box.innerHTML=`<div class="sxl-t">↗ 좌석별 양도 내역 (${items.length})</div>`+items.map(({el,i})=>`
+    <div class="sxl-item"><div class="sxl-seat">${esc(seatLabelFromEl(el))}</div>
+      <div class="sgrid3">
+        <div><label>금액(원)</label><input type="number" inputmode="numeric" data-si="${i}" value="${esc(el.dataset.tp||'')}" oninput="setSeatXfer(this,'tp')" placeholder="0"></div>
+        <div><label>어디서</label><input data-si="${i}" value="${esc(el.dataset.tvia||'')}" oninput="setSeatXfer(this,'tvia')" placeholder="티켓베이 등"></div>
+        <div><label>누구에게</label><input data-si="${i}" value="${esc(el.dataset.tto||'')}" oninput="setSeatXfer(this,'tto')" placeholder="홍길동 / @아이디"></div>
+      </div></div>`).join('');
+}
+// 좌석별 양도가 있으면 → 양도 토글 자동 활성화(고정) + 전체양도 입력 숨김 + 좌석별 리스트 표시
+function syncTransferUI(){
+  const fT=document.getElementById('fTransfer');
+  const partial=[...document.querySelectorAll('#seatBox .seat-edit .s-t')].some(c=>c.checked);
+  if(partial){ fT.checked=true; fT.disabled=true; } else { fT.disabled=false; }
+  const show=partial||fT.checked;
+  document.getElementById('transferBox').classList.toggle('on',show);
+  document.getElementById('wholeXfer').style.display=(!partial&&fT.checked)?'':'none';
+  renderSeatXferList();
+}
 function toggleTransfer(){
   const on=document.getElementById('fTransfer').checked;
-  document.getElementById('transferBox').classList.toggle('on',on);
-  // 양도 켜면 양도 금액을 구매금액으로 기본 채움(비어 있을 때만)
+  // 전체 양도 켜면 양도 금액을 구매금액으로 기본 채움(비어 있을 때만)
   if(on){ const tp=document.getElementById('fTPrice'); if(!tp.value){ const p=document.getElementById('fPrice').value; if(p)tp.value=p; } }
+  syncTransferUI();
 }
 
 /* ===== modal ===== */
@@ -1305,8 +1338,9 @@ function openModal(){
   editingId=null; formVendor=''; formPlatform=''; editCanceled=[];
   document.getElementById('modalTitle').textContent='티켓 추가';
   ['fName','fDate','fTime','fQty','fPrice','fMemo','fTPrice','fTTo'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('fTransfer').checked=false; toggleTransfer();
+  document.getElementById('fTransfer').checked=false;
   document.getElementById('seatBox').innerHTML=''; addSeatRow(); renderCanceledNote();
+  syncPlatformBtn(); syncTransferUI();
   document.getElementById('delBtn').style.display='none';
   document.getElementById('modalHeadActions').style.display='none';
   syncVendorBtn(); syncPlatformBtn();
@@ -1324,16 +1358,16 @@ function edit(id){
   document.getElementById('fPrice').value=t.price??'';
   document.getElementById('fMemo').value=t.memo||'';
   const tr=t.transfer||{};
-  document.getElementById('fTransfer').checked=!!tr.done; toggleTransfer();
+  document.getElementById('fTransfer').checked=!!tr.done;
   document.getElementById('fTPrice').value=tr.price??'';
   document.getElementById('fTTo').value=tr.to||'';
   formPlatform=tr.platform||'';
   const box=document.getElementById('seatBox'); box.innerHTML='';
-  // 취소·양도된 좌석은 편집 목록에서 빼고 별도 보존(표시·복원용)
-  const active=(t.seats||[]).filter(s=>!s.x&&!s.t);
-  editCanceled=(t.seats||[]).filter(s=>s.x||s.t).map(s=>({...s}));
+  // 취소 좌석만 별도 보존(표시·복원용). 양도(t) 좌석은 편집 목록에 남겨 좌석별 양도 입력을 살린다.
+  const active=(t.seats||[]).filter(s=>!s.x);
+  editCanceled=(t.seats||[]).filter(s=>s.x).map(s=>({...s}));
   (active.length?active:[null]).forEach(s=>addSeatRow(s));
-  renderCanceledNote();
+  renderCanceledNote(); syncTransferUI();
   document.getElementById('delBtn').style.display='block';
   document.getElementById('modalHeadActions').style.display='flex';
   document.getElementById('modalImgBtn').style.display=t.hasImg?'flex':'none';
@@ -1401,7 +1435,9 @@ function initImgZoom(){
 async function save(){
   const name=document.getElementById('fName').value.trim();
   if(!name){toast('공연명을 입력해 주세요');return;}
-  const done=document.getElementById('fTransfer').checked;
+  const seatsArr=collectSeats();
+  const partial=seatsArr.some(s=>s.t);   // 좌석별(표단위) 양도가 하나라도 있으면 부분 양도
+  const done=!partial && document.getElementById('fTransfer').checked; // 전체 양도(양도완료)는 부분 양도가 없을 때만
   const data={
     vendor:formVendor||'기타', name,
     date:document.getElementById('fDate').value,
@@ -1409,7 +1445,7 @@ async function save(){
     qty:document.getElementById('fQty').value,
     price:document.getElementById('fPrice').value,
     memo:document.getElementById('fMemo').value.trim(),
-    seats:[...collectSeats(), ...editCanceled],
+    seats:[...seatsArr, ...editCanceled],
     transfer:{done,
       price:done?numOrNull(document.getElementById('fTPrice').value):null,
       to:done?document.getElementById('fTTo').value.trim():'',
