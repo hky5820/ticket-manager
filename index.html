@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f4f6fb">
+<title>티켓 보관함</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="티켓 보관함">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#f4f6fb;
+    --bg-grad:linear-gradient(160deg,#f8fafc 0%,#eef2fb 100%);
+    --card:#ffffff;
+    --ink:#1f2637;
+    --ink-soft:#5b6474;
+    --ink-faint:#98a0b3;
+    --line:#e9edf5;
+    --accent:#6c8cff;
+    --accent-ink:#4361ee;
+    --accent-soft:#eef2ff;
+    --danger:#ff6b7a;
+    --ok:#3ecf8e;
+    --radius:20px;
+    --shadow-sm:0 2px 6px rgba(31,46,84,.05);
+    --shadow:0 10px 30px -12px rgba(31,46,84,.22), 0 4px 10px -6px rgba(31,46,84,.12);
+    --shadow-lg:0 24px 48px -20px rgba(31,46,84,.32), 0 8px 20px -10px rgba(31,46,84,.18);
+    --shadow-inset:inset 0 1px 0 rgba(255,255,255,.7);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    background:var(--bg-grad);
+    background-attachment:fixed;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  .wrap{max-width:720px;margin:0 auto;padding:22px 16px 120px}
+
+  /* Header */
+  header{margin:8px 2px 18px}
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .title{display:flex;align-items:center;gap:10px}
+  .title h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin:0}
+  .logo{
+    width:40px;height:40px;border-radius:14px;flex:none;
+    display:grid;place-items:center;font-size:20px;
+    background:linear-gradient(145deg,#ffffff,#eef2ff);
+    box-shadow:var(--shadow),var(--shadow-inset);
+  }
+  .subtitle{color:var(--ink-soft);font-size:13.5px;margin:10px 2px 0}
+  .pill{
+    border:1px solid var(--line);background:var(--card);border-radius:999px;
+    padding:8px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
+    color:var(--ink-soft);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:6px;white-space:nowrap;
+  }
+  .pill .dot{width:7px;height:7px;border-radius:99px;background:var(--ink-faint)}
+  .pill.on{color:var(--accent-ink);border-color:#d6def8;background:#f4f7ff}
+  .pill.on .dot{background:var(--ok)}
+
+  /* Stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
+  .stat{
+    background:var(--card);border-radius:16px;padding:14px 12px;text-align:center;
+    box-shadow:var(--shadow-sm),var(--shadow-inset);border:1px solid var(--line);
+  }
+  .stat .num{font-size:20px;font-weight:800;letter-spacing:-.5px}
+  .stat .lbl{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+
+  /* Search */
+  .toolbar{display:flex;gap:10px;margin:16px 0 6px;align-items:center}
+  .search{flex:1;position:relative}
+  .search input{
+    width:100%;border:1px solid var(--line);background:var(--card);
+    border-radius:14px;padding:12px 14px 12px 40px;font-size:15px;color:var(--ink);
+    box-shadow:var(--shadow-sm);outline:none;transition:.15s;
+  }
+  .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
+
+  /* Cards */
+  .list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
+  .ticket{
+    background:var(--card);border-radius:var(--radius);padding:16px 16px 14px;
+    box-shadow:var(--shadow),var(--shadow-inset);border:1px solid var(--line);
+    position:relative;transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s;
+    animation:pop .28s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+  .ticket:active{transform:translateY(1px)}
+  .ticket .row1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+  .badge{
+    font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;color:#fff;
+    box-shadow:var(--shadow-sm);white-space:nowrap;letter-spacing:-.2px;
+  }
+  .ticket h3{margin:10px 0 2px;font-size:18px;font-weight:800;letter-spacing:-.5px;line-height:1.3}
+  .when{font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:5px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .chip{
+    background:#f7f9fe;border:1px solid var(--line);border-radius:11px;
+    padding:7px 11px;font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;
+  }
+  .chip b{color:var(--ink);font-weight:700}
+  .chip.price b{color:var(--accent-ink)}
+  .seats{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+  .seat{
+    background:linear-gradient(145deg,#fbfcff,#f2f5fd);border:1px dashed #dbe2f3;border-radius:12px;
+    padding:9px 12px;font-size:13px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;
+  }
+  .seat .g{font-weight:800;color:var(--accent-ink);background:var(--accent-soft);padding:2px 8px;border-radius:7px;font-size:12px}
+  .seat span{color:var(--ink-soft)}
+  .seat span b{color:var(--ink);font-weight:700}
+  .memo{margin-top:10px;font-size:13px;color:var(--ink-soft);background:#fffdf3;border:1px solid #f3ecd0;border-radius:11px;padding:8px 11px;white-space:pre-wrap}
+  .actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .actions button{
+    flex:1;border:none;border-radius:11px;padding:9px;font-size:13.5px;font-weight:700;cursor:pointer;
+    background:#f2f4fa;color:var(--ink-soft);transition:.15s;font-family:inherit;
+  }
+  .actions button:active{transform:scale(.97)}
+  .actions .del{color:var(--danger);background:#fff1f2}
+
+  /* Empty / loading */
+  .empty{text-align:center;padding:60px 20px;color:var(--ink-faint)}
+  .empty .ico{font-size:52px;margin-bottom:10px}
+  .empty p{margin:4px 0}
+  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* FAB */
+  .fab{
+    position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:40;
+    background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border:none;
+    padding:15px 26px;border-radius:999px;font-size:15.5px;font-weight:800;cursor:pointer;
+    box-shadow:0 14px 30px -8px rgba(67,97,238,.6),var(--shadow-inset);
+    display:flex;align-items:center;gap:8px;font-family:inherit;transition:.18s;
+  }
+  .fab:active{transform:translateX(-50%) scale(.96)}
+
+  /* Modal */
+  .overlay{
+    position:fixed;inset:0;background:rgba(31,38,55,.42);backdrop-filter:blur(3px);
+    z-index:50;display:none;align-items:flex-end;justify-content:center;
+  }
+  .overlay.on{display:flex;animation:fade .2s}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{
+    background:var(--card);width:100%;max-width:720px;border-radius:26px 26px 0 0;
+    max-height:92vh;overflow-y:auto;padding:8px 18px 28px;
+    box-shadow:0 -20px 50px -12px rgba(31,46,84,.3);animation:up .28s cubic-bezier(.2,.8,.2,1);
+  }
+  @keyframes up{from{transform:translateY(40px)}to{transform:none}}
+  .grab{width:44px;height:5px;background:#dfe4f0;border-radius:99px;margin:8px auto 6px}
+  .sheet h2{font-size:19px;font-weight:800;margin:6px 2px 4px;letter-spacing:-.5px}
+  .sheet .hint{font-size:13px;color:var(--ink-soft);margin:0 2px 16px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin:0 2px 6px}
+  .field input,.field select,.field textarea{
+    width:100%;border:1px solid var(--line);background:#fbfcff;border-radius:13px;
+    padding:12px 13px;font-size:15px;color:var(--ink);outline:none;font-family:inherit;transition:.15s;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{resize:vertical;min-height:60px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .venmix{display:flex;gap:8px}
+  .venmix select{flex:1}
+  .icon-btn{
+    border:1px solid var(--line);background:#fbfcff;border-radius:13px;width:48px;flex:none;
+    font-size:20px;cursor:pointer;color:var(--accent-ink);font-weight:700;
+  }
+  .seat-edit{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:#fafbff;position:relative}
+  .seat-edit .four{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  .seat-edit .rm{position:absolute;top:8px;right:8px;border:none;background:#fff1f2;color:var(--danger);border-radius:8px;width:26px;height:26px;font-size:15px;cursor:pointer;line-height:1}
+  .seat-edit label{font-size:11.5px}
+  .add-seat{width:100%;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent-ink);
+    border-radius:13px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:6px}
+  .save-row{display:flex;gap:10px;margin-top:18px}
+  .save-row button{flex:1;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
+  .save-row .cancel{background:#f2f4fa;color:var(--ink-soft);flex:0 0 34%}
+  .save-row .save{background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;box-shadow:0 10px 22px -8px rgba(67,97,238,.55)}
+  .save-row .save:disabled{opacity:.6}
+
+  /* Sync sheet extras */
+  .seg{display:flex;background:#f2f4fa;border-radius:12px;padding:4px;margin-bottom:14px}
+  .seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px;font-size:14px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit}
+  .seg button.on{background:#fff;color:var(--accent-ink);box-shadow:var(--shadow-sm)}
+  .statusbox{border-radius:14px;padding:14px;font-size:13.5px;margin-bottom:14px;border:1px solid var(--line)}
+  .statusbox.good{background:#f1fbf6;border-color:#c9efdd;color:#1f7a4d}
+  .statusbox.warn{background:#fffaf0;border-color:#f3e6c4;color:#8a6d1f}
+  .statusbox b{font-weight:800}
+  .btn-primary{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;box-shadow:0 10px 22px -8px rgba(67,97,238,.55)}
+  .btn-primary:disabled{opacity:.6}
+  .btn-ghost{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink-soft);margin-top:10px}
+  .btn-danger-ghost{color:var(--danger)}
+  details.guide{margin-top:8px;border:1px solid var(--line);border-radius:13px;padding:2px 14px;background:#fbfcff}
+  details.guide summary{cursor:pointer;font-size:13.5px;font-weight:700;color:var(--accent-ink);padding:11px 0}
+  details.guide ol{margin:4px 0 12px;padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.7}
+  details.guide code{background:#eef2ff;color:var(--accent-ink);padding:1px 6px;border-radius:5px;font-size:12px}
+  details.guide pre{background:#1f2637;color:#e6ebf5;padding:12px;border-radius:10px;overflow-x:auto;font-size:11.5px;line-height:1.5}
+  details.guide a{color:var(--accent-ink);font-weight:700}
+
+  /* Utility bar */
+  .util{display:flex;gap:8px;justify-content:center;margin-top:26px;flex-wrap:wrap}
+  .util button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
+    border-radius:11px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm)}
+  .toast{
+    position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:60;
+    background:#1f2637;color:#fff;padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;
+    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:88vw;text-align:center;
+  }
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="topbar">
+      <div class="title">
+        <div class="logo">🎫</div>
+        <h1>티켓 보관함</h1>
+      </div>
+      <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">로컬 저장</span></button>
+    </div>
+    <p class="subtitle">내가 예매한 공연들, 한눈에 정리하고 안 까먹기</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="stCount">0</div><div class="lbl">공연</div></div>
+    <div class="stat"><div class="num" id="stQty">0</div><div class="lbl">총 매수</div></div>
+    <div class="stat"><div class="num" id="stPrice">0</div><div class="lbl">총 지출(원)</div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="search" type="text" placeholder="공연명 · 예매처 검색" oninput="render()">
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <div class="util">
+    <button onclick="exportData()">⬇ 백업 내보내기</button>
+    <button onclick="document.getElementById('importFile').click()">⬆ 백업 불러오기</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
+</div>
+
+<button class="fab" onclick="openModal()">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  티켓 추가
+</button>
+
+<!-- Ticket Modal -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 id="modalTitle">티켓 추가</h2>
+    <div class="field">
+      <label>예매처</label>
+      <div class="venmix">
+        <select id="fVendor"></select>
+        <button class="icon-btn" type="button" onclick="addVendor()" title="예매처 추가">+</button>
+      </div>
+    </div>
+    <div class="field">
+      <label>공연명</label>
+      <input id="fName" type="text" placeholder="예: 뮤지컬 〈오페라의 유령〉">
+    </div>
+    <div class="field">
+      <label>공연 날짜 · 시간 (선택)</label>
+      <input id="fDate" type="text" placeholder="예: 2026-08-15 (토) 19:00">
+    </div>
+    <div class="two">
+      <div class="field"><label>매수</label><input id="fQty" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+      <div class="field"><label>가격 (원)</label><input id="fPrice" type="number" inputmode="numeric" min="0" placeholder="0"></div>
+    </div>
+    <div class="field">
+      <label>자리</label>
+      <div id="seatBox"></div>
+      <button class="add-seat" type="button" onclick="addSeatRow()">+ 자리 추가 (등급·층·구역·번호)</button>
+    </div>
+    <div class="field">
+      <label>메모 (선택)</label>
+      <textarea id="fMemo" placeholder="예: 티켓 수령 방법, 동행인, 취소 마감일 등"></textarea>
+    </div>
+    <div class="save-row">
+      <button class="cancel" type="button" onclick="closeModal()">취소</button>
+      <button class="save" id="saveBtn" type="button" onclick="save()">저장하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- Sync Sheet -->
+<div class="overlay" id="syncOverlay" onclick="if(event.target===this)closeSync()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div id="syncBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= storage keys ================= */
+const LS_TICKETS='tm_tickets_v1';
+const LS_VENDORS='tm_vendors_v1';
+const LS_CFG='tm_cfg_v1';
+const DEFAULT_VENDORS=['티켓링크','멜론티켓','세종문화회관','YES24','클립서비스','NOL 인터파크','샤롯데씨어터'];
+const PALETTE=['#6c8cff','#ff8fb1','#ffa94d','#4dd4ac','#b088ff','#5bc0eb','#ff6b7a','#7bc86c','#f4a259','#5d9cec'];
+
+let tickets=load(LS_TICKETS,[]);
+let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
+let editingId=null;
+
+/* cloud state */
+let sb=null, user=null, mode='local', loading=false, authTab='in';
+
+function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def;}catch(e){return def;}}
+function saveLocal(){localStorage.setItem(LS_TICKETS,JSON.stringify(tickets));localStorage.setItem(LS_VENDORS,JSON.stringify(vendors));}
+/* 내장 백엔드 연결 정보 (본인 Supabase 프로젝트, 브라우저 공개용 publishable 키 — RLS로 보호됨) */
+const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
+function getCfg(){const c=load(LS_CFG,null);return (c&&c.url&&c.key)?c:{...BUILTIN_CFG};}
+function setCfg(c){localStorage.setItem(LS_CFG,JSON.stringify(c));}
+function colorFor(v){let h=0;for(let i=0;i<(v||'').length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
+function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function numOrNull(v){return v===''||v==null?null:Number(v);}
+
+/* map between DB row and UI ticket (DB uses show_date) */
+function rowToTicket(r){return {id:r.id,vendor:r.vendor,name:r.name,date:r.show_date,qty:r.qty,price:r.price,memo:r.memo,seats:r.seats||[]};}
+function ticketToDB(t){return {vendor:t.vendor,name:t.name,show_date:t.date||null,qty:numOrNull(t.qty),price:numOrNull(t.price),memo:t.memo||null,seats:t.seats||[]};}
+
+/* ================= backend ================= */
+async function boot(){
+  render();
+  const cfg=getCfg();
+  if(cfg.url && cfg.key && window.supabase){
+    try{
+      sb=window.supabase.createClient(cfg.url,cfg.key,{auth:{persistSession:true,autoRefreshToken:true}});
+      sb.auth.onAuthStateChange((_e,session)=>{ user=session?.user||null; });
+      const {data:{session}}=await sb.auth.getSession();
+      if(session){ user=session.user; mode='cloud'; await refresh(); }
+    }catch(e){ console.error(e); mode='local'; }
+  }
+  updateSyncPill();
+}
+
+async function refresh(){
+  if(mode!=='cloud'||!sb) return;
+  loading=true; render();
+  const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
+  loading=false;
+  if(error){ toast('불러오기 실패: '+error.message); render(); return; }
+  tickets=(data||[]).map(rowToTicket);
+  render();
+}
+
+function updateSyncPill(){
+  const pill=document.getElementById('syncPill');
+  const txt=document.getElementById('syncPillTxt');
+  if(mode==='cloud'&&user){ pill.classList.add('on'); txt.textContent='동기화 켜짐'; }
+  else{ pill.classList.remove('on'); txt.textContent='로컬 저장'; }
+}
+
+/* ================= render ================= */
+function render(){
+  const q=(document.getElementById('search').value||'').trim().toLowerCase();
+  const list=document.getElementById('list');
+
+  document.getElementById('stCount').textContent=tickets.length;
+  document.getElementById('stQty').textContent=tickets.reduce((s,t)=>s+(Number(t.qty)||0),0);
+  document.getElementById('stPrice').textContent=won(tickets.reduce((s,t)=>s+(Number(t.price)||0),0));
+
+  if(loading && tickets.length===0){
+    list.innerHTML=`<div class="empty"><div class="spinner"></div><p>클라우드에서 불러오는 중…</p></div>`;
+    return;
+  }
+
+  let shown=tickets.slice().reverse();
+  if(q) shown=shown.filter(t=>(t.name||'').toLowerCase().includes(q)||(t.vendor||'').toLowerCase().includes(q));
+
+  if(shown.length===0){
+    list.innerHTML=`<div class="empty"><div class="ico">🎭</div><p><b>${tickets.length?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${tickets.length?'다른 키워드로 찾아보세요':'아래 + 버튼으로 첫 티켓을 추가해 보세요'}</p></div>`;
+    return;
+  }
+  list.innerHTML=shown.map(t=>{
+    const c=colorFor(t.vendor||'');
+    const seats=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.no).map(s=>{
+      const bits=[];
+      if(s.floor)bits.push(`<span>${esc(s.floor)}층</span>`);
+      if(s.zone)bits.push(`<span>${esc(s.zone)}구역</span>`);
+      if(s.no)bits.push(`<span><b>${esc(s.no)}</b></span>`);
+      return `<div class="seat">${s.grade?`<span class="g">${esc(s.grade)}</span>`:''}${bits.join('')}</div>`;
+    }).join('');
+    return `<div class="ticket">
+      <div class="row1"><span class="badge" style="background:${c}">${esc(t.vendor||'예매처')}</span></div>
+      <h3>${esc(t.name||'(공연명 없음)')}</h3>
+      ${t.date?`<div class="when">📅 ${esc(t.date)}</div>`:''}
+      <div class="meta">
+        <div class="chip">🎟 매수 <b>${Number(t.qty)||0}</b></div>
+        <div class="chip price">💳 <b>${won(t.price)}원</b></div>
+      </div>
+      ${seats?`<div class="seats">${seats}</div>`:''}
+      ${t.memo?`<div class="memo">📝 ${esc(t.memo)}</div>`:''}
+      <div class="actions">
+        <button onclick="edit('${t.id}')">✏️ 수정</button>
+        <button class="del" onclick="del('${t.id}')">🗑 삭제</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ================= vendors ================= */
+function allVendors(){const set=new Set(vendors);tickets.forEach(t=>{if(t.vendor)set.add(t.vendor);});return [...set];}
+function fillVendors(sel){
+  const s=document.getElementById('fVendor');
+  s.innerHTML=allVendors().map(v=>`<option${v===sel?' selected':''}>${esc(v)}</option>`).join('');
+}
+function addVendor(){
+  const name=prompt('추가할 예매처 이름을 입력하세요');
+  if(!name)return;const n=name.trim();if(!n)return;
+  if(!vendors.includes(n))vendors.push(n);
+  saveLocal();fillVendors(n);toast('예매처 추가됨');
+}
+
+/* ================= seat rows ================= */
+function seatRowHTML(s={}){
+  return `<div class="seat-edit">
+    <button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
+    <div class="four">
+      <div><label>등급</label><input class="s-grade" value="${esc(s.grade||'')}" placeholder="VIP / R / S"></div>
+      <div><label>층</label><input class="s-floor" value="${esc(s.floor||'')}" placeholder="1"></div>
+      <div><label>구역</label><input class="s-zone" value="${esc(s.zone||'')}" placeholder="A / 가"></div>
+      <div><label>번호(열·석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="3열 12번"></div>
+    </div>
+  </div>`;
+}
+function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
+function collectSeats(){
+  return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>({
+    grade:el.querySelector('.s-grade').value.trim(),
+    floor:el.querySelector('.s-floor').value.trim(),
+    zone:el.querySelector('.s-zone').value.trim(),
+    no:el.querySelector('.s-no').value.trim(),
+  })).filter(s=>s.grade||s.floor||s.zone||s.no);
+}
+
+/* ================= ticket modal ================= */
+function openModal(){
+  editingId=null;
+  document.getElementById('modalTitle').textContent='티켓 추가';
+  fillVendors();
+  ['fName','fDate','fQty','fPrice','fMemo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('seatBox').innerHTML='';
+  addSeatRow();
+  document.getElementById('overlay').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+function closeModal(){document.getElementById('overlay').classList.remove('on');document.body.style.overflow='';}
+function edit(id){
+  const t=tickets.find(x=>String(x.id)===String(id));if(!t)return;
+  editingId=t.id;
+  document.getElementById('modalTitle').textContent='티켓 수정';
+  if(t.vendor&&!vendors.includes(t.vendor))vendors.push(t.vendor);
+  fillVendors(t.vendor);
+  document.getElementById('fName').value=t.name||'';
+  document.getElementById('fDate').value=t.date||'';
+  document.getElementById('fQty').value=t.qty??'';
+  document.getElementById('fPrice').value=t.price??'';
+  document.getElementById('fMemo').value=t.memo||'';
+  const box=document.getElementById('seatBox');box.innerHTML='';
+  (t.seats&&t.seats.length?t.seats:[null]).forEach(s=>addSeatRow(s));
+  document.getElementById('overlay').classList.add('on');
+  document.body.style.overflow='hidden';
+}
+async function save(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){toast('공연명을 입력해 주세요');return;}
+  const data={
+    vendor:document.getElementById('fVendor').value,
+    name,
+    date:document.getElementById('fDate').value.trim(),
+    qty:document.getElementById('fQty').value,
+    price:document.getElementById('fPrice').value,
+    memo:document.getElementById('fMemo').value.trim(),
+    seats:collectSeats(),
+  };
+  const btn=document.getElementById('saveBtn');btn.disabled=true;
+  try{
+    if(mode==='cloud'&&sb){
+      if(editingId){
+        const {data:row,error}=await sb.from('tickets').update(ticketToDB(data)).eq('id',editingId).select().single();
+        if(error)throw error;
+        const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]=rowToTicket(row);
+        toast('수정되었어요');
+      }else{
+        const {data:row,error}=await sb.from('tickets').insert(ticketToDB(data)).select().single();
+        if(error)throw error;
+        tickets.push(rowToTicket(row));
+        toast('추가되었어요 🎉');
+      }
+    }else{
+      if(editingId){
+        const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]={...tickets[i],...data};
+        toast('수정되었어요');
+      }else{
+        tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...data});
+        toast('추가되었어요 🎉');
+      }
+      saveLocal();
+    }
+    render();closeModal();
+  }catch(e){ toast('저장 실패: '+(e.message||e)); }
+  finally{ btn.disabled=false; }
+}
+async function del(id){
+  const t=tickets.find(x=>String(x.id)===String(id));
+  if(!confirm(`"${t?t.name:'이 티켓'}"을(를) 삭제할까요?`))return;
+  try{
+    if(mode==='cloud'&&sb){
+      const {error}=await sb.from('tickets').delete().eq('id',id);
+      if(error)throw error;
+    }
+    tickets=tickets.filter(x=>String(x.id)!==String(id));
+    if(mode!=='cloud')saveLocal();
+    render();toast('삭제되었어요');
+  }catch(e){ toast('삭제 실패: '+(e.message||e)); }
+}
+
+/* ================= sync sheet ================= */
+function openSync(){ renderSync(); document.getElementById('syncOverlay').classList.add('on'); document.body.style.overflow='hidden'; }
+function closeSync(){ document.getElementById('syncOverlay').classList.remove('on'); document.body.style.overflow=''; }
+
+const SETUP_GUIDE=`<details class="guide"><summary>⚙️ 처음이라면 — Supabase 5분 설정법</summary>
+<ol>
+<li><a href="https://supabase.com" target="_blank">supabase.com</a> 가입 후 <b>New project</b> 생성 (Region은 <code>Northeast Asia (Seoul)</code> 추천)</li>
+<li>왼쪽 <b>SQL Editor</b> → 아래 코드 붙여넣고 <b>Run</b>:
+<pre>create table if not exists public.tickets (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid()
+    references auth.users(id) on delete cascade,
+  vendor text, name text, show_date text,
+  qty int, price bigint, memo text,
+  seats jsonb not null default '[]'::jsonb,
+  created_at timestamptz not null default now()
+);
+alter table public.tickets enable row level security;
+create policy "owner only" on public.tickets
+  for all to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);</pre></li>
+<li><b>Authentication → Sign In / Providers → Email</b>에서 <b>Confirm email</b>을 꺼두면 가입 즉시 로그인돼요(개인용 권장).</li>
+<li><b>Project Settings → API</b>에서 <b>Project URL</b>과 <b>anon public</b> 키를 복사해 아래에 붙여넣기.</li>
+</ol></details>`;
+
+function renderSync(){
+  const cfg=getCfg();
+  const box=document.getElementById('syncBody');
+
+  if(mode==='cloud'&&user){
+    box.innerHTML=`<h2>클라우드 동기화</h2>
+      <div class="statusbox good">✅ <b>${esc(user.email||'로그인됨')}</b> 계정으로 연결되어 있어요.<br>이제 어느 기기에서든 같은 목록이 보이고 자동 저장됩니다.</div>
+      <button class="btn-ghost btn-danger-ghost" onclick="signOut()">로그아웃</button>`;
+    return;
+  }
+
+  if(!window.supabase){
+    box.innerHTML=`<h2>클라우드 동기화</h2><div class="statusbox warn">⚠️ 동기화 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요. (설정 전까지는 이 기기에 로컬로 저장됩니다.)</div>`;
+    return;
+  }
+
+  if(!cfg.url || !cfg.key){
+    box.innerHTML=`<h2>클라우드 동기화 설정</h2>
+      <p class="hint">무료 Supabase 프로젝트를 연결하면 폰·PC 어디서나 같은 목록을 볼 수 있어요.</p>
+      ${SETUP_GUIDE}
+      <div class="field" style="margin-top:14px"><label>Project URL</label><input id="cfgUrl" placeholder="https://xxxx.supabase.co"></div>
+      <div class="field"><label>anon public key</label><input id="cfgKey" placeholder="eyJhbGci..."></div>
+      <button class="btn-primary" onclick="saveCfg()">연결하기</button>`;
+    return;
+  }
+
+  // configured, logged out -> auth
+  box.innerHTML=`<h2>로그인</h2>
+    <p class="hint">가입한 이메일로 로그인하면 이 기기에도 목록이 동기화돼요.</p>
+    <div class="seg">
+      <button class="${authTab==='in'?'on':''}" onclick="setAuthTab('in')">로그인</button>
+      <button class="${authTab==='up'?'on':''}" onclick="setAuthTab('up')">회원가입</button>
+    </div>
+    <div class="field"><label>이메일</label><input id="auEmail" type="email" placeholder="you@example.com"></div>
+    <div class="field"><label>비밀번호</label><input id="auPass" type="password" placeholder="6자 이상"></div>
+    <button class="btn-primary" id="auBtn" onclick="doAuth()">${authTab==='in'?'로그인':'회원가입'}</button>
+    <button class="btn-ghost" onclick="changeServer()">서버 설정 변경</button>`;
+}
+function setAuthTab(t){authTab=t;renderSync();}
+
+function saveCfg(){
+  const url=document.getElementById('cfgUrl').value.trim().replace(/\/+$/,'');
+  const key=document.getElementById('cfgKey').value.trim();
+  if(!/^https:\/\/.+\.supabase\.co$/.test(url)){toast('Project URL을 확인해 주세요');return;}
+  if(key.length<20){toast('anon key를 확인해 주세요');return;}
+  setCfg({url,key});
+  try{
+    sb=window.supabase.createClient(url,key,{auth:{persistSession:true,autoRefreshToken:true}});
+    sb.auth.onAuthStateChange((_e,session)=>{ user=session?.user||null; });
+    toast('연결됨 · 로그인해 주세요');
+    renderSync();
+  }catch(e){toast('연결 실패: '+(e.message||e));}
+}
+function changeServer(){ setCfg({url:'',key:''}); sb=null; user=null; mode='local'; updateSyncPill(); renderSync(); }
+
+async function doAuth(){
+  const email=document.getElementById('auEmail').value.trim();
+  const pass=document.getElementById('auPass').value;
+  if(!email||pass.length<6){toast('이메일과 6자 이상 비밀번호를 입력해 주세요');return;}
+  const btn=document.getElementById('auBtn');btn.disabled=true;
+  try{
+    if(authTab==='up'){
+      const {data,error}=await sb.auth.signUp({email,password:pass});
+      if(error)throw error;
+      if(!data.session){ toast('확인 메일을 열어 인증한 뒤 로그인해 주세요'); btn.disabled=false; return; }
+    }else{
+      const {error}=await sb.auth.signInWithPassword({email,password:pass});
+      if(error)throw error;
+    }
+    const {data:{session}}=await sb.auth.getSession();
+    user=session.user; mode='cloud';
+    await maybeUploadLocal();
+    await refresh();
+    updateSyncPill(); closeSync();
+    toast('동기화 켜짐 ☁️');
+  }catch(e){ toast('실패: '+(e.message||e)); btn.disabled=false; }
+}
+
+async function maybeUploadLocal(){
+  const localT=load(LS_TICKETS,[]);
+  if(!localT.length) return;
+  if(!confirm(`이 기기에 저장된 티켓 ${localT.length}개를 클라우드 계정으로 올릴까요?`)) return;
+  const rows=localT.map(ticketToDB);
+  const {error}=await sb.from('tickets').insert(rows);
+  if(error){ toast('업로드 일부 실패: '+error.message); return; }
+  localStorage.removeItem(LS_TICKETS);
+  toast('로컬 데이터를 클라우드로 옮겼어요');
+}
+
+async function signOut(){
+  try{ await sb.auth.signOut(); }catch(e){}
+  user=null; mode='local'; tickets=load(LS_TICKETS,[]);
+  updateSyncPill(); render(); closeSync(); toast('로그아웃됨 (로컬 저장으로 전환)');
+}
+
+/* ================= backup ================= */
+function exportData(){
+  const blob=new Blob([JSON.stringify({tickets,vendors},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='티켓보관함_백업.json';a.click();
+  toast('백업 파일을 저장했어요');
+}
+async function importData(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=async()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!Array.isArray(d.tickets))throw 0;
+      if(!confirm('백업을 현재 데이터에 합칠까요?')){e.target.value='';return;}
+      if(Array.isArray(d.vendors))d.vendors.forEach(v=>{if(!vendors.includes(v))vendors.push(v);});
+      if(mode==='cloud'&&sb){
+        const rows=d.tickets.map(ticketToDB);
+        const {error}=await sb.from('tickets').insert(rows);
+        if(error)throw error;
+        await refresh();
+      }else{
+        const ids=new Set(tickets.map(t=>String(t.id)));
+        d.tickets.forEach(t=>{if(!ids.has(String(t.id)))tickets.push(t);});
+        saveLocal();render();
+      }
+      toast('불러오기 완료');
+    }catch(err){toast('올바른 백업 파일이 아니에요');}
+  };
+  r.readAsText(f);e.target.value='';
+}
+
+/* ================= toast ================= */
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');
+  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2200);
+}
+
+boot();
+
+/* PWA: 홈 화면 앱 + 오프라인 지원 */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+}
+</script>
+</body>
+</html>
