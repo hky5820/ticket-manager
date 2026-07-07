@@ -32,6 +32,7 @@
     --card-solid:rgba(255,255,255,.86); /* 스크롤 카드용: 블러 없이 글래스 느낌(깜빡임 방지) */
     --glass-bd:rgba(255,255,255,.75);
     --blur:saturate(180%) blur(14px);
+    --sheen:rgba(255,255,255,.42); /* 리퀴드 글래스 상단 빛반사 */
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -361,7 +362,7 @@
     --shadow-lg:0 20px 44px -18px rgba(0,0,0,.7);
     --inset:inset 0 1px 0 rgba(255,255,255,.05);
     --glass:rgba(44,52,72,.6); --glass2:rgba(34,41,58,.85); --card-solid:#232b3e; --glass-bd:rgba(255,255,255,.14);
-    --surf:#2b344a;
+    --surf:#2b344a; --sheen:rgba(255,255,255,.10);
   }
   :root[data-theme="dark"] body{background:#0b0e15}
   :root[data-theme="dark"] body::before{background:
@@ -706,6 +707,8 @@ function saveLocal(){localStorage.setItem(LS_TICKETS,JSON.stringify(tickets));lo
 function getCfg(){const c=load(LS_CFG,null);return (c&&c.url&&c.key)?c:{...BUILTIN_CFG};}
 function colorFor(v){v=v||'';if(vcolors[v])return vcolors[v];if(VENDOR_COLORS[v])return VENDOR_COLORS[v];let h=0;for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
 function hexA(hex,a){const m=/^#?([0-9a-f]{6})$/i.exec(String(hex||''));if(!m)return `rgba(108,140,255,${a})`;const n=parseInt(m[1],16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+// 리퀴드 글래스 배경: 상단 빛반사 스펙큘러 + 예매처색 그라데이션 + 카드 표면
+function glassBg(c,top,bot){return `radial-gradient(135% 95% at 12% -18%,var(--sheen),transparent 52%),linear-gradient(155deg,${hexA(c,top)},${hexA(c,bot)} 74%),var(--card-solid)`;}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function numOrNull(v){return v===''||v==null?null:Number(v);}
@@ -935,7 +938,7 @@ function renderUpcoming(){
                   .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:(a.time||'')<(b.time||'')?-1:1));
   if(!up.length){ el.innerHTML=''; return; }
   const cards=up.map(t=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
-    return `<div class="up-card" onclick="edit('${t.id}')" style="background:linear-gradient(0deg,${hexA(c,.1)},${hexA(c,.1)}),var(--card-solid)">
+    return `<div class="up-card" onclick="edit('${t.id}')" style="background:${glassBg(c,.17,.04)}">
       <span class="up-dday ${dd.soon?'soon':''}">${dd.label}</span>
       <span class="up-name">${esc(t.name||'공연')}</span>
       <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
@@ -981,8 +984,8 @@ function tileCard(t){
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  // 예매처 색을 카드 전체에 균일한 평면 톤으로 은은하게(방향성 그라데이션 X → 자연스러움)
-  const tint=(!xf&&!xc)?` style="background:linear-gradient(0deg,${hexA(c,.09)},${hexA(c,.09)}),var(--card-solid)"`:'';
+  // 리퀴드 글래스: 예매처색 그라데이션 + 상단 빛반사
+  const tint=(!xf&&!xc)?` style="background:${glassBg(c,.15,.03)}"`:'';
   return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     ${xf?'<span class="tk-ribbon">양도완료</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':'')}
@@ -1005,7 +1008,7 @@ function listRow(t){
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  const tint=(!xf&&!xc)?` style="background:linear-gradient(0deg,${hexA(c,.07)},${hexA(c,.07)}),var(--card-solid)"`:'';
+  const tint=(!xf&&!xc)?` style="background:${glassBg(c,.11,.02)}"`:'';
   return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
