@@ -103,14 +103,14 @@
   .tk:active{box-shadow:0 3px 8px -4px rgba(31,46,84,.24),var(--inset)}
   .tk:active{transform:scale(.98)}
   .tk-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px;height:18px;margin-bottom:3px}
-  .tk-when{font-size:14.5px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px;white-space:nowrap}
+  .tk-when{font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.3px;white-space:nowrap}
   .tk-when small{font-size:10px;font-weight:700;color:var(--ink-faint);margin-left:3px}
   .tk-when.nodate{color:var(--ink-faint)}
   .tk-vendor{display:flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;overflow:hidden;max-width:48%}
   .tk-vendor i{width:6px;height:6px;border-radius:99px;flex:none}
   .tk-vendor span{overflow:hidden;text-overflow:ellipsis}
   .tk-name{font-size:13px;font-weight:800;letter-spacing:-.3px;line-height:1.25;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:33px;margin-bottom:4px}
-  .tk-seatline{font-size:11px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);border-radius:6px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:flex-start;max-width:100%;height:19px;line-height:15px}
+  .tk-seatline{font-size:11px;font-weight:700;color:var(--ink-soft);background:rgba(120,133,152,.12);border-radius:6px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:flex-start;max-width:100%;height:19px;line-height:15px}
   .tk-bottom{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:6px;border-top:1px solid var(--line)}
   .tk-qty{font-size:11.5px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
   .tk-price{font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap}
@@ -155,7 +155,7 @@
   .lbody{flex:1;min-width:0}
   .lname{font-size:14px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
   .lname .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .lseat{font-size:11px;font-weight:700;color:var(--accent-ink);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lseat{font-size:11px;font-weight:700;color:var(--ink-soft);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lsub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lsub b{color:var(--ink);font-weight:800}
   .lsub .lxf{color:var(--warn);font-weight:800}
@@ -935,7 +935,7 @@ function renderUpcoming(){
                   .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:(a.time||'')<(b.time||'')?-1:1));
   if(!up.length){ el.innerHTML=''; return; }
   const cards=up.map(t=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
-    return `<div class="up-card" onclick="edit('${t.id}')" style="background:linear-gradient(180deg,${hexA(c,.13)},${hexA(c,.04)}),var(--card-solid)">
+    return `<div class="up-card" onclick="edit('${t.id}')" style="background:linear-gradient(0deg,${hexA(c,.1)},${hexA(c,.1)}),var(--card-solid)">
       <span class="up-dday ${dd.soon?'soon':''}">${dd.label}</span>
       <span class="up-name">${esc(t.name||'공연')}</span>
       <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
@@ -981,8 +981,8 @@ function tileCard(t){
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  // 예매처 색을 불투명유리처럼 카드 배경에 은은하게(위가 살짝 밝고 아래로 옅어짐 → 자연스러운 톤)
-  const tint=(!xf&&!xc)?` style="background:linear-gradient(180deg,${hexA(c,.11)},${hexA(c,.035)}),var(--card-solid)"`:'';
+  // 예매처 색을 카드 전체에 균일한 평면 톤으로 은은하게(방향성 그라데이션 X → 자연스러움)
+  const tint=(!xf&&!xc)?` style="background:linear-gradient(0deg,${hexA(c,.09)},${hexA(c,.09)}),var(--card-solid)"`:'';
   return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     ${xf?'<span class="tk-ribbon">양도완료</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':'')}
@@ -1005,7 +1005,7 @@ function listRow(t){
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  const tint=(!xf&&!xc)?` style="background:linear-gradient(180deg,${hexA(c,.09)},${hexA(c,.03)}),var(--card-solid)"`:'';
+  const tint=(!xf&&!xc)?` style="background:linear-gradient(0deg,${hexA(c,.07)},${hexA(c,.07)}),var(--card-solid)"`:'';
   return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
