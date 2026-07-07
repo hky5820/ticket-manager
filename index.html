@@ -18,7 +18,7 @@
     --bg-grad:linear-gradient(160deg,#f8fafc 0%,#eef2fb 100%);
     --card:#ffffff; --ink:#1f2637; --ink-soft:#5b6474; --ink-faint:#98a0b3;
     --line:#e9edf5; --accent:#6c8cff; --accent-ink:#4361ee; --accent-soft:#eef2ff;
-    --danger:#ff6b7a; --ok:#3ecf8e; --warn:#f5a524;
+    --danger:#ff6b7a; --danger-ink:#e5455c; --danger-soft:#fff2f4; --danger-bd:#ffd2d9; --ok:#3ecf8e; --warn:#f5a524;
     --shadow-sm:0 1px 3px rgba(31,46,84,.06);
     --shadow:0 6px 18px -8px rgba(31,46,84,.20), 0 2px 6px -3px rgba(31,46,84,.12);
     --shadow-lg:0 20px 44px -18px rgba(31,46,84,.32);
@@ -51,7 +51,7 @@
   .pill.on{color:var(--accent-ink);border-color:#d6def8;background:#f4f7ff}
   .pill.on .dot{background:var(--ok)}
   .icon-btn{border:1px solid var(--glass-bd);background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:999px;width:32px;height:32px;flex:0 0 auto;font-size:14px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center}
-  .icon-btn.on{background:#fff1f2;border-color:#ffc9ce;color:var(--danger)}
+  .icon-btn.on{background:var(--danger-soft);border-color:var(--danger-bd);color:var(--danger-ink)}
 
   /* stats strip */
   .stats{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin:2px 2px 10px}
@@ -170,8 +170,10 @@
   .select-bar.on{display:flex}
   .select-bar #selectCount{font-size:13px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
   .sb-actions{display:flex;gap:8px}
-  .sb-btn{border:1px solid var(--glass-bd);background:#fff;border-radius:10px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-soft)}
-  .sb-btn.danger{background:linear-gradient(145deg,#ff8a8a,var(--danger));color:#fff;border:none}
+  .sb-btn{border:1px solid var(--line);background:#fff;border-radius:11px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-soft);box-shadow:var(--shadow-sm);transition:.12s}
+  .sb-btn:active{transform:scale(.96)}
+  .sb-btn.danger{background:var(--danger-soft);color:var(--danger-ink);border:1px solid var(--danger-bd);font-weight:800}
+  .sb-btn.danger:active{background:#ffe6ea}
   body.selecting .fab, body.selecting .fab-ai{display:none}
   .tk-check{position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:50%;border:2px solid #c9d2e6;background:#fff;box-shadow:var(--shadow-sm);z-index:2}
   .tk-check.on{background:var(--accent,#4361ee);border-color:var(--accent,#4361ee)}
@@ -256,6 +258,8 @@
   .statusbox.good{background:#f1fbf6;border-color:#c9efdd;color:#1f7a4d}
   .statusbox.warn{background:#fffaf0;border-color:#f3e6c4;color:#8a6d1f}
   .btn-ghost{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink-soft);margin-top:8px}
+  .btn-danger{width:100%;border:1px solid var(--danger-bd);border-radius:12px;padding:12px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit;background:var(--danger-soft);color:var(--danger-ink);margin-top:8px;transition:.12s}
+  .btn-danger:active{background:#ffe6ea}
   .btn-primary{width:100%;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff}
 
   .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:60;background:#1f2637;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
@@ -366,7 +370,7 @@
       <textarea id="fMemo" placeholder="티켓 수령 방법, 동행인, 취소 마감일 등"></textarea>
     </div>
 
-    <button type="button" id="delBtn" class="btn-ghost" style="display:none;color:var(--danger)" onclick="delCurrent()">🗑 이 티켓 삭제</button>
+    <button type="button" id="delBtn" class="btn-danger" style="display:none" onclick="delCurrent()">🗑 이 티켓 삭제</button>
 
     <div class="save-row">
       <button class="cancel" type="button" onclick="closeModal()">취소</button>
