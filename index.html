@@ -1408,25 +1408,13 @@ function renderSync(){
   const box=document.getElementById('syncBody');
   if(mode==='cloud'){
     box.innerHTML=`<h2>동기화 상태</h2><div class="statusbox good">✅ 클라우드에 자동 저장 중이에요. 폰·PC 어디서 열어도 같은 목록이 보입니다. 로그인 필요 없어요.</div>
-      <button class="btn-primary" style="margin-bottom:8px" onclick="forceSyncRequest()">🤖 AI 인식 지금 요청</button>
-      <p class="hint" style="margin:0 2px 12px">업로드한 사진을 지금 인식하도록 컴퓨터에 요청해요. (컴퓨터가 켜져 있어야 처리됩니다)</p>
+      <div class="statusbox warn">🤖 AI 인식: 6시간마다 자동 실행돼요. 지금 바로 인식하려면 컴퓨터의 Claude에게 <b>"큐 처리해줘"</b>라고 하면 됩니다.</div>
       <button class="btn-ghost" onclick="refresh().then(()=>toast('새로고침됨'))">🔄 지금 새로고침</button>
       <button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }else{
     box.innerHTML=`<h2>동기화 상태</h2><div class="statusbox warn">⚠️ 지금은 오프라인이라 이 기기에 임시 저장돼요. 인터넷 연결 후 새로고침하면 다시 동기화됩니다.</div>
       <button class="btn-primary" onclick="location.reload()">새로고침</button><button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }
-}
-
-// 강제 동기화 요청: pending_uploads에 status='sync' 신호행을 남김 → 컴퓨터의 감시 작업이 감지해 인식 실행
-async function forceSyncRequest(){
-  if(!(mode==='cloud'&&sb)){ toast('오프라인이라 지금은 안 돼요'); return; }
-  try{
-    const {error}=await sb.from('pending_uploads').insert({image_b64:'',status:'sync'});
-    if(error)throw error;
-    toast('동기화 요청됨 · 컴퓨터가 켜져 있으면 곧 인식해요 🤖');
-    closeSync();
-  }catch(e){ toast('요청 실패: '+(e.message||e)); }
 }
 
 /* ===== backup ===== */
