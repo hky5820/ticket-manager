@@ -215,10 +215,11 @@
   .vbtn .chev{color:var(--ink-faint);font-size:13px}
   .vbtn.placeholder{color:var(--ink-faint)}
   /* seat editor */
-  .seat-edit{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fafbff;position:relative}
+  .seat-edit{border:1px solid var(--line);border-radius:12px;padding:34px 10px 10px;margin-bottom:8px;background:#fafbff;position:relative}
   .seat-edit .sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .seat-edit .sgrid3{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:8px;margin-top:8px}
-  .seat-edit .rm{position:absolute;top:7px;right:7px;border:none;background:#fff1f2;color:var(--danger);border-radius:7px;width:24px;height:24px;font-size:14px;cursor:pointer;line-height:1}
+  .seat-edit .rm{position:absolute;top:7px;right:8px;border:1px solid var(--danger-bd);background:var(--danger-soft);color:var(--danger-ink);border-radius:8px;height:24px;padding:0 10px;font-size:12px;font-weight:700;cursor:pointer;line-height:22px}
+  .seat-edit .rm::before{content:"삭제 "}
   .seat-edit label{font-size:11px}
   .seat-edit input{padding:9px 10px;font-size:14px}
   .gwrap{display:flex;flex-direction:column}
