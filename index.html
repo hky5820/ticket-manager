@@ -841,17 +841,39 @@ async function doShare(){
   const wantTxt=document.getElementById('shTxt').checked;
   const wantImg=document.getElementById('shImg').checked && t.hasImg && shareImgB64;
   if(!wantTxt&&!wantImg){ toast('보낼 항목을 선택하세요'); return; }
-  const data={};
-  if(wantTxt){ data.title=t.name||'티켓'; data.text=ticketText(t); }
-  if(wantImg){ data.files=[b64ToFile(shareImgB64,(t.name||'예매내역').replace(/[\\/:*?"<>|]/g,'')+'.jpg')]; }
+  const title=t.name||'티켓', text=ticketText(t);
+  const fname=(t.name||'예매내역').replace(/[\\/:*?"<>|]/g,'')+'.jpg';
+  const imgFile=wantImg?b64ToFile(shareImgB64,fname):null;
   try{
-    if(navigator.share && (!data.files || (navigator.canShare&&navigator.canShare({files:data.files})))){
-      await navigator.share(data); closeShare();
+    // 텍스트+사진을 동시에 공유하면 대부분 앱(카톡/문자 등)이 사진만 받고 텍스트를 버려서,
+    // 둘 다 선택 시 텍스트 먼저 → 사진 순서로 공유 시트를 두 번 띄운다.
+    if(wantTxt&&wantImg){
+      if(navigator.share){
+        await navigator.share({title,text});
+        toast('텍스트 공유됨 · 이어서 사진 공유');
+        if(navigator.canShare&&navigator.canShare({files:[imgFile]})){
+          await navigator.share({files:[imgFile]});
+        }else{
+          const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
+          toast('사진은 파일로 저장했어요 (이 기기는 사진 공유 미지원)');
+        }
+      }else{
+        if(navigator.clipboard)await navigator.clipboard.writeText(text);
+        const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
+        toast('이 기기는 공유 시트 미지원 · 텍스트 복사/사진 저장했어요');
+      }
+    }else if(wantImg){
+      if(navigator.share && navigator.canShare && navigator.canShare({files:[imgFile]})){
+        await navigator.share({files:[imgFile]});
+      }else{
+        const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
+        toast('이 기기는 사진 공유 미지원 · 파일로 저장했어요');
+      }
     }else{
-      if(wantTxt&&navigator.clipboard)await navigator.clipboard.writeText(data.text);
-      if(wantImg){ const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=data.files[0].name; a.click(); }
-      toast('이 기기는 공유 시트 미지원 · 텍스트 복사/사진 저장했어요'); closeShare();
+      if(navigator.share){ await navigator.share({title,text}); }
+      else{ if(navigator.clipboard)await navigator.clipboard.writeText(text); toast('이 기기는 공유 시트 미지원 · 텍스트 복사했어요'); }
     }
+    closeShare();
   }catch(e){ if(e&&e.name!=='AbortError')toast('공유 실패: '+(e.message||e)); }
 }
 function copyShareText(){ const t=tickets.find(x=>String(x.id)===String(shareId)); if(!t)return; (navigator.clipboard?navigator.clipboard.writeText(ticketText(t)):Promise.reject()).then(()=>toast('텍스트 복사됨'),()=>toast('복사 미지원')); }
