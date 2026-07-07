@@ -86,19 +86,30 @@
   .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
 
-  /* tile grid */
+  /* month grouping header */
+  .month-head{display:flex;align-items:center;gap:8px;margin:16px 2px 9px;font-size:13px;font-weight:800;color:var(--ink-soft)}
+  .grouped>.month-head:first-child,.list>.month-head:first-child{margin-top:2px}
+  .month-head .mh-count{font-size:11px;font-weight:700;color:var(--ink-faint);background:var(--card-solid);border:1px solid var(--line);padding:1px 8px;border-radius:999px}
+  .month-head .mh-line{flex:1;height:1px;background:var(--line)}
+
+  /* tile grid — 위:언제 / 가운데:공연명 / 아래:등급·가격 */
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:stretch}
-  .tk{display:flex;flex-direction:column;height:176px;overflow:hidden;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
+  .tk{position:relative;display:flex;flex-direction:column;height:148px;overflow:hidden;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:16px;padding:12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
   .tk:active{transform:scale(.98)}
-  @keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
-  .tk-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px}
+  .tk-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:7px}
+  .tk-when{font-size:16px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px;white-space:nowrap}
+  .tk-when small{font-size:11px;font-weight:700;color:var(--ink-faint);margin-left:4px}
+  .tk-when.nodate{color:var(--ink-faint)}
+  .tk-vendor{display:flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--ink-soft);white-space:nowrap;overflow:hidden;max-width:52%}
+  .tk-vendor i{width:7px;height:7px;border-radius:99px;flex:none}
+  .tk-vendor span{overflow:hidden;text-overflow:ellipsis}
+  .tk-name{font-size:14px;font-weight:800;letter-spacing:-.3px;line-height:1.3;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .tk-bottom{margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px;padding-top:8px}
+  .tk-price{font-size:13px;font-weight:800;color:var(--ink);white-space:nowrap}
+  .tk-price small{font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-left:3px}
+  .tk-cam{font-size:12px;line-height:1}
   .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-  .tk-name{font-size:14.5px;font-weight:800;letter-spacing:-.3px;line-height:1.25;margin-bottom:5px;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .tk-date{font-size:12px;color:var(--accent-ink);font-weight:700;margin-bottom:4px}
-  .tk-meta{font-size:11.5px;color:var(--ink-soft)}
-  .xtag{font-size:10px;font-weight:800;color:#fff;background:var(--warn);padding:2px 7px;border-radius:999px;white-space:nowrap}
-  .tk-icons{display:flex;align-items:center;gap:5px}
-  .tk-cam{font-size:13px;line-height:1}
+  .xtag{font-size:9.5px;font-weight:800;color:#fff;background:var(--warn);padding:2px 6px;border-radius:999px;white-space:nowrap}
   .tk-share{border:none;background:#eef2ff;color:var(--accent-ink);border-radius:8px;width:26px;height:26px;font-size:13px;cursor:pointer;flex:none;line-height:1;padding:0}
   .tk-share:active{transform:scale(.9)}
   .lrow .tk-share{margin-left:auto}
@@ -106,7 +117,7 @@
   .chk input{width:18px;height:18px;accent-color:var(--accent-ink)}
   .share-prev{white-space:pre-wrap;font-size:12.5px;color:var(--ink-soft);background:#f7f9fe;border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin:0 0 10px;line-height:1.6}
   .share-thumb{width:100%;max-height:200px;object-fit:contain;border-radius:11px;border:1px solid var(--line);margin-bottom:12px;background:#fafbff}
-  .tk-seat{display:inline-block;font-size:10.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);padding:2px 6px;border-radius:6px;margin-top:6px;margin-right:4px}
+  .tk-seat{display:inline-block;font-size:10.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);padding:3px 7px;border-radius:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%}
 
   /* list */
   .list{display:flex;flex-direction:column;gap:7px}
@@ -703,24 +714,49 @@ function render(){
   if(view==='calendar'){root.innerHTML=renderCalendar();return;}
   const a=byDate(filtered());
   if(a.length===0){root.innerHTML=emptyHTML();return;}
-  root.innerHTML = view==='list' ? `<div class="list">${a.map(listRow).join('')}</div>`
-                                 : `<div class="tiles">${a.map(tileCard).join('')}</div>`;
+  const groups=groupByMonth(a);
+  const head=g=>`<div class="month-head">${g.label}<span class="mh-count">${g.items.length}</span><span class="mh-line"></span></div>`;
+  if(view==='list'){
+    root.innerHTML=`<div class="list">${groups.map(g=>head(g)+g.items.map(listRow).join('')).join('')}</div>`;
+  }else{
+    root.innerHTML=`<div class="grouped">${groups.map(g=>head(g)+`<div class="tiles">${g.items.map(tileCard).join('')}</div>`).join('')}</div>`;
+  }
 }
 function emptyHTML(){const has=tickets.length>0;return `<div class="empty"><div class="ico">🎭</div><p><b>${has?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${has?'다른 키워드로 찾아보세요':'아래 + 버튼으로 추가해 보세요'}</p></div>`;}
 
+function groupByMonth(arr){
+  const groups=[], map={};
+  arr.forEach(t=>{
+    let key,label;
+    if(t.date){const p=t.date.split('-');key=p[0]+'-'+p[1];label=`${p[0]}년 ${Number(p[1])}월`;}
+    else{key='none';label='날짜 미정';}
+    if(!map[key]){map[key]={key,label,items:[]};groups.push(map[key]);}
+    map[key].items.push(t);
+  });
+  return groups; // byDate 정렬(오름차순, 날짜없음 마지막) 순서 유지
+}
+function dayLabel(t){
+  if(!t.date)return {main:'미정',sub:''};
+  const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);
+  return {main:`${p[1]}/${p[2]}`, sub:`${WD[dt.getDay()]}${t.time?' '+esc(t.time):''}`};
+}
 function tileCard(t){
   const c=colorFor(t.vendor);
   const seat=(t.seats||[]).find(s=>s.grade)||{};
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
+  const d=dayLabel(t);
   return `<div class="tk ${selectMode?'sel-mode':''}" data-id="${t.id}" onclick="${click}">
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
-    <div class="tk-row"><span class="badge" style="background:${c}">${esc(t.vendor||'예매처')}</span><span class="tk-icons">${t.hasImg?'<span class="tk-cam" title="예매내역 사진 첨부">📷</span>':''}${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}</span></div>
-    <div class="tk-name">${esc(t.name||'(공연명 없음)')}</div>
-    ${t.date?`<div class="tk-date">📅 ${esc(fmtDate(t.date,t.time))}</div>`:''}
-    <div class="tk-meta">🎟 ${Number(t.qty)||0} · ₩${won(t.price)}</div>
-    ${seat.grade?`<span class="tk-seat">${esc(seat.grade)}</span>`:''}
-    ${t.transfer&&t.transfer.done&&t.transfer.price?`<span class="tk-seat" style="color:#8a6d1f;background:#fff3d6">양도 ₩${won(t.transfer.price)}</span>`:''}
+    <div class="tk-top">
+      <span class="tk-when ${t.date?'':'nodate'}">${d.main}${d.sub?`<small>${d.sub}</small>`:''}</span>
+      <span class="tk-vendor"><i style="background:${c}"></i><span>${esc(t.vendor||'')}</span></span>
+    </div>
+    <div class="tk-name">${esc(t.name||'(공연명 없음)')}${t.transfer&&t.transfer.done?' <span class="xtag">양도</span>':''}</div>
+    <div class="tk-bottom">
+      ${seat.grade?`<span class="tk-seat">${esc(seat.grade)}</span>`:'<span></span>'}
+      <span class="tk-price">₩${won(t.price)}<small>${Number(t.qty)||0}매</small></span>
+    </div>
   </div>`;
 }
 function listRow(t){
