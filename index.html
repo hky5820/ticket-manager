@@ -193,7 +193,7 @@
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
   .cal-wd{text-align:center;font-size:11px;font-weight:800;color:var(--ink-faint);padding:0 0 4px}
   .cal-wd.sun{color:#ff7a7a}.cal-wd.sat{color:#6f93ff}
-  .cal-cell{min-height:58px;border-radius:10px;padding:5px 3px 4px;background:#fff;border:1px solid var(--line);cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .cal-cell{position:relative;min-height:58px;border-radius:10px;padding:5px 3px 4px;background:#fff;border:1px solid var(--line);cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:4px}
   .cal-cell.empty{background:transparent;border-color:transparent;cursor:default}
   .cal-cell.has{background:var(--accent-soft);border-color:#d8e0ff}
   .cal-cell.has:active{filter:brightness(.96)}
@@ -203,11 +203,13 @@
   .cal-cell.sun .cal-day{color:#ff7a7a}.cal-cell.sat .cal-day{color:#6f93ff}
   .cal-dots{display:flex;gap:3px;align-items:center;justify-content:center;flex-wrap:wrap;line-height:1}
   .cal-dots i{width:7px;height:7px;border-radius:50%;display:block}
-  /* 다가올 공연 있는 날: 점 통통 + 셀 은은한 강조로 일정 있음을 알림 */
+  /* 다가올 공연 있는 날: 점 통통 + 테두리 강조 + 밖으로 퍼지는 링(리플) */
+  .cal-cell.up{overflow:visible;animation:calBorder 1.9s ease-in-out infinite}
   .cal-cell.up .cal-dots i{animation:calDot 1.6s ease-in-out infinite}
   @keyframes calDot{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.45);opacity:1}}
-  .cal-cell.up{animation:calCell 2.6s ease-in-out infinite}
-  @keyframes calCell{0%,100%{box-shadow:0 0 0 0 rgba(109,140,255,0)}50%{box-shadow:0 0 0 2px var(--accent-soft),0 3px 10px -4px var(--accent-soft)}}
+  @keyframes calBorder{0%,100%{border-color:#d8e0ff}50%{border-color:var(--accent)}}
+  .cal-cell.up::after{content:"";position:absolute;inset:-1px;border-radius:11px;border:2px solid var(--accent);opacity:0;pointer-events:none;animation:calRipple 1.9s ease-out infinite}
+  @keyframes calRipple{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.14);opacity:0}}
   .cal-dots em{font-size:9px;font-style:normal;font-weight:800;color:var(--ink-soft)}
   .cal-grid{touch-action:pan-y}
   .cal-hint{text-align:center;font-size:10.5px;color:var(--ink-faint);margin-top:10px;user-select:none}
