@@ -321,7 +321,12 @@
   .vitem .vd{width:14px;height:14px;border-radius:99px;flex:none}
   .vitem .vn{flex:1;font-size:14.5px;font-weight:700}
   .vitem .vchk{color:var(--accent-ink);font-weight:800;font-size:15px}
-  .vitem .vdel{border:none;background:transparent;color:var(--ink-faint);font-size:17px;cursor:pointer;padding:2px 4px;border-radius:6px}
+  .vitem .vd{border:2px solid rgba(255,255,255,.6);cursor:pointer;box-shadow:var(--shadow-sm)}
+  .sw-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:14px}
+  .sw-grid .sw{aspect-ratio:1;border-radius:11px;border:2px solid transparent;cursor:pointer;box-shadow:var(--shadow-sm)}
+  .sw-grid .sw.on{border-color:var(--ink);box-shadow:0 0 0 3px var(--accent-soft)}
+  .color-custom{display:flex;align-items:center;justify-content:space-between;background:var(--surf,#fbfcff);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:8px;font-size:14px;font-weight:700;color:var(--ink-soft)}
+  .color-custom input[type=color]{width:54px;height:36px;border:none;background:none;cursor:pointer;padding:0}
   .vitem .vdel:active{background:#fff1f2;color:var(--danger)}
   .vadd{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:12px}
   .vadd input{flex:1;border:1px solid var(--line);background:#fbfcff;border-radius:11px;padding:11px 12px;font-size:15px;outline:none;font-family:inherit}
@@ -533,6 +538,20 @@
   </div>
 </div>
 
+<!-- Vendor color picker -->
+<div class="overlay" id="colorOverlay" onclick="if(event.target===this)closeColorPicker()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2><span id="colorVendorName"></span> 색 선택</h2>
+    <div class="sw-grid" id="colorSwatches"></div>
+    <div class="color-custom">
+      <label>직접 선택</label>
+      <input type="color" id="colorCustom" onchange="pickVendorColor(this.value)">
+    </div>
+    <button class="btn-ghost" type="button" onclick="resetVendorColor()">기본색으로 되돌리기</button>
+  </div>
+</div>
+
 <!-- Platform picker (양도) -->
 <div class="overlay" id="platformOverlay" onclick="if(event.target===this)closePlatform()">
   <div class="sheet">
@@ -631,6 +650,10 @@ const DEFAULT_VENDORS=['티켓링크','멜론티켓','세종문화회관','YES24
 const DEFAULT_GRADES=['VIP','R','S','A'];
 const DEFAULT_PLATFORMS=['티켓베이','중고나라','당근마켓','번개장터','트위터/X','지인','기타'];
 const PALETTE=['#6c8cff','#ff8fb1','#ffa94d','#4dd4ac','#b088ff','#5bc0eb','#ff6b7a','#7bc86c','#f4a259','#5d9cec'];
+// 예매처 브랜드 색(파비콘에서 영감). 사용자가 컬러 피커로 덮어쓸 수 있음.
+const VENDOR_COLORS={'티켓링크':'#E03E3E','멜론티켓':'#00A33F','세종문화회관':'#F9A825','YES24':'#1D6FD6','샤롯데씨어터':'#E0457A','클립서비스':'#8B5CF6','NOL 인터파크':'#FF4D8D','LG아트센터':'#B00046'};
+const LS_VCOLORS='tm_vcolors_v1';
+const PICK_PALETTE=['#E03E3E','#FF4D8D','#F9A825','#00A33F','#1D6FD6','#8B5CF6','#E0457A','#B00046','#4dd4ac','#5bc0eb','#6c8cff','#7c8598'];
 const WD=['일','월','화','수','목','금','토'];
 const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
 
@@ -639,6 +662,7 @@ let pendings=[];
 let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
 let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
 let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
+let vcolors=load(LS_VCOLORS,{});
 let gradeTargetBtn=null;
 let view=load(LS_VIEW,'tile');
 let editingId=null, formVendor='', formPlatform='', editCanceled=[];
@@ -650,7 +674,8 @@ let selDay=ymd(_now);
 function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def;}catch(e){return def;}}
 function saveLocal(){localStorage.setItem(LS_TICKETS,JSON.stringify(tickets));localStorage.setItem(LS_VENDORS,JSON.stringify(vendors));}
 function getCfg(){const c=load(LS_CFG,null);return (c&&c.url&&c.key)?c:{...BUILTIN_CFG};}
-function colorFor(v){let h=0;v=v||'';for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
+function colorFor(v){v=v||'';if(vcolors[v])return vcolors[v];if(VENDOR_COLORS[v])return VENDOR_COLORS[v];let h=0;for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
+function hexA(hex,a){const m=/^#?([0-9a-f]{6})$/i.exec(String(hex||''));if(!m)return `rgba(108,140,255,${a})`;const n=parseInt(m[1],16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function numOrNull(v){return v===''||v==null?null:Number(v);}
@@ -926,7 +951,9 @@ function tileCard(t){
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}">
+  // 예매처 색을 불투명유리처럼 카드 배경에 연하게(양도·부분취소 카드는 자체 색 유지)
+  const tint=(!xf&&!xc)?` style="background:linear-gradient(135deg,${hexA(c,.16)},${hexA(c,.02)} 58%),var(--card-solid)"`:'';
+  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     ${xf?'<span class="tk-ribbon">양도완료</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':'')}
     <div class="tk-top">
@@ -1006,13 +1033,40 @@ function renderVendorList(){
   const box=document.getElementById('vlist');
   box.innerHTML=allVendors().map(v=>{
     const del=!DEFAULT_VENDORS.includes(v);
-    return `<div class="vitem ${v===formVendor?'sel':''}" onclick="selectVendor('${esc(v).replace(/'/g,"\\'")}')">
-      <span class="vd" style="background:${colorFor(v)}"></span>
+    const e=esc(v).replace(/'/g,"\\'");
+    return `<div class="vitem ${v===formVendor?'sel':''}" onclick="selectVendor('${e}')">
+      <button type="button" class="vd" style="background:${colorFor(v)}" title="색 변경" onclick="event.stopPropagation();openVendorColor('${e}')"></button>
       <span class="vn">${esc(v)}</span>
       ${v===formVendor?'<span class="vchk">✓</span>':''}
-      ${del?`<button class="vdel" onclick="event.stopPropagation();deleteVendor('${esc(v).replace(/'/g,"\\'")}')">×</button>`:''}
+      ${del?`<button class="vdel" onclick="event.stopPropagation();deleteVendor('${e}')">×</button>`:''}
     </div>`;
   }).join('');
+}
+/* 예매처 색 팔레트 */
+let colorTargetVendor=null;
+function openVendorColor(v){
+  colorTargetVendor=v;
+  document.getElementById('colorVendorName').textContent=v;
+  renderColorSwatches();
+  document.getElementById('colorCustom').value=/^#[0-9a-f]{6}$/i.test(colorFor(v))?colorFor(v):'#6c8cff';
+  openOv('colorOverlay');
+}
+function closeColorPicker(){ closeOv('colorOverlay'); }
+function renderColorSwatches(){
+  const cur=colorFor(colorTargetVendor).toLowerCase();
+  document.getElementById('colorSwatches').innerHTML=PICK_PALETTE.map(hex=>
+    `<button type="button" class="sw ${hex.toLowerCase()===cur?'on':''}" style="background:${hex}" onclick="pickVendorColor('${hex}')"></button>`
+  ).join('');
+}
+function pickVendorColor(hex){
+  if(!colorTargetVendor)return;
+  vcolors[colorTargetVendor]=hex; localStorage.setItem(LS_VCOLORS,JSON.stringify(vcolors));
+  renderVendorList(); syncVendorBtn(); render(); closeColorPicker(); toast('색 변경됨');
+}
+function resetVendorColor(){
+  if(!colorTargetVendor)return;
+  delete vcolors[colorTargetVendor]; localStorage.setItem(LS_VCOLORS,JSON.stringify(vcolors));
+  renderVendorList(); syncVendorBtn(); render(); closeColorPicker(); toast('기본색으로 되돌림');
 }
 function selectVendor(v){ formVendor=v; syncVendorBtn(); closeVendor(); }
 function syncVendorBtn(){
