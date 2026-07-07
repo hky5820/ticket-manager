@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#f4f6fb">
+<meta name="theme-color" content="#f4f6fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1219" media="(prefers-color-scheme: dark)">
 <title>티켓 보관함</title>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -321,6 +322,58 @@
 
   .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:60;background:#1f2637;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
+
+  /* ===== 다크모드 ===== */
+  @media (prefers-color-scheme: dark){
+    :root{
+      --card:#1b2130; --ink:#e8ebf3; --ink-soft:#a6adbe; --ink-faint:#727b90;
+      --line:#2c3345; --accent:#7d97ff; --accent-ink:#a9bcff; --accent-soft:rgba(109,140,255,.18);
+      --danger:#ff6b7a; --danger-ink:#ff96a1; --danger-soft:rgba(255,107,122,.15); --danger-bd:rgba(255,107,122,.4); --ok:#3ecf8e; --warn:#f5b544;
+      --shadow-sm:0 1px 3px rgba(0,0,0,.4);
+      --shadow:0 8px 20px -8px rgba(0,0,0,.55),0 2px 6px -3px rgba(0,0,0,.4);
+      --shadow-lg:0 20px 44px -18px rgba(0,0,0,.7);
+      --inset:inset 0 1px 0 rgba(255,255,255,.05);
+      --glass:rgba(38,44,60,.55); --glass2:rgba(28,33,46,.8); --card-solid:#1c2233; --glass-bd:rgba(255,255,255,.09);
+      --surf:#232a3b; /* 입력/리스트 표면 */
+    }
+    body{background:#0f1219}
+    body::before{background:
+      radial-gradient(38% 32% at 12% 8%, rgba(90,110,220,.28), transparent 70%),
+      radial-gradient(32% 28% at 90% 14%, rgba(200,90,140,.20), transparent 70%),
+      radial-gradient(44% 40% at 84% 90%, rgba(50,150,120,.18), transparent 70%),
+      radial-gradient(40% 38% at 6% 88%, rgba(130,90,210,.20), transparent 70%),
+      linear-gradient(160deg,#10131b,#0d1017)}
+    /* 흰색·밝은 표면 → 다크 표면 */
+    .field input,.field textarea,.vbtn,.gbtn,.vadd input,.switch-row,.vitem,.chk,.seat-edit{background:var(--surf)}
+    .field input:focus,.field textarea:focus{background:#283043}
+    .vitem:active,.vitem.sel{background:var(--accent-soft)}
+    .share-prev{background:#171c28}
+    .share-thumb,.pend-thumb{background:#171c28}
+    .cal-cell{background:#20273a;border-color:var(--line)}
+    .cal-cell.has{background:rgba(109,140,255,.16);border-color:rgba(109,140,255,.32)}
+    .cal-head button,.sb-btn,.seg button.on{background:var(--surf);color:var(--ink)}
+    .pill.on{background:var(--accent-soft);border-color:rgba(109,140,255,.4)}
+    .tk-check{background:var(--surf);border-color:#3a445c}
+    .tk-share{background:var(--accent-soft)}
+    .save-row .cancel{background:var(--surf);color:var(--ink-soft)}
+    .act-btn{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1)}
+    .transfer-box{background:rgba(245,181,68,.1);border-color:rgba(245,181,68,.28)}
+    .pend-card{background:linear-gradient(145deg,#2a2618,#211d12);border-color:#4a4021;color:#e6c878}
+    .pend-card b{color:#f0d68a}
+    .pend-card.err{background:rgba(255,107,122,.12);border-color:rgba(255,107,122,.3);color:var(--danger-ink)}
+    .tk.is-transfer{background:linear-gradient(180deg,#2a2517,#231f12);border-color:#4a4021}
+    .tk.is-transfer .tk-when{color:#e6c060}
+    .tk.is-transfer .tk-name{color:#e8d59a}
+    .lrow.is-transfer{background:linear-gradient(90deg,#241f12,#1c2233);border-color:#4a4021}
+    .lrow.is-transfer .nm{color:#e8d59a}
+    .statusbox.good{background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.3);color:#5fdca2}
+    .statusbox.warn{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.3);color:#f0c775}
+    .month-head .mh-count,.up-h span{background:var(--surf)}
+    .sheet{background:linear-gradient(180deg,rgba(28,33,46,.97),rgba(20,24,34,.95));border-top-color:rgba(255,255,255,.08)}
+    .grab{background:#3a445c}
+    .switch .track:before{background:#e8ebf3}
+    .badge{color:#0f1219}
+  }
 </style>
 </head>
 <body>
