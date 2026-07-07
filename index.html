@@ -857,8 +857,8 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
       zone=el.querySelector('.s-zone').value.trim(),
       row=el.querySelector('.s-row').value.trim().replace(/열$/,'').trim(),
       no=el.querySelector('.s-no').value.trim().replace(/번$/,'').trim();
-  // OP(오피)는 등급이 아니라 구역으로
-  if(grade.toUpperCase()==='OP'){ if(!zone)zone='OP'; grade=''; }
+  // OP(오피): 구역을 OP로 두고 등급도 "오피"로
+  if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='오피'; }
   return {grade,floor,zone,row,no};
 }).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
 
