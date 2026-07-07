@@ -29,10 +29,10 @@
     --inset:inset 0 1px 0 rgba(255,255,255,.75);
     --glass:rgba(255,255,255,.52);
     --glass2:rgba(255,255,255,.78);
-    --card-solid:rgba(255,255,255,.86); /* 스크롤 카드용: 블러 없이 글래스 느낌(깜빡임 방지) */
+    --card-solid:rgba(255,255,255,.9); /* 카드 표면(불투명, 틴트+광택으로 글라스 표현) */
     --glass-bd:rgba(255,255,255,.75);
     --blur:saturate(180%) blur(14px);
-    --sheen:rgba(255,255,255,.3); /* 리퀴드 글래스 상단 빛반사(라이트는 은은하게) */
+    --sheen:rgba(255,255,255,.62); /* 리퀴드 글래스 상단 빛반사 */
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -723,9 +723,9 @@ function colorFor(v){v=v||'';if(vcolors[v])return vcolors[v];if(VENDOR_COLORS[v]
 function hexA(hex,a){const m=/^#?([0-9a-f]{6})$/i.exec(String(hex||''));if(!m)return `rgba(108,140,255,${a})`;const n=parseInt(m[1],16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 // 리퀴드 글래스 배경: 상단 빛반사 스펙큘러 + 예매처색 그라데이션 + 카드 표면
 function glassBg(c,top,bot){return `radial-gradient(135% 95% at 12% -18%,var(--sheen),transparent 52%),linear-gradient(155deg,${hexA(c,top)},${hexA(c,bot)} 74%),var(--card-solid)`;}
-// 테마별 틴트 세기: 라이트는 아주 옅게(흰 카드+색 힌트 → 진한 글자 편하게), 다크는 진하게(예쁨 유지)
+// 테마별 틴트 세기: 다크/라이트 모두 글라스 느낌(라이트는 광택으로 유리감, 글자는 중립색이라 가독성 유지)
 function tintBg(c,strong){const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  return dark?glassBg(c,strong?.17:.15,strong?.04:.03):glassBg(c,strong?.075:.055,strong?.02:.014);}
+  return dark?glassBg(c,strong?.17:.15,strong?.04:.03):glassBg(c,strong?.13:.11,strong?.035:.028);}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function numOrNull(v){return v===''||v==null?null:Number(v);}
