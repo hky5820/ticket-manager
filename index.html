@@ -307,7 +307,11 @@
   .seat-edit .seat-x:last-child input{accent-color:var(--warn)}
   .seat-edit.canceled{background:var(--danger-soft);border-color:var(--danger-bd)}
   .seat-edit.xferred{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.4)}
-  .seat-edit.canceled .sgrid2,.seat-edit.canceled .sgrid3,.seat-edit.xferred .sgrid2,.seat-edit.xferred .sgrid3{opacity:.55}
+  .seat-edit.canceled .sgrid2,.seat-edit.canceled .sgrid3,.seat-edit.xferred>.sgrid2,.seat-edit.xferred>.sgrid3{opacity:.55}
+  .seat-xfer{display:none;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(245,181,68,.5)}
+  .seat-edit.xferred .seat-xfer{display:block}
+  .seat-xfer .sx-t{font-size:11.5px;font-weight:800;color:var(--warn);margin-bottom:7px}
+  .seat-xfer .sgrid3{opacity:1;margin-top:0}
   .cn-tag{font-size:10px;color:#fff;background:var(--danger);padding:1px 6px;border-radius:99px}
   .cn-tag.xf{background:var(--warn)}
   .seat-edit .rm{position:absolute;top:7px;right:8px;border:1px solid var(--danger-bd);background:var(--danger-soft);color:var(--danger-ink);border-radius:8px;height:24px;padding:0 10px;font-size:12px;font-weight:700;cursor:pointer;line-height:22px}
@@ -1231,6 +1235,14 @@ function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''} ${
     <div><label>구역</label><input class="s-zone" value="${esc(s.zone||'')}" placeholder="A / 가"></div>
     <div><label>열</label><input class="s-row" value="${esc(s.row||'')}" placeholder="3"></div>
     <div><label>번호(석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="12"></div>
+  </div>
+  <div class="seat-xfer">
+    <div class="sx-t">↗ 이 좌석 양도 내역</div>
+    <div class="sgrid3">
+      <div><label>양도 금액(원)</label><input class="s-tp" type="number" inputmode="numeric" value="${s.tp!=null?esc(String(s.tp)):''}" placeholder="0"></div>
+      <div><label>어디서</label><input class="s-tvia" value="${esc(s.tvia||'')}" placeholder="티켓베이 등"></div>
+      <div><label>누구에게</label><input class="s-tto" value="${esc(s.tto||'')}" placeholder="홍길동 / @아이디"></div>
+    </div>
   </div></div>`;}
 function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
 // 등급에서 끝의 "석" 제거(VIP석→VIP, R석→R). 단 "지정석 P"처럼 끝이 석이 아니면 그대로.
@@ -1243,7 +1255,12 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
   const x=el.querySelector('.s-x').checked, tr=el.querySelector('.s-t').checked;
   // OP(오피): 구역을 OP로 두고 등급도 "OP"(영어)로
   if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }
-  const o={grade,floor,zone,row,no}; if(x)o.x=true; if(tr)o.t=true; return o;
+  const o={grade,floor,zone,row,no}; if(x)o.x=true;
+  if(tr){ o.t=true;
+    const tp=el.querySelector('.s-tp').value.trim(), tvia=el.querySelector('.s-tvia').value.trim(), tto=el.querySelector('.s-tto').value.trim();
+    if(tp!=='')o.tp=Number(tp); if(tvia)o.tvia=tvia; if(tto)o.tto=tto;
+  }
+  return o;
 }).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
 // 취소·양도된 좌석 요약 노트(편집 목록엔 안 보이지만 여기 표시 + 복원 가능)
 function renderCanceledNote(){
