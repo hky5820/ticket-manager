@@ -50,6 +50,8 @@
   .pill .dot{width:7px;height:7px;border-radius:99px;background:var(--ink-faint)}
   .pill.on{color:var(--accent-ink);border-color:#d6def8;background:#f4f7ff}
   .pill.on .dot{background:var(--ok)}
+  .icon-btn{border:1px solid var(--glass-bd);background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:999px;width:32px;height:32px;flex:0 0 auto;font-size:14px;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center}
+  .icon-btn.on{background:#fff1f2;border-color:#ffc9ce;color:var(--danger)}
 
   /* stats strip */
   .stats{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin:2px 2px 10px}
@@ -156,6 +158,19 @@
   .fab-ai{position:fixed;right:16px;bottom:22px;z-index:40;width:54px;height:54px;border-radius:50%;border:none;background:linear-gradient(145deg,#ffd873,#ffb020);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 12px 26px -8px rgba(255,160,0,.6),var(--inset)}
   .fab-ai:active{transform:scale(.94)}
 
+  .select-bar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--glass2,rgba(255,255,255,.85));-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-top:1px solid var(--glass-bd);box-shadow:0 -8px 24px -12px rgba(0,0,0,.25)}
+  .select-bar.on{display:flex}
+  .select-bar #selectCount{font-size:13px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
+  .sb-actions{display:flex;gap:8px}
+  .sb-btn{border:1px solid var(--glass-bd);background:#fff;border-radius:10px;padding:9px 13px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-soft)}
+  .sb-btn.danger{background:linear-gradient(145deg,#ff8a8a,var(--danger));color:#fff;border:none}
+  body.selecting .fab, body.selecting .fab-ai{display:none}
+  .tk-check{position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:50%;border:2px solid #c9d2e6;background:#fff;box-shadow:var(--shadow-sm);z-index:2}
+  .tk-check.on{background:var(--accent,#4361ee);border-color:var(--accent,#4361ee)}
+  .tk-check.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900}
+  .tk.sel-mode{position:relative;padding-left:34px}
+  .lrow .tk-check{position:static;margin-right:2px}
+
   /* sheets / overlays */
   .overlay{position:fixed;inset:0;background:rgba(26,31,52,.30);-webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);z-index:50;display:none;align-items:flex-end;justify-content:center}
   .overlay.on{display:flex;animation:fade .18s}
@@ -240,6 +255,7 @@
       <button data-v="tile" onclick="setView('tile')">▦ 타일</button>
       <button data-v="list" onclick="setView('list')">☰ 리스트</button>
     </div>
+    <button class="icon-btn" id="selBtn" onclick="toggleSelectMode()" title="선택 삭제">🗑️</button>
     <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
   </div>
 
@@ -254,11 +270,20 @@
   <div id="viewRoot"></div>
 </div>
 
-<button class="fab" onclick="openModal()">
+<div class="select-bar" id="selectBar">
+  <span id="selectCount">0개 선택</span>
+  <span class="sb-actions">
+    <button class="sb-btn" onclick="selectAllToggle()" id="selAllBtn">전체선택</button>
+    <button class="sb-btn danger" onclick="bulkDelete()">삭제</button>
+    <button class="sb-btn" onclick="cancelSelectMode()">취소</button>
+  </span>
+</div>
+
+<button class="fab" id="fabAdd" onclick="openModal()">
   <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
   추가
 </button>
-<button class="fab-ai" onclick="document.getElementById('aiFile').click()" title="예매내역 캡처로 AI 자동 추가">🤖</button>
+<button class="fab-ai" id="fabAi" onclick="document.getElementById('aiFile').click()" title="예매내역 캡처로 AI 자동 추가">🤖</button>
 <input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
 <input type="file" id="pendReplaceFile" accept="image/*" style="display:none" onchange="pendReplaceFile(event)">
 
@@ -511,7 +536,48 @@ function updateSyncPill(){
 }
 
 /* ===== render ===== */
-function setView(v){view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));render();}
+let selectMode=false, selectedIds=new Set();
+function toggleSelectMode(){
+  if(view==='calendar'){ toast('캘린더 보기에서는 사용할 수 없어요'); return; }
+  selectMode=!selectMode; selectedIds.clear(); render();
+}
+function cancelSelectMode(){ selectMode=false; selectedIds.clear(); render(); }
+function toggleSelect(id){
+  id=String(id);
+  if(selectedIds.has(id))selectedIds.delete(id); else selectedIds.add(id);
+  renderSelectBar();
+  document.querySelectorAll(`[data-id="${id}"] .tk-check`).forEach(el=>el.classList.toggle('on',selectedIds.has(id)));
+}
+function selectAllToggle(){
+  const ids=byDate(filtered()).map(t=>String(t.id));
+  const allSel=ids.length&&ids.every(id=>selectedIds.has(id));
+  if(allSel)selectedIds.clear(); else ids.forEach(id=>selectedIds.add(id));
+  render();
+}
+function renderSelectBar(){
+  const bar=document.getElementById('selectBar'); if(!bar)return;
+  bar.classList.toggle('on',selectMode);
+  document.body.classList.toggle('selecting',selectMode);
+  document.getElementById('selBtn').classList.toggle('on',selectMode);
+  if(!selectMode)return;
+  document.getElementById('selectCount').textContent=`${selectedIds.size}개 선택`;
+  const ids=byDate(filtered()).map(t=>String(t.id));
+  const allSel=ids.length&&ids.every(id=>selectedIds.has(id));
+  document.getElementById('selAllBtn').textContent=allSel?'전체해제':'전체선택';
+}
+async function bulkDelete(){
+  if(!selectedIds.size){ toast('선택된 티켓이 없어요'); return; }
+  const ids=[...selectedIds];
+  if(!confirm(`선택한 ${ids.length}개 티켓을 삭제할까요?`))return;
+  try{
+    if(mode==='cloud'&&sb){ const {error}=await sb.from('tickets').delete().in('id',ids); if(error)throw error; }
+    tickets=tickets.filter(t=>!selectedIds.has(String(t.id)));
+    if(mode!=='cloud')saveLocal();
+    selectMode=false; selectedIds.clear();
+    render(); toast(`${ids.length}개 삭제되었어요`);
+  }catch(e){ toast('삭제 실패: '+(e.message||e)); }
+}
+function setView(v){view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));if(v==='calendar'){selectMode=false;selectedIds.clear();}render();}
 function filtered(){
   const q=(document.getElementById('search').value||'').trim().toLowerCase();
   let a=tickets.slice();
@@ -534,6 +600,7 @@ function render(){
     (tx?`<span class="sep">·</span><span class="x">양도 <b>${tx}</b></span>`:'');
 
   renderPending();
+  renderSelectBar();
 
   const root=document.getElementById('viewRoot');
   if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;return;}
@@ -548,8 +615,11 @@ function emptyHTML(){const has=tickets.length>0;return `<div class="empty"><div 
 function tileCard(t){
   const c=colorFor(t.vendor);
   const seat=(t.seats||[]).find(s=>s.grade)||{};
-  return `<div class="tk" data-id="${t.id}" onclick="edit('${t.id}')">
-    <div class="tk-row"><span class="badge" style="background:${c}">${esc(t.vendor||'예매처')}</span><span class="tk-icons">${t.hasImg?'<span class="tk-cam" title="예매내역 사진 첨부">📷</span>':''}${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button></span></div>
+  const sel=selectedIds.has(String(t.id));
+  const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
+  return `<div class="tk ${selectMode?'sel-mode':''}" data-id="${t.id}" onclick="${click}">
+    ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
+    <div class="tk-row"><span class="badge" style="background:${c}">${esc(t.vendor||'예매처')}</span><span class="tk-icons">${t.hasImg?'<span class="tk-cam" title="예매내역 사진 첨부">📷</span>':''}${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}</span></div>
     <div class="tk-name">${esc(t.name||'(공연명 없음)')}</div>
     ${t.date?`<div class="tk-date">📅 ${esc(fmtDate(t.date,t.time))}</div>`:''}
     <div class="tk-meta">🎟 ${Number(t.qty)||0} · ₩${won(t.price)}</div>
@@ -561,14 +631,17 @@ function listRow(t){
   const c=colorFor(t.vendor);
   let dm='—',dw='';
   if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dm=p[1]+'/'+p[2];dw=WD[dt.getDay()];}
-  return `<div class="lrow" data-id="${t.id}" onclick="edit('${t.id}')">
+  const sel=selectedIds.has(String(t.id));
+  const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
+  return `<div class="lrow" data-id="${t.id}" onclick="${click}">
+    ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
       <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}</div>
       <div class="lsub">${esc(t.vendor||'')} · 🎟${Number(t.qty)||0} · ₩${won(t.price)}${t.time?' · '+esc(t.time):''}</div>
     </div>
     ${t.hasImg?'<span class="tk-cam">📷</span>':''}
-    <button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>
+    ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
     <span class="ldot" style="background:${c}"></span>
   </div>`;
 }
