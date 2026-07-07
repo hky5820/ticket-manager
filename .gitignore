@@ -1,2 +1,11 @@
 .claude/
 *.zip
+
+# AI 인그레스트 임시 파일
+ob64*.txt
+oimg*.jpg
+opatch*.json
+ticket-*.json
+*-b64.txt
+scratch*tmp/
+*.jpg
