@@ -49,6 +49,7 @@
 
   /* top bar */
   .topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
+  .topbar-right{display:flex;align-items:center;gap:8px}
   .seg{display:inline-flex;background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-bd);border-radius:12px;padding:3px;box-shadow:var(--shadow-sm),var(--inset)}
   .seg button{border:none;background:transparent;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s}
   .seg button.on{background:#fff;color:var(--accent-ink);box-shadow:var(--shadow-sm)}
@@ -98,7 +99,8 @@
 
   /* tile grid — 위:언제 / 가운데:공연명 / 아래:등급·가격 */
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(146px,1fr));gap:8px;align-items:stretch}
-  .tk{position:relative;display:flex;flex-direction:column;height:126px;overflow:hidden;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:14px;padding:9px 10px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
+  .tk{position:relative;display:flex;flex-direction:column;height:126px;overflow:hidden;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:14px;padding:9px 10px;box-shadow:0 8px 18px -8px rgba(31,46,84,.28),0 2px 5px -2px rgba(31,46,84,.16),var(--inset);cursor:pointer;transition:transform .15s,box-shadow .15s;-webkit-touch-callout:none;user-select:none}
+  .tk:active{box-shadow:0 3px 8px -4px rgba(31,46,84,.24),var(--inset)}
   .tk:active{transform:scale(.98)}
   .tk-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px;height:18px;margin-bottom:3px}
   .tk-when{font-size:14.5px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px;white-space:nowrap}
@@ -401,6 +403,7 @@
   :root[data-theme="dark"] .grab{background:#3a445c}
   :root[data-theme="dark"] .switch .track:before{background:#e8ebf3}
   :root[data-theme="dark"] .badge{color:#0f1219}
+  :root[data-theme="dark"] .tk{box-shadow:0 8px 20px -8px rgba(0,0,0,.6),0 2px 6px -3px rgba(0,0,0,.5),var(--inset)}
 
   /* 테마 세그먼트(설정) */
   .theme-seg{display:flex;gap:6px;background:var(--surf,#f2f4fa);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:10px}
@@ -416,8 +419,10 @@
       <button data-v="tile" onclick="setView('tile')">▦ 타일</button>
       <button data-v="list" onclick="setView('list')">☰ 리스트</button>
     </div>
-    <button class="icon-btn" id="settingsBtn" onclick="openSettings()" title="설정">⚙️</button>
-    <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
+    <div class="topbar-right">
+      <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
+      <button class="icon-btn" id="settingsBtn" onclick="openSettings()" title="설정">⚙️</button>
+    </div>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -676,7 +681,7 @@ const DEFAULT_GRADES=['VIP','R','S','A'];
 const DEFAULT_PLATFORMS=['티켓베이','중고나라','당근마켓','번개장터','트위터/X','지인','기타'];
 const PALETTE=['#6c8cff','#ff8fb1','#ffa94d','#4dd4ac','#b088ff','#5bc0eb','#ff6b7a','#7bc86c','#f4a259','#5d9cec'];
 // 예매처 브랜드 색(파비콘에서 영감). 사용자가 컬러 피커로 덮어쓸 수 있음.
-const VENDOR_COLORS={'티켓링크':'#E03E3E','멜론티켓':'#00A33F','세종문화회관':'#F9A825','YES24':'#1565D8','샤롯데씨어터':'#E0457A','클립서비스':'#35C0F0','NOL 인터파크':'#4B79FF','LG아트센터':'#B00046'};
+const VENDOR_COLORS={'티켓링크':'#E03E3E','멜론티켓':'#00A33F','세종문화회관':'#F9A825','YES24':'#3B82F6','샤롯데씨어터':'#E0457A','클립서비스':'#22C3E6','NOL 인터파크':'#1E3A8A','LG아트센터':'#B00046'};
 const LS_VCOLORS='tm_vcolors_v1';
 const PICK_PALETTE=['#E03E3E','#FF6B6B','#FF4D8D','#F0629E','#B00046','#F9A825','#FF8C42','#FFC24B','#00A33F','#2FBF71','#12B886','#35C0F0','#38BDF8','#1565D8','#4B79FF','#5B6EF5','#8B5CF6','#E0457A','#7c8598','#495a70'];
 const WD=['일','월','화','수','목','금','토'];
@@ -930,7 +935,7 @@ function renderUpcoming(){
                   .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:(a.time||'')<(b.time||'')?-1:1));
   if(!up.length){ el.innerHTML=''; return; }
   const cards=up.map(t=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
-    return `<div class="up-card" onclick="edit('${t.id}')" style="background:linear-gradient(135deg,${hexA(c,.18)},${hexA(c,.02)} 60%),var(--card-solid)">
+    return `<div class="up-card" onclick="edit('${t.id}')" style="background:linear-gradient(180deg,${hexA(c,.13)},${hexA(c,.04)}),var(--card-solid)">
       <span class="up-dday ${dd.soon?'soon':''}">${dd.label}</span>
       <span class="up-name">${esc(t.name||'공연')}</span>
       <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
@@ -976,8 +981,8 @@ function tileCard(t){
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  // 예매처 색을 불투명유리처럼 카드 배경에 연하게(양도·부분취소 카드는 자체 색 유지)
-  const tint=(!xf&&!xc)?` style="background:linear-gradient(135deg,${hexA(c,.16)},${hexA(c,.02)} 58%),var(--card-solid)"`:'';
+  // 예매처 색을 불투명유리처럼 카드 배경에 은은하게(위가 살짝 밝고 아래로 옅어짐 → 자연스러운 톤)
+  const tint=(!xf&&!xc)?` style="background:linear-gradient(180deg,${hexA(c,.11)},${hexA(c,.035)}),var(--card-solid)"`:'';
   return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     ${xf?'<span class="tk-ribbon">양도완료</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':'')}
@@ -1000,7 +1005,7 @@ function listRow(t){
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  const tint=(!xf&&!xc)?` style="background:linear-gradient(100deg,${hexA(c,.14)},${hexA(c,.02)} 60%),var(--card-solid)"`:'';
+  const tint=(!xf&&!xc)?` style="background:linear-gradient(180deg,${hexA(c,.09)},${hexA(c,.03)}),var(--card-solid)"`:'';
   return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
