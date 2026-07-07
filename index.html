@@ -115,6 +115,12 @@
   .tk.is-transfer .tk-when{color:#b07d17}
   .tk.is-transfer .tk-name{color:#7a5b12}
   .tk-ribbon{position:absolute;top:12px;right:-30px;width:110px;transform:rotate(40deg);background:linear-gradient(145deg,#ffbe52,#f5a524);color:#fff;font-size:9px;font-weight:800;text-align:center;padding:3px 0;letter-spacing:.4px;box-shadow:0 4px 9px -3px rgba(180,120,0,.55);pointer-events:none;z-index:1}
+  .tk-ribbon.cancel{background:linear-gradient(145deg,#ff8a97,#e5455c);box-shadow:0 4px 9px -3px rgba(200,40,60,.5)}
+  .tk.is-cancel{background:linear-gradient(180deg,#fff4f5,#ffeef0);border-color:#f5cdd3}
+  .tk.is-cancel .tk-name{color:#a23b48}
+  .xtag.cancel{background:var(--danger)}
+  .lrow.is-cancel{position:relative;background:linear-gradient(90deg,#fff0f2,#fff8f9);border-color:#f5cdd3;padding-left:16px}
+  .lrow.is-cancel::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:99px;background:linear-gradient(180deg,#ff8a97,#e5455c)}
   .tk-cam{font-size:12px;line-height:1}
   .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .xtag{font-size:9.5px;font-weight:800;color:#fff;background:var(--warn);padding:2px 6px;border-radius:999px;white-space:nowrap}
@@ -270,6 +276,11 @@
   .seat-edit{border:1px solid var(--line);border-radius:12px;padding:34px 10px 10px;margin-bottom:8px;background:#fafbff;position:relative}
   .seat-edit .sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .seat-edit .sgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+  .seat-edit .seat-x{position:absolute;top:9px;left:11px;font-size:11.5px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;gap:5px;cursor:pointer}
+  .seat-edit .seat-x input{width:15px;height:15px;accent-color:var(--danger)}
+  .seat-edit.canceled{background:var(--danger-soft);border-color:var(--danger-bd)}
+  .seat-edit.canceled .sgrid2,.seat-edit.canceled .sgrid3{opacity:.55}
+  .seat-edit.canceled .seat-x{color:var(--danger-ink)}
   .seat-edit .rm{position:absolute;top:7px;right:8px;border:1px solid var(--danger-bd);background:var(--danger-soft);color:var(--danger-ink);border-radius:8px;height:24px;padding:0 10px;font-size:12px;font-weight:700;cursor:pointer;line-height:22px}
   .seat-edit .rm::before{content:"삭제 "}
   .seat-edit label{font-size:11px}
@@ -879,10 +890,12 @@ function dayLabel(t){
   const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);
   return {main:`${p[1]}/${p[2]}`, sub:`${WD[dt.getDay()]}${t.time?' '+esc(t.time):''}`};
 }
-// 자리 요약: 등급 층 구역 열 번호(스탠딩 등 자유텍스트면 N석)
+function hasCancel(t){ return (t.seats||[]).some(s=>s.x); }
+// 자리 요약: 유효 좌석만 표기 + 취소된 좌석 수. (스탠딩 등 자유텍스트면 N석)
 function seatLine(t){
-  const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);
-  if(!ss.length)return '';
+  const all=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);
+  const ss=all.filter(s=>!s.x), canceled=all.filter(s=>s.x);
+  if(!all.length)return '';
   const g=(ss.find(s=>s.grade)||{}).grade||'';
   const f=(ss.find(s=>s.floor)||{}).floor||'';
   const z=(ss.find(s=>s.zone)||{}).zone||'';
@@ -891,17 +904,18 @@ function seatLine(t){
   let numStr='';
   if(nos.length&&nos.every(n=>/^\d+$/.test(n))) numStr=nos.join(',')+'번';
   else if(nos.length) numStr=ss.length+'석';
-  return [g, f&&f+'층', z&&z+'구역', r&&r+'열', numStr].filter(Boolean).join(' ');
+  const main=[g, f&&f+'층', z&&z+'구역', r&&r+'열', numStr].filter(Boolean).join(' ');
+  return main+(canceled.length?` · 취소 ${canceled.length}`:'');
 }
 function tileCard(t){
   const c=colorFor(t.vendor);
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
-  const xf=t.transfer&&t.transfer.done;
-  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''}" data-id="${t.id}" onclick="${click}">
+  const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
+  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}">
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
-    ${xf?'<span class="tk-ribbon">양도완료</span>':''}
+    ${xf?'<span class="tk-ribbon">양도완료</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':'')}
     <div class="tk-top">
       <span class="tk-when ${t.date?'':'nodate'}">${d.main}${d.sub?`<small>${d.sub}</small>`:''}</span>
       <span class="tk-vendor"><i style="background:${c}"></i><span>${esc(t.vendor||'')}</span></span>
@@ -920,12 +934,12 @@ function listRow(t){
   if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dm=p[1]+'/'+p[2];dw=WD[dt.getDay()];}
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
-  const xf=t.transfer&&t.transfer.done;
-  return `<div class="lrow ${xf?'is-transfer':''}" data-id="${t.id}" onclick="${click}">
+  const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
+  return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}">
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
-      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':''}</div>
+      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':''}${xc?'<span class="xtag cancel">부분취소</span>':''}</div>
       ${seatLine(t)?`<div class="lseat">🎫 ${esc(seatLine(t))}</div>`:''}
       <div class="lsub">🎟 ${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${xf&&t.transfer.price?` · <span class="lxf">→ ₩${won(t.transfer.price)}</span>`:''}${t.vendor?' · '+esc(t.vendor):''}</div>
     </div>
@@ -1063,7 +1077,8 @@ function addGradeInline(){ const inp=document.getElementById('newGrade'); const 
 function deleteGrade(g){ if(!confirm(`등급 "${g}"를 목록에서 지울까요?`))return; grades=grades.filter(x=>x!==g); localStorage.setItem(LS_GRADES,JSON.stringify(grades)); renderGradeList(); }
 
 /* ===== seats ===== */
-function seatRowHTML(s={}){return `<div class="seat-edit"><button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
+function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''}"><button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
+  <label class="seat-x"><input type="checkbox" class="s-x" ${s.x?'checked':''} onchange="this.closest('.seat-edit').classList.toggle('canceled',this.checked)"> 취소됨</label>
   <div class="sgrid2">
     <div class="gwrap"><label>등급</label>
       <input type="hidden" class="s-grade" value="${esc(s.grade||'')}">
@@ -1084,9 +1099,10 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
       zone=el.querySelector('.s-zone').value.trim(),
       row=el.querySelector('.s-row').value.trim().replace(/열$/,'').trim(),
       no=el.querySelector('.s-no').value.trim().replace(/번$/,'').trim();
+  const x=el.querySelector('.s-x').checked;
   // OP(오피): 구역을 OP로 두고 등급도 "OP"(영어)로
   if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }
-  return {grade,floor,zone,row,no};
+  const o={grade,floor,zone,row,no}; if(x)o.x=true; return o;
 }).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
 
 /* ===== transfer ===== */
@@ -1329,48 +1345,37 @@ function wrapCanvasText(x,text,maxW){
   if(line)out.push(line);
   return out.length?out:[''];
 }
-// 공연정보 카드 + 예매내역 스크린샷을 한 장의 이미지로 합성 → 한 번의 공유로 모두 전달
-function composeShareImage(t,imgB64){
-  return new Promise((res,rej)=>{
-    const img=new Image();
-    img.onload=()=>{
-      const W=820, pad=36, contentW=W-pad*2, labelX=pad+112;
-      const c=document.createElement('canvas'), x=c.getContext('2d');
-      const seatStr=s=>{const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';return [s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ');};
-      const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no).map(seatStr).join(' / ');
-      const qp=[]; if(Number(t.qty))qp.push(Number(t.qty)+'매'); if(Number(t.price))qp.push('₩'+won(t.price));
-      const rows=[];
-      const add=(l,v)=>{ if(v)rows.push([l,v]); };
-      add('예매처',t.vendor); add('일시',t.date?fmtDate(t.date,t.time):''); add('매수·가격',qp.join('   ·   ')); add('좌석',ss);
-      if(t.transfer&&t.transfer.done)add('양도',[t.transfer.price?won(t.transfer.price)+'원':'',t.transfer.to,t.transfer.platform].filter(Boolean).join(' · ')||'완료');
-      add('메모',t.memo);
-      const titleFont='800 38px system-ui,-apple-system,sans-serif', valFont='500 25px system-ui,sans-serif', labelFont='700 21px system-ui,sans-serif';
-      x.textBaseline='top';
-      x.font=titleFont; const titleLines=wrapCanvasText(x,t.name||'(공연명 없음)',contentW);
-      x.font=valFont; const measured=rows.map(([l,v])=>({l,vl:wrapCanvasText(x,v,contentW-112)}));
-      const titleH=titleLines.length*46;
-      let bodyH=0; measured.forEach(r=>bodyH+=Math.max(1,r.vl.length)*34+10);
-      const headerH=pad+titleH+18+bodyH+pad;
-      const scale=W/img.naturalWidth, ih=Math.round(img.naturalHeight*scale);
-      c.width=W; c.height=headerH+ih;
-      x.fillStyle='#ffffff'; x.fillRect(0,0,c.width,c.height);
-      x.fillStyle='#4361ee'; x.fillRect(0,0,W,7);
-      let y=pad+6; x.fillStyle='#1f2637'; x.font=titleFont;
-      titleLines.forEach(l=>{ x.fillText(l,pad,y); y+=46; });
-      y+=18;
-      measured.forEach(r=>{
-        x.font=labelFont; x.fillStyle='#98a0b3'; x.fillText(r.l,pad,y+2);
-        x.font=valFont; x.fillStyle='#2a3345'; let yy=y;
-        r.vl.forEach(l=>{ x.fillText(l,labelX,yy); yy+=34; });
-        y+=Math.max(1,r.vl.length)*34+10;
-      });
-      x.strokeStyle='#e9edf5'; x.lineWidth=1; x.beginPath(); x.moveTo(pad,headerH-14); x.lineTo(W-pad,headerH-14); x.stroke();
-      x.drawImage(img,0,headerH,W,ih);
-      res(c.toDataURL('image/jpeg',0.9).split(',')[1]);
-    };
-    img.onerror=rej;
-    img.src='data:image/jpeg;base64,'+imgB64;
+// 공연정보를 예쁜 카드 이미지 1장으로(스크린샷은 별도 파일로 함께 보냄)
+function composeInfoCard(t){
+  const W=820, pad=36, contentW=W-pad*2, labelX=pad+112;
+  const c=document.createElement('canvas'), x=c.getContext('2d');
+  const seatStr=s=>{const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';const base=[s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ');return s.x?base+' (취소)':base;};
+  const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no).map(seatStr).join(' / ');
+  const qp=[]; if(Number(t.qty))qp.push(Number(t.qty)+'매'); if(Number(t.price))qp.push('₩'+won(t.price));
+  const rows=[];
+  const add=(l,v)=>{ if(v)rows.push([l,v]); };
+  add('예매처',t.vendor); add('일시',t.date?fmtDate(t.date,t.time):''); add('매수·가격',qp.join('   ·   ')); add('좌석',ss);
+  if(t.transfer&&t.transfer.done)add('양도',[t.transfer.price?won(t.transfer.price)+'원':'',t.transfer.to,t.transfer.platform].filter(Boolean).join(' · ')||'완료');
+  add('메모',t.memo);
+  const titleFont='800 38px system-ui,-apple-system,sans-serif', valFont='500 25px system-ui,sans-serif', labelFont='700 21px system-ui,sans-serif';
+  x.textBaseline='top';
+  x.font=titleFont; const titleLines=wrapCanvasText(x,t.name||'(공연명 없음)',contentW);
+  x.font=valFont; const measured=rows.map(([l,v])=>({l,vl:wrapCanvasText(x,v,contentW-112)}));
+  const titleH=titleLines.length*46;
+  let bodyH=0; measured.forEach(r=>bodyH+=Math.max(1,r.vl.length)*34+10);
+  c.width=W; c.height=pad+titleH+18+bodyH+pad;
+  x.fillStyle='#ffffff'; x.fillRect(0,0,c.width,c.height);
+  x.fillStyle='#4361ee'; x.fillRect(0,0,W,7);
+  let y=pad+6; x.fillStyle='#1f2637'; x.font=titleFont;
+  titleLines.forEach(l=>{ x.fillText(l,pad,y); y+=46; });
+  y+=18;
+  measured.forEach(r=>{
+    x.font=labelFont; x.fillStyle='#98a0b3'; x.fillText(r.l,pad,y+2);
+    x.font=valFont; x.fillStyle='#2a3345'; let yy=y;
+    r.vl.forEach(l=>{ x.fillText(l,labelX,yy); yy+=34; });
+    y+=Math.max(1,r.vl.length)*34+10;
   });
+  return c.toDataURL('image/jpeg',0.92).split(',')[1];
 }
 async function doShare(){
   const t=tickets.find(x=>String(x.id)===String(shareId)); if(!t)return;
@@ -1378,24 +1383,27 @@ async function doShare(){
   const wantImg=document.getElementById('shImg').checked && t.hasImg && shareImgB64;
   if(!wantTxt&&!wantImg){ toast('보낼 항목을 선택하세요'); return; }
   const title=t.name||'티켓', text=ticketText(t);
-  const fname=(t.name||'예매내역').replace(/[\\/:*?"<>|]/g,'')+'.jpg';
-  const dl=(b64)=>{ const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+b64; a.download=fname; a.click(); };
+  const fname=(t.name||'예매내역').replace(/[\\/:*?"<>|]/g,'');
+  const dl=(b64,nm)=>{ const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+b64; a.download=nm; a.click(); };
   try{
     if(wantTxt&&wantImg){
-      // 텍스트를 이미지에 합쳐 한 장으로 → 카톡 등에서 한 번에 정보+사진 모두 전달
-      toast('공유 이미지 만드는 중…');
-      let b64=shareImgB64; try{ b64=await composeShareImage(t,shareImgB64); }catch(e){}
-      const cf=b64ToFile(b64,fname);
-      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[cf]})){
-        await navigator.share({title,text,files:[cf]}); // 정보는 이미지에 이미 포함, text는 지원 앱용 보너스
+      // 정보카드 + 예매내역 스크린샷을 사진 2장으로 함께 전송(카톡 등에서 한 번에 둘 다 감)
+      const cardB64=composeInfoCard(t);
+      const files=[b64ToFile(cardB64,fname+'_정보.jpg'), b64ToFile(shareImgB64,fname+'_예매내역.jpg')];
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files})){
+        await navigator.share({files});
+      }else if(navigator.share&&navigator.canShare&&navigator.canShare({files:[files[1]]})){
+        // 2장 동시 미지원 → 정보카드 저장 후 스크린샷 공유
+        dl(cardB64,fname+'_정보.jpg'); await navigator.share({files:[files[1]]});
+        toast('정보카드는 저장됨 · 스크린샷 공유');
       }else{
-        if(navigator.clipboard)await navigator.clipboard.writeText(text); dl(b64);
-        toast('이 기기는 공유 시트 미지원 · 정보이미지 저장 + 텍스트 복사');
+        if(navigator.clipboard)await navigator.clipboard.writeText(text); dl(cardB64,fname+'_정보.jpg'); dl(shareImgB64,fname+'_예매내역.jpg');
+        toast('공유 시트 미지원 · 사진 2장 저장 + 텍스트 복사');
       }
     }else if(wantImg){
-      const f=b64ToFile(shareImgB64,fname);
+      const f=b64ToFile(shareImgB64,fname+'.jpg');
       if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f]}); }
-      else{ dl(shareImgB64); toast('이 기기는 사진 공유 미지원 · 파일로 저장했어요'); }
+      else{ dl(shareImgB64,fname+'.jpg'); toast('이 기기는 사진 공유 미지원 · 파일로 저장했어요'); }
     }else{
       if(navigator.share){ await navigator.share({title,text}); }
       else{ if(navigator.clipboard)await navigator.clipboard.writeText(text); toast('이 기기는 공유 시트 미지원 · 텍스트 복사했어요'); }
