@@ -402,7 +402,7 @@
     <h2>좌석 등급 선택</h2>
     <div class="vlist" id="glist"></div>
     <div class="vadd">
-      <input id="newGrade" type="text" placeholder="새 등급 (예: VIP석, 스탠딩)" onkeydown="if(event.key==='Enter')addGradeInline()">
+      <input id="newGrade" type="text" placeholder="새 등급 (예: VIP, 스탠딩 · '석' 없이)" onkeydown="if(event.key==='Enter')addGradeInline()">
       <button type="button" onclick="addGradeInline()">추가</button>
     </div>
   </div>
@@ -829,7 +829,7 @@ function renderGradeList(){
 }
 function applyGrade(g){ if(!gradeTargetBtn)return; const w=gradeTargetBtn.parentNode; w.querySelector('.s-grade').value=g; gradeTargetBtn.querySelector('.gtext').textContent=g; gradeTargetBtn.classList.remove('placeholder'); }
 function selectGrade(g){ applyGrade(g); closeGrade(); }
-function addGradeInline(){ const inp=document.getElementById('newGrade'); const n=(inp.value||'').trim(); if(!n)return; if(!grades.includes(n))grades.push(n); localStorage.setItem(LS_GRADES,JSON.stringify(grades)); inp.value=''; applyGrade(n); renderGradeList(); toast('등급 추가됨'); }
+function addGradeInline(){ const inp=document.getElementById('newGrade'); const n=normGrade(inp.value); if(!n)return; if(!grades.includes(n))grades.push(n); localStorage.setItem(LS_GRADES,JSON.stringify(grades)); inp.value=''; applyGrade(n); renderGradeList(); toast('등급 추가됨'); }
 function deleteGrade(g){ if(!confirm(`등급 "${g}"를 목록에서 지울까요?`))return; grades=grades.filter(x=>x!==g); localStorage.setItem(LS_GRADES,JSON.stringify(grades)); renderGradeList(); }
 
 /* ===== seats ===== */
@@ -844,9 +844,15 @@ function seatRowHTML(s={}){return `<div class="seat-edit"><button class="rm" typ
     <div><label>번호(열·석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="3열 12번"></div>
   </div></div>`;}
 function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
-function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>({
-  grade:el.querySelector('.s-grade').value.trim(),floor:el.querySelector('.s-floor').value.trim(),
-  zone:el.querySelector('.s-zone').value.trim(),no:el.querySelector('.s-no').value.trim()})).filter(s=>s.grade||s.floor||s.zone||s.no);}
+// 등급에서 끝의 "석" 제거(VIP석→VIP, R석→R). 단 "지정석 P"처럼 끝이 석이 아니면 그대로.
+function normGrade(g){ return String(g||'').trim().replace(/석$/,'').trim(); }
+function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>{
+  let grade=normGrade(el.querySelector('.s-grade').value), floor=el.querySelector('.s-floor').value.trim(),
+      zone=el.querySelector('.s-zone').value.trim(), no=el.querySelector('.s-no').value.trim();
+  // OP(오피)는 등급이 아니라 구역으로
+  if(grade.toUpperCase()==='OP'){ if(!zone)zone='OP'; grade=''; no=no.replace(/^\s*OP\s*/i,''); }
+  return {grade,floor,zone,no};
+}).filter(s=>s.grade||s.floor||s.zone||s.no);}
 
 /* ===== transfer ===== */
 function toggleTransfer(){document.getElementById('transferBox').classList.toggle('on',document.getElementById('fTransfer').checked);}
