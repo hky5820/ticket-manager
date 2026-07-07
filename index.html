@@ -191,10 +191,23 @@
   /* util + fab */
   .util{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
   .util button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm)}
-  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:40;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border:none;padding:13px 24px;border-radius:999px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 12px 26px -8px rgba(67,97,238,.6),var(--inset);display:flex;align-items:center;gap:7px;font-family:inherit}
-  .fab:active{transform:translateX(-50%) scale(.96)}
-  .fab-ai{position:fixed;right:16px;bottom:22px;z-index:40;width:54px;height:54px;border-radius:50%;border:none;background:linear-gradient(145deg,#ffd873,#ffb020);color:#fff;font-size:24px;cursor:pointer;box-shadow:0 12px 26px -8px rgba(255,160,0,.6),var(--inset)}
-  .fab-ai:active{transform:scale(.94)}
+  /* 추가 스피드다이얼(부채꼴) */
+  .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:41}
+  .fab{position:relative;z-index:2;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border:none;padding:13px 24px;border-radius:999px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 12px 26px -8px rgba(67,97,238,.6),var(--inset);display:flex;align-items:center;gap:7px;font-family:inherit}
+  .fab:active{transform:scale(.96)}
+  .fab-plus{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
+  .fab-wrap.open .fab-plus{transform:rotate(135deg)}
+  .fab-item{position:absolute;left:50%;bottom:5px;margin-left:-28px;z-index:1;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;color:#fff;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:0 12px 24px -8px rgba(31,46,84,.5),var(--inset);opacity:0;transform:translateY(8px) scale(.35);pointer-events:none;transition:transform .32s cubic-bezier(.2,.9,.3,1.45),opacity .2s}
+  .fab-item .fi-ic{font-size:21px;line-height:1}
+  .fab-item .fi-lb{font-size:9.5px;font-weight:800;letter-spacing:-.2px}
+  .fab-item.manual{background:linear-gradient(145deg,#7d97ff,#4361ee)}
+  .fab-item.photo{background:linear-gradient(145deg,#ffcf5e,#ff9f1c)}
+  .fab-wrap.open .fab-item{opacity:1;pointer-events:auto}
+  .fab-wrap.open .fab-item.manual{transform:translate(-82px,-98px) scale(1)}
+  .fab-wrap.open .fab-item.photo{transform:translate(82px,-98px) scale(1);transition-delay:.05s}
+  .fab-item:active{filter:brightness(.95)}
+  .fab-scrim{position:fixed;inset:0;background:rgba(18,22,38,.28);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+  .fab-scrim.on{opacity:1;pointer-events:auto}
 
   .select-bar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--glass2,rgba(255,255,255,.85));-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-top:1px solid var(--glass-bd);box-shadow:0 -8px 24px -12px rgba(0,0,0,.25)}
   .select-bar.on{display:flex}
@@ -204,7 +217,7 @@
   .sb-btn:active{transform:scale(.96)}
   .sb-btn.danger{background:var(--danger-soft);color:var(--danger-ink);border:1px solid var(--danger-bd);font-weight:800}
   .sb-btn.danger:active{background:#ffe6ea}
-  body.selecting .fab, body.selecting .fab-ai{display:none}
+  body.selecting .fab-wrap{display:none}
   .tk-check{position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:50%;border:2px solid #c9d2e6;background:#fff;box-shadow:var(--shadow-sm);z-index:2}
   .tk-check.on{background:var(--accent,#4361ee);border-color:var(--accent,#4361ee)}
   .tk-check.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900}
@@ -333,11 +346,15 @@
   </span>
 </div>
 
-<button class="fab" id="fabAdd" onclick="openModal()">
-  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-  추가
-</button>
-<button class="fab-ai" id="fabAi" onclick="document.getElementById('aiFile').click()" title="예매내역 캡처로 AI 자동 추가">🤖</button>
+<div class="fab-scrim" id="fabScrim" onclick="closeAddMenu()"></div>
+<div class="fab-wrap" id="fabWrap">
+  <button class="fab-item manual" onclick="fabManual()"><span class="fi-ic">✏️</span><span class="fi-lb">수기</span></button>
+  <button class="fab-item photo" onclick="fabPhoto()"><span class="fi-ic">📷</span><span class="fi-lb">사진</span></button>
+  <button class="fab" id="fabAdd" onclick="toggleAddMenu()">
+    <svg class="fab-plus" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    추가
+  </button>
+</div>
 <input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
 <input type="file" id="pendReplaceFile" accept="image/*" style="display:none" onchange="pendReplaceFile(event)">
 
@@ -958,6 +975,18 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
 function toggleTransfer(){document.getElementById('transferBox').classList.toggle('on',document.getElementById('fTransfer').checked);}
 
 /* ===== modal ===== */
+/* ===== 추가 스피드다이얼 ===== */
+function toggleAddMenu(){
+  const w=document.getElementById('fabWrap'), open=!w.classList.contains('open');
+  w.classList.toggle('open',open);
+  document.getElementById('fabScrim').classList.toggle('on',open);
+}
+function closeAddMenu(){
+  document.getElementById('fabWrap').classList.remove('open');
+  document.getElementById('fabScrim').classList.remove('on');
+}
+function fabManual(){ closeAddMenu(); openModal(); }
+function fabPhoto(){ closeAddMenu(); document.getElementById('aiFile').click(); }
 function openModal(){
   editingId=null; formVendor='';
   document.getElementById('modalTitle').textContent='티켓 추가';
