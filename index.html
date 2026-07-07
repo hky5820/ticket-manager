@@ -60,8 +60,12 @@
   .pend-card{display:flex;align-items:center;gap:8px;background:linear-gradient(145deg,#fff8ea,#fffdf8);border:1px solid #f2e3bf;border-radius:12px;padding:9px 12px;font-size:12.5px;color:#8a6d1f;margin-bottom:8px;box-shadow:var(--shadow-sm),var(--inset)}
   .pend-card b{color:#7a5b12;font-weight:800}
   .pend-card .pend-sub{color:var(--ink-faint)}
-  .pend-card.err{background:#fff1f2;border-color:#ffd7db;color:var(--danger);justify-content:space-between}
-  .pend-card.err button{border:none;background:transparent;color:var(--danger);font-size:16px;cursor:pointer;line-height:1;padding:0 2px}
+  .pend-card{justify-content:space-between}
+  .pend-card.err{background:#fff1f2;border-color:#ffd7db;color:var(--danger)}
+  .pend-actions{display:flex;gap:4px;margin-left:auto}
+  .pend-actions button{border:none;background:transparent;color:inherit;font-size:15px;cursor:pointer;line-height:1;padding:2px 4px;opacity:.75}
+  .pend-actions button:active{opacity:1}
+  .pend-card.err .pend-actions button{color:var(--danger)}
   .pend-spin{width:14px;height:14px;border:2px solid #f0dca8;border-top-color:#e0a92e;border-radius:50%;animation:spin .8s linear infinite;flex:none}
 
   /* search */
@@ -256,6 +260,7 @@
 </button>
 <button class="fab-ai" onclick="document.getElementById('aiFile').click()" title="예매내역 캡처로 AI 자동 추가">🤖</button>
 <input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
+<input type="file" id="pendReplaceFile" accept="image/*" style="display:none" onchange="pendReplaceFile(event)">
 
 <!-- Ticket modal -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
@@ -458,16 +463,47 @@ async function refresh(){
 function renderPending(){
   const el=document.getElementById('pending'); if(!el)return;
   if(!pendings.length){ el.innerHTML=''; return; }
-  const pend=pendings.filter(p=>p.status==='pending').length;
-  const errs=pendings.filter(p=>p.status==='error');
   let h='';
-  if(pend)h+=`<div class="pend-card"><span class="pend-spin"></span><span><b>${pend}건</b> AI가 인식 중… <span class="pend-sub">최대 30분</span></span></div>`;
-  errs.forEach(p=>{ h+=`<div class="pend-card err"><span>⚠️ 인식 실패${p.result?' · '+esc(p.result):''}</span><button onclick="dismissPending('${p.id}')" title="지우기">✕</button></div>`; });
+  pendings.forEach(p=>{
+    if(p.status==='pending'){
+      h+=`<div class="pend-card"><span class="pend-spin"></span><span>AI가 인식 중… <span class="pend-sub">최대 30분</span></span>
+        <span class="pend-actions">
+          <button onclick="replacePendingPhoto('${p.id}')" title="사진 교체">🖼️</button>
+          <button onclick="cancelPending('${p.id}')" title="취소">✕</button>
+        </span></div>`;
+    } else if(p.status==='error'){
+      h+=`<div class="pend-card err"><span>⚠️ 인식 실패${p.result?' · '+esc(p.result):''}</span>
+        <span class="pend-actions">
+          <button onclick="replacePendingPhoto('${p.id}')" title="사진 교체">🖼️</button>
+          <button onclick="cancelPending('${p.id}')" title="지우기">✕</button>
+        </span></div>`;
+    }
+  });
   el.innerHTML=h;
 }
-function dismissPending(id){
+function dismissPending(id){ cancelPending(id); }
+function cancelPending(id){
   if(!(mode==='cloud'&&sb))return;
-  sb.from('pending_uploads').delete().eq('id',id).then(()=>{ pendings=pendings.filter(p=>String(p.id)!==String(id)); renderPending(); });
+  if(!confirm('이 업로드 항목을 취소할까요?'))return;
+  sb.from('pending_uploads').delete().eq('id',id).then(()=>{ pendings=pendings.filter(p=>String(p.id)!==String(id)); renderPending(); toast('취소됨'); });
+}
+let pendReplaceId=null;
+function replacePendingPhoto(id){
+  if(!(mode==='cloud'&&sb))return;
+  pendReplaceId=id;
+  document.getElementById('pendReplaceFile').click();
+}
+async function pendReplaceFile(e){
+  const file=(e.target.files||[])[0]; e.target.value='';
+  const id=pendReplaceId; pendReplaceId=null;
+  if(!file||!id||!(mode==='cloud'&&sb))return;
+  try{
+    const b64=await fileToB64(file);
+    const {error}=await sb.from('pending_uploads').update({image_b64:b64,status:'pending',result:null}).eq('id',id);
+    if(error)throw error;
+    toast('사진 교체됨 · 다시 인식해요 🤖');
+    refresh();
+  }catch(err){ toast('교체 실패: '+(err.message||err)); }
 }
 function updateSyncPill(){
   const pill=document.getElementById('syncPill'), txt=document.getElementById('syncPillTxt');
