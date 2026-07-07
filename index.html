@@ -240,7 +240,9 @@
   .sb-btn:active{transform:scale(.96)}
   .sb-btn.danger{background:var(--danger-soft);color:var(--danger-ink);border:1px solid var(--danger-bd);font-weight:800}
   .sb-btn.danger:active{background:#ffe6ea}
-  body.selecting .fab-wrap{display:none}
+  body.selecting .fab-wrap,body.selecting .fab-settings{display:none}
+  .fab-settings{position:fixed;right:16px;bottom:24px;z-index:41;width:48px;height:48px;border-radius:50%;border:1px solid var(--glass-bd);background:var(--card-solid);color:var(--ink-soft);font-size:20px;cursor:pointer;box-shadow:var(--shadow),var(--inset);display:flex;align-items:center;justify-content:center}
+  .fab-settings:active{transform:scale(.94)}
   .tk-check{position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:50%;border:2px solid #c9d2e6;background:#fff;box-shadow:var(--shadow-sm);z-index:2}
   .tk-check.on{background:var(--accent,#4361ee);border-color:var(--accent,#4361ee)}
   .tk-check.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900}
@@ -419,10 +421,7 @@
       <button data-v="tile" onclick="setView('tile')">▦ 타일</button>
       <button data-v="list" onclick="setView('list')">☰ 리스트</button>
     </div>
-    <div class="topbar-right">
-      <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
-      <button class="icon-btn" id="settingsBtn" onclick="openSettings()" title="설정">⚙️</button>
-    </div>
+    <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
   </div>
 
   <div class="stats" id="stats"></div>
@@ -455,6 +454,7 @@
     추가
   </button>
 </div>
+<button class="fab-settings" id="settingsBtn" onclick="openSettings()" title="설정">⚙️</button>
 <input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
 <input type="file" id="pendReplaceFile" accept="image/*" style="display:none" onchange="pendReplaceFile(event)">
 
