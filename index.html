@@ -115,12 +115,13 @@
   .tk.is-transfer .tk-when{color:#b07d17}
   .tk.is-transfer .tk-name{color:#7a5b12}
   .tk-ribbon{position:absolute;top:12px;right:-30px;width:110px;transform:rotate(40deg);background:linear-gradient(145deg,#ffbe52,#f5a524);color:#fff;font-size:9px;font-weight:800;text-align:center;padding:3px 0;letter-spacing:.4px;box-shadow:0 4px 9px -3px rgba(180,120,0,.55);pointer-events:none;z-index:1}
-  .tk-ribbon.cancel{background:linear-gradient(145deg,#ff8a97,#e5455c);box-shadow:0 4px 9px -3px rgba(200,40,60,.5)}
-  .tk.is-cancel{background:linear-gradient(180deg,#fff4f5,#ffeef0);border-color:#f5cdd3}
-  .tk.is-cancel .tk-name{color:#a23b48}
-  .xtag.cancel{background:var(--danger)}
-  .lrow.is-cancel{position:relative;background:linear-gradient(90deg,#fff0f2,#fff8f9);border-color:#f5cdd3;padding-left:16px}
-  .lrow.is-cancel::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:99px;background:linear-gradient(180deg,#ff8a97,#e5455c)}
+  .tk-ribbon.cancel{background:linear-gradient(145deg,#98a1b3,#6b7488);box-shadow:0 4px 9px -3px rgba(60,70,95,.45)}
+  .tk.is-cancel{background:linear-gradient(180deg,#f1f3f8,#e7ebf2);border-color:#d2d9e4}
+  .tk.is-cancel .tk-name{color:#5b6474}
+  .xtag.cancel{background:#7c8598}
+  .lrow.is-cancel{position:relative;background:linear-gradient(90deg,#eef1f6,#f6f8fb);border-color:#d2d9e4;padding-left:16px}
+  .lrow.is-cancel::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:99px;background:linear-gradient(180deg,#98a1b3,#6b7488)}
+  .lrow.is-cancel .nm{color:#5b6474}
   .tk-cam{font-size:12px;line-height:1}
   .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .xtag{font-size:9.5px;font-weight:800;color:#fff;background:var(--warn);padding:2px 6px;border-radius:999px;white-space:nowrap}
@@ -376,11 +377,18 @@
     .pend-card{background:linear-gradient(145deg,#2a2618,#211d12);border-color:#4a4021;color:#e6c878}
     .pend-card b{color:#f0d68a}
     .pend-card.err{background:rgba(255,107,122,.12);border-color:rgba(255,107,122,.3);color:var(--danger-ink)}
-    .tk.is-transfer{background:linear-gradient(180deg,#2a2517,#231f12);border-color:#4a4021}
-    .tk.is-transfer .tk-when{color:#e6c060}
-    .tk.is-transfer .tk-name{color:#e8d59a}
-    .lrow.is-transfer{background:linear-gradient(90deg,#241f12,#1c2233);border-color:#4a4021}
-    .lrow.is-transfer .nm{color:#e8d59a}
+    .tk.is-transfer{background:linear-gradient(180deg,#4a3d1c,#3c3115);border-color:#75612e}
+    .tk.is-transfer .tk-when{color:#ffd464}
+    .tk.is-transfer .tk-name{color:#f4e2a8}
+    .lrow.is-transfer{background:linear-gradient(90deg,#3c3115,#2b3245);border-color:#6b5a2c}
+    .lrow.is-transfer .nm{color:#f4e2a8}
+    /* 부분취소: 슬레이트 톤(밝은 분홍 대신) */
+    .tk.is-cancel{background:linear-gradient(180deg,#2c3242,#262b38);border-color:#3d4557}
+    .tk.is-cancel .tk-name{color:#c3cad8}
+    .lrow.is-cancel{background:linear-gradient(90deg,#262b38,#232b3e);border-color:#3d4557}
+    .lrow.is-cancel .nm{color:#c3cad8}
+    .tk-ribbon.cancel{background:linear-gradient(145deg,#8a93a6,#5c6578)}
+    .xtag.cancel{background:#5c6578}
     .statusbox.good{background:rgba(62,207,142,.12);border-color:rgba(62,207,142,.3);color:#5fdca2}
     .statusbox.warn{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.3);color:#f0c775}
     .month-head .mh-count,.up-h span{background:var(--surf)}
