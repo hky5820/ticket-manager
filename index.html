@@ -68,7 +68,15 @@
   .pend-actions button{border:none;background:transparent;color:inherit;font-size:15px;cursor:pointer;line-height:1;padding:2px 4px;opacity:.75}
   .pend-actions button:active{opacity:1}
   .pend-card.err .pend-actions button{color:var(--danger)}
-  .pend-spin{width:14px;height:14px;border:2px solid #f0dca8;border-top-color:#e0a92e;border-radius:50%;animation:spin .8s linear infinite;flex:none}
+  .pend-spin{width:14px;height:14px;border:2px solid #f0dca8;border-top-color:#e0a92e;border-radius:50%;animation:spin .8s linear infinite;flex:none;display:inline-block;vertical-align:middle;margin-right:5px}
+  .pend-chev{margin-left:auto;font-size:18px;color:var(--ink-faint);font-weight:700}
+  .pend-item{display:flex;gap:12px;padding:10px;border:1px solid var(--line);border-radius:14px;margin-bottom:10px;background:var(--card)}
+  .pend-thumb{width:72px;height:72px;flex:none;object-fit:cover;border-radius:10px;cursor:pointer;background:#eef1f7;box-shadow:var(--shadow-sm)}
+  .pend-item-body{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0;gap:8px}
+  .pend-st{font-size:13px;font-weight:700;color:#8a6d1f;display:flex;align-items:center}
+  .pend-st.err{color:var(--danger)}
+  .pend-item-btns{display:flex;gap:8px}
+  .pend-item-btns .sb-btn{flex:1;text-align:center}
 
   /* search */
   .search{position:relative;margin-bottom:12px}
@@ -415,6 +423,16 @@
   </div>
 </div>
 
+<!-- Pending uploads manager -->
+<div class="overlay" id="pendOverlay" onclick="if(event.target===this)closePend()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2>🤖 AI 인식 대기열</h2>
+    <p class="hint">사진을 눌러 크게 보고, 교체하거나 삭제할 수 있어요.</p>
+    <div id="pendBody"></div>
+  </div>
+</div>
+
 <!-- Image viewer -->
 <div class="overlay img-view-overlay" id="imgViewOverlay" onclick="if(event.target===this)closeImgView()">
   <div class="sheet">
@@ -509,29 +527,63 @@ async function refresh(){
 function renderPending(){
   const el=document.getElementById('pending'); if(!el)return;
   if(!pendings.length){ el.innerHTML=''; return; }
-  let h='';
-  pendings.forEach(p=>{
-    if(p.status==='pending'){
-      h+=`<div class="pend-card"><span class="pend-spin"></span><span>AI가 인식 중… <span class="pend-sub">최대 30분</span></span>
-        <span class="pend-actions">
-          <button onclick="replacePendingPhoto('${p.id}')" title="사진 교체">🖼️</button>
-          <button onclick="cancelPending('${p.id}')" title="취소">✕</button>
-        </span></div>`;
-    } else if(p.status==='error'){
-      h+=`<div class="pend-card err"><span>⚠️ 인식 실패${p.result?' · '+esc(p.result):''}</span>
-        <span class="pend-actions">
-          <button onclick="replacePendingPhoto('${p.id}')" title="사진 교체">🖼️</button>
-          <button onclick="cancelPending('${p.id}')" title="지우기">✕</button>
-        </span></div>`;
-    }
-  });
-  el.innerHTML=h;
+  const pend=pendings.filter(p=>p.status==='pending').length;
+  const errs=pendings.filter(p=>p.status==='error').length;
+  let label;
+  if(pend&&errs) label=`<span class="pend-spin"></span><span>AI 인식 중 <b>${pend}</b> · 실패 <b>${errs}</b> <span class="pend-sub">· 탭해서 관리</span></span>`;
+  else if(pend)  label=`<span class="pend-spin"></span><span>AI가 인식 중… <b>${pend}건</b> <span class="pend-sub">· 탭해서 관리</span></span>`;
+  else           label=`<span>⚠️ 인식 실패 <b>${errs}건</b> <span class="pend-sub">· 탭해서 관리</span></span>`;
+  el.innerHTML=`<div class="pend-card ${pend?'':'err'}" onclick="openPendManage()" style="cursor:pointer">${label}<span class="pend-chev">›</span></div>`;
+}
+// 대기열 관리 팝업 — 썸네일, 보기, 교체, 삭제
+let pendFull=[]; // {id,status,result,image_b64}
+async function openPendManage(){
+  if(!(mode==='cloud'&&sb))return;
+  const body=document.getElementById('pendBody');
+  body.innerHTML=`<div class="empty" style="padding:24px 0"><div class="spinner"></div></div>`;
+  openOv('pendOverlay');
+  try{
+    const {data}=await sb.from('pending_uploads').select('id,status,result,image_b64').neq('status','done').order('created_at',{ascending:false});
+    pendFull=data||[];
+  }catch(e){ pendFull=[]; }
+  renderPendList();
+}
+function renderPendList(){
+  const body=document.getElementById('pendBody');
+  if(!pendFull.length){ body.innerHTML=`<p class="hint" style="text-align:center;padding:16px 0">대기 중인 업로드가 없어요.</p>`; return; }
+  body.innerHTML=pendFull.map(p=>{
+    const st=p.status==='error'
+      ? `<span class="pend-st err">⚠️ 인식 실패${p.result?' · '+esc(p.result):''}</span>`
+      : `<span class="pend-st"><span class="pend-spin"></span>AI가 인식 중…</span>`;
+    return `<div class="pend-item" data-id="${p.id}">
+      <img class="pend-thumb" src="data:image/jpeg;base64,${p.image_b64}" onclick="viewPendImage('${p.id}')" alt="업로드 사진">
+      <div class="pend-item-body">
+        ${st}
+        <div class="pend-item-btns">
+          <button class="sb-btn" onclick="replacePendingPhoto('${p.id}')">🖼️ 교체</button>
+          <button class="sb-btn danger" onclick="cancelPending('${p.id}')">🗑 삭제</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function closePend(){ closeOv('pendOverlay'); }
+function viewPendImage(id){
+  const p=pendFull.find(x=>String(x.id)===String(id)); if(!p||!p.image_b64)return;
+  document.getElementById('imgViewImg').src='data:image/jpeg;base64,'+p.image_b64;
+  openOv('imgViewOverlay');
 }
 function dismissPending(id){ cancelPending(id); }
 function cancelPending(id){
   if(!(mode==='cloud'&&sb))return;
-  if(!confirm('이 업로드 항목을 취소할까요?'))return;
-  sb.from('pending_uploads').delete().eq('id',id).then(()=>{ pendings=pendings.filter(p=>String(p.id)!==String(id)); renderPending(); toast('취소됨'); });
+  if(!confirm('이 업로드 항목을 삭제할까요?'))return;
+  sb.from('pending_uploads').delete().eq('id',id).then(()=>{
+    pendings=pendings.filter(p=>String(p.id)!==String(id));
+    pendFull=pendFull.filter(p=>String(p.id)!==String(id));
+    renderPending(); renderPendList();
+    if(!pendFull.length)closePend();
+    toast('삭제됨');
+  });
 }
 let pendReplaceId=null;
 function replacePendingPhoto(id){
@@ -547,8 +599,12 @@ async function pendReplaceFile(e){
     const b64=await fileToB64(file);
     const {error}=await sb.from('pending_uploads').update({image_b64:b64,status:'pending',result:null}).eq('id',id);
     if(error)throw error;
+    // 로컬 캐시도 갱신해 팝업 썸네일/상태 즉시 반영
+    const p=pendFull.find(x=>String(x.id)===String(id));
+    if(p){ p.image_b64=b64; p.status='pending'; p.result=null; }
+    const pp=pendings.find(x=>String(x.id)===String(id)); if(pp){ pp.status='pending'; pp.result=null; }
+    renderPending(); renderPendList();
     toast('사진 교체됨 · 다시 인식해요 🤖');
-    refresh();
   }catch(err){ toast('교체 실패: '+(err.message||err)); }
 }
 function updateSyncPill(){
