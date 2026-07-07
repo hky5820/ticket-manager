@@ -196,7 +196,7 @@
   .img-view-overlay{background:rgba(10,12,20,.92)}
   .img-view-overlay .sheet{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;overflow:hidden}
   .img-view-stage{width:100%;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
-  .img-view-overlay img{max-width:100%;max-height:80vh;border-radius:14px;box-shadow:var(--shadow-lg);transform-origin:0 0;will-change:transform;user-select:none;-webkit-user-drag:none}
+  .img-view-overlay img{max-width:100%;max-height:80vh;border-radius:14px;box-shadow:var(--shadow-lg);transform-origin:center center;will-change:transform;user-select:none;-webkit-user-drag:none}
   .img-view-hint{color:rgba(255,255,255,.55);font-size:12px;margin-top:6px}
   .img-view-close{margin-top:16px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
   .sheet h2{font-size:17px;font-weight:800;margin:4px 2px 14px;letter-spacing:-.4px}
@@ -904,13 +904,11 @@ function ivReset(){ _iv={scale:1,tx:0,ty:0}; ivApply(); }
 function ivClamp(){
   const st=document.getElementById('imgViewStage'), im=document.getElementById('imgViewImg');
   if(!st||!im)return;
-  const sw=st.clientWidth, sh=st.clientHeight;
+  // transform-origin이 center이므로, 스테이지보다 큰 만큼의 절반까지만 이동 허용(넘치면 가장자리, 작으면 중앙 0)
   const iw=im.clientWidth*_iv.scale, ih=im.clientHeight*_iv.scale;
-  // 이미지가 스테이지보다 크면 가장자리 넘지 않게, 작으면 가운데 정렬
-  const minX=Math.min(0, sw-iw), minY=Math.min(0, sh-ih);
-  const cx=iw<=sw?(sw-iw)/2:Math.max(minX,Math.min(0,_iv.tx));
-  const cy=ih<=sh?(sh-ih)/2:Math.max(minY,Math.min(0,_iv.ty));
-  _iv.tx=cx; _iv.ty=cy;
+  const maxX=Math.max(0,(iw-st.clientWidth)/2), maxY=Math.max(0,(ih-st.clientHeight)/2);
+  _iv.tx=Math.max(-maxX,Math.min(maxX,_iv.tx));
+  _iv.ty=Math.max(-maxY,Math.min(maxY,_iv.ty));
 }
 function initImgZoom(){
   const st=document.getElementById('imgViewStage'); if(!st)return;
