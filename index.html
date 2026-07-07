@@ -246,7 +246,7 @@
   추가
 </button>
 <button class="fab-ai" onclick="document.getElementById('aiFile').click()" title="예매내역 캡처로 AI 자동 추가">🤖</button>
-<input type="file" id="aiFile" accept="image/*" style="display:none" onchange="aiUpload(event)">
+<input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
 
 <!-- Ticket modal -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
@@ -755,16 +755,19 @@ function fileToB64(file){
   });
 }
 async function aiUpload(e){
-  const f=e.target.files&&e.target.files[0]; e.target.value=''; if(!f)return;
+  const files=[...(e.target.files||[])]; e.target.value=''; if(!files.length)return;
   if(mode!=='cloud'||!sb){ toast('오프라인이라 지금은 안 돼요'); return; }
-  toast('캡처 처리 중…');
-  try{
-    const b64=await fileToB64(f);
-    const {error}=await sb.from('pending_uploads').insert({image_b64:b64,status:'pending'});
-    if(error)throw error;
-    toast('접수됐어요 · AI가 곧 인식해서 추가해요 🤖');
-    refresh();
-  }catch(err){ toast('업로드 실패: '+(err.message||err)); }
+  toast(`캡처 ${files.length}장 처리 중…`);
+  let ok=0, fail=0;
+  for(const f of files){
+    try{
+      const b64=await fileToB64(f);
+      const {error}=await sb.from('pending_uploads').insert({image_b64:b64,status:'pending'});
+      if(error)throw error; ok++;
+    }catch(err){ fail++; }
+  }
+  toast(`${ok}장 접수됨${fail?` · ${fail}장 실패`:''} · AI가 곧 인식해요 🤖`);
+  refresh();
 }
 
 /* ===== toast ===== */
