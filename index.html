@@ -1266,6 +1266,59 @@ async function openShare(id){
 function closeShare(){ shareStep=0; resetShareBtn(); closeOv('shareOverlay'); }
 function resetShareBtn(){ const b=document.getElementById('shareGo'); if(b)b.textContent='📤 공유하기'; }
 let shareStep=0;
+// 글자 줄바꿈(한글은 글자 단위)
+function wrapCanvasText(x,text,maxW){
+  let line='',out=[];
+  for(const ch of String(text)){
+    if(ch==='\n'){ out.push(line); line=''; continue; }
+    if(line&&x.measureText(line+ch).width>maxW){ out.push(line); line=ch; } else line+=ch;
+  }
+  if(line)out.push(line);
+  return out.length?out:[''];
+}
+// 공연정보 카드 + 예매내역 스크린샷을 한 장의 이미지로 합성 → 한 번의 공유로 모두 전달
+function composeShareImage(t,imgB64){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      const W=820, pad=36, contentW=W-pad*2, labelX=pad+112;
+      const c=document.createElement('canvas'), x=c.getContext('2d');
+      const seatStr=s=>{const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';return [s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ');};
+      const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no).map(seatStr).join(' / ');
+      const qp=[]; if(Number(t.qty))qp.push(Number(t.qty)+'매'); if(Number(t.price))qp.push('₩'+won(t.price));
+      const rows=[];
+      const add=(l,v)=>{ if(v)rows.push([l,v]); };
+      add('예매처',t.vendor); add('일시',t.date?fmtDate(t.date,t.time):''); add('매수·가격',qp.join('   ·   ')); add('좌석',ss);
+      if(t.transfer&&t.transfer.done)add('양도',[t.transfer.price?won(t.transfer.price)+'원':'',t.transfer.to,t.transfer.platform].filter(Boolean).join(' · ')||'완료');
+      add('메모',t.memo);
+      const titleFont='800 38px system-ui,-apple-system,sans-serif', valFont='500 25px system-ui,sans-serif', labelFont='700 21px system-ui,sans-serif';
+      x.textBaseline='top';
+      x.font=titleFont; const titleLines=wrapCanvasText(x,t.name||'(공연명 없음)',contentW);
+      x.font=valFont; const measured=rows.map(([l,v])=>({l,vl:wrapCanvasText(x,v,contentW-112)}));
+      const titleH=titleLines.length*46;
+      let bodyH=0; measured.forEach(r=>bodyH+=Math.max(1,r.vl.length)*34+10);
+      const headerH=pad+titleH+18+bodyH+pad;
+      const scale=W/img.naturalWidth, ih=Math.round(img.naturalHeight*scale);
+      c.width=W; c.height=headerH+ih;
+      x.fillStyle='#ffffff'; x.fillRect(0,0,c.width,c.height);
+      x.fillStyle='#4361ee'; x.fillRect(0,0,W,7);
+      let y=pad+6; x.fillStyle='#1f2637'; x.font=titleFont;
+      titleLines.forEach(l=>{ x.fillText(l,pad,y); y+=46; });
+      y+=18;
+      measured.forEach(r=>{
+        x.font=labelFont; x.fillStyle='#98a0b3'; x.fillText(r.l,pad,y+2);
+        x.font=valFont; x.fillStyle='#2a3345'; let yy=y;
+        r.vl.forEach(l=>{ x.fillText(l,labelX,yy); yy+=34; });
+        y+=Math.max(1,r.vl.length)*34+10;
+      });
+      x.strokeStyle='#e9edf5'; x.lineWidth=1; x.beginPath(); x.moveTo(pad,headerH-14); x.lineTo(W-pad,headerH-14); x.stroke();
+      x.drawImage(img,0,headerH,W,ih);
+      res(c.toDataURL('image/jpeg',0.9).split(',')[1]);
+    };
+    img.onerror=rej;
+    img.src='data:image/jpeg;base64,'+imgB64;
+  });
+}
 async function doShare(){
   const t=tickets.find(x=>String(x.id)===String(shareId)); if(!t)return;
   const wantTxt=document.getElementById('shTxt').checked;
@@ -1273,38 +1326,24 @@ async function doShare(){
   if(!wantTxt&&!wantImg){ toast('보낼 항목을 선택하세요'); return; }
   const title=t.name||'티켓', text=ticketText(t);
   const fname=(t.name||'예매내역').replace(/[\\/:*?"<>|]/g,'')+'.jpg';
-  const imgFile=wantImg?b64ToFile(shareImgB64,fname):null;
-  const canShareImg=wantImg&&navigator.share&&navigator.canShare&&navigator.canShare({files:[imgFile]});
+  const dl=(b64)=>{ const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+b64; a.download=fname; a.click(); };
   try{
-    // 텍스트+사진을 한 번의 navigator.share() 호출에 같이 넘기면 카톡/문자 등 대부분 앱이 사진만 받고
-    // 텍스트를 버린다. 그렇다고 코드에서 곧바로 두 번 연달아 share()를 부르면, 두 번째 호출은 모바일 브라우저의
-    // "사용자 제스처" 요건을 잃어서 조용히 실패한다 → 반드시 버튼을 두 번 눌러(제스처 2회) 순서대로 보낸다.
-    if(wantTxt&&wantImg&&navigator.share){
-      if(shareStep===0){
-        await navigator.share({title,text});
-        if(canShareImg){
-          shareStep=1;
-          document.getElementById('shareGo').textContent='📷 이어서 사진 공유하기 (탭)';
-          toast('텍스트 공유됨 · 아래 버튼을 한 번 더 눌러 사진도 보내세요');
-          return; // 팝업 유지, 다음 탭에서 사진 전송
-        }else{
-          const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
-          toast('사진은 파일로 저장했어요 (이 기기는 사진 공유 미지원)');
-        }
+    if(wantTxt&&wantImg){
+      // 텍스트를 이미지에 합쳐 한 장으로 → 카톡 등에서 한 번에 정보+사진 모두 전달
+      toast('공유 이미지 만드는 중…');
+      let b64=shareImgB64; try{ b64=await composeShareImage(t,shareImgB64); }catch(e){}
+      const cf=b64ToFile(b64,fname);
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[cf]})){
+        await navigator.share({title,text,files:[cf]}); // 정보는 이미지에 이미 포함, text는 지원 앱용 보너스
       }else{
-        await navigator.share({files:[imgFile]});
+        if(navigator.clipboard)await navigator.clipboard.writeText(text); dl(b64);
+        toast('이 기기는 공유 시트 미지원 · 정보이미지 저장 + 텍스트 복사');
       }
-    }else if(wantTxt&&wantImg){
-      if(navigator.clipboard)await navigator.clipboard.writeText(text);
-      const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
-      toast('이 기기는 공유 시트 미지원 · 텍스트 복사/사진 저장했어요');
     }else if(wantImg){
-      if(canShareImg){ await navigator.share({files:[imgFile]}); }
-      else{
-        const a=document.createElement('a'); a.href='data:image/jpeg;base64,'+shareImgB64; a.download=fname; a.click();
-        toast('이 기기는 사진 공유 미지원 · 파일로 저장했어요');
-      }
-    }else if(wantTxt){
+      const f=b64ToFile(shareImgB64,fname);
+      if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})){ await navigator.share({files:[f]}); }
+      else{ dl(shareImgB64); toast('이 기기는 사진 공유 미지원 · 파일로 저장했어요'); }
+    }else{
       if(navigator.share){ await navigator.share({title,text}); }
       else{ if(navigator.clipboard)await navigator.clipboard.writeText(text); toast('이 기기는 공유 시트 미지원 · 텍스트 복사했어요'); }
     }
