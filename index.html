@@ -25,6 +25,7 @@
     --inset:inset 0 1px 0 rgba(255,255,255,.75);
     --glass:rgba(255,255,255,.52);
     --glass2:rgba(255,255,255,.78);
+    --card-solid:rgba(255,255,255,.86); /* 스크롤 카드용: 블러 없이 글래스 느낌(깜빡임 방지) */
     --glass-bd:rgba(255,255,255,.75);
     --blur:saturate(180%) blur(14px);
   }
@@ -86,7 +87,7 @@
 
   /* tile grid */
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .tk{background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-bd);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;animation:pop .2s;-webkit-touch-callout:none;user-select:none}
+  .tk{background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;animation:pop .2s;-webkit-touch-callout:none;user-select:none}
   .tk:active{transform:scale(.98)}
   @keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
   .tk-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px}
@@ -108,7 +109,7 @@
 
   /* list */
   .list{display:flex;flex-direction:column;gap:7px}
-  .lrow{display:flex;align-items:center;gap:11px;background:var(--glass);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-bd);border-radius:13px;padding:9px 12px;box-shadow:var(--shadow-sm),var(--inset);cursor:pointer;-webkit-touch-callout:none;user-select:none}
+  .lrow{display:flex;align-items:center;gap:11px;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:13px;padding:9px 12px;box-shadow:var(--shadow-sm),var(--inset);cursor:pointer;-webkit-touch-callout:none;user-select:none}
   .act-title{font-size:15px;font-weight:800;text-align:center;margin:2px 0 14px;color:var(--ink)}
   .act-btn{width:100%;border:1px solid rgba(255,255,255,.8);background:rgba(255,255,255,.62);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border-radius:14px;padding:15px;font-size:15px;font-weight:700;color:var(--ink);font-family:inherit;cursor:pointer;margin-bottom:9px;text-align:center;box-shadow:var(--shadow-sm),var(--inset)}
   .act-btn:active{transform:scale(.98)}
@@ -126,7 +127,7 @@
   .ldot{flex:none;width:9px;height:9px;border-radius:99px}
 
   /* calendar */
-  .cal{background:var(--glass2);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);border:1px solid var(--glass-bd);border-radius:18px;padding:10px;box-shadow:var(--shadow),var(--inset)}
+  .cal{background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:18px;padding:10px;box-shadow:var(--shadow),var(--inset)}
   .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:2px 4px}
   .cal-head .mon{font-size:15px;font-weight:800}
   .cal-head button{border:none;background:#f2f4fa;border-radius:9px;width:32px;height:32px;font-size:17px;cursor:pointer;color:var(--ink-soft);font-weight:800}
