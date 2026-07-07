@@ -39,7 +39,8 @@
       radial-gradient(32% 28% at 90% 14%, rgba(255,143,177,.34), transparent 70%),
       radial-gradient(44% 40% at 84% 90%, rgba(77,212,172,.32), transparent 70%),
       radial-gradient(40% 38% at 6% 88%, rgba(176,136,255,.34), transparent 70%),
-      linear-gradient(160deg,#f6f8fe,#e9f0fb);}
+      linear-gradient(160deg,#f6f8fe,#e9f0fb);
+    transform:translateZ(0);backface-visibility:hidden;}
   .wrap{max-width:680px;margin:0 auto;padding:12px 12px 96px}
 
   /* top bar */
@@ -86,8 +87,8 @@
   .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
 
   /* tile grid */
-  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-  .tk{background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;animation:pop .2s;-webkit-touch-callout:none;user-select:none}
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:stretch}
+  .tk{display:flex;flex-direction:column;min-height:118px;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:16px;padding:11px 12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
   .tk:active{transform:scale(.98)}
   @keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
   .tk-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px}
@@ -215,7 +216,8 @@
   .vbtn.placeholder{color:var(--ink-faint)}
   /* seat editor */
   .seat-edit{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fafbff;position:relative}
-  .seat-edit .four{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .seat-edit .sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .seat-edit .sgrid3{display:grid;grid-template-columns:1.2fr .9fr .9fr;gap:8px;margin-top:8px}
   .seat-edit .rm{position:absolute;top:7px;right:7px;border:none;background:#fff1f2;color:var(--danger);border-radius:7px;width:24px;height:24px;font-size:14px;cursor:pointer;line-height:1}
   .seat-edit label{font-size:11px}
   .seat-edit input{padding:9px 10px;font-size:14px}
@@ -834,25 +836,30 @@ function deleteGrade(g){ if(!confirm(`등급 "${g}"를 목록에서 지울까요
 
 /* ===== seats ===== */
 function seatRowHTML(s={}){return `<div class="seat-edit"><button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
-  <div class="four">
+  <div class="sgrid2">
     <div class="gwrap"><label>등급</label>
       <input type="hidden" class="s-grade" value="${esc(s.grade||'')}">
       <button type="button" class="gbtn ${s.grade?'':'placeholder'}" onclick="openGradePicker(this)"><span class="gtext">${s.grade?esc(s.grade):'선택'}</span><span class="chev">▾</span></button>
     </div>
     <div><label>층</label><input class="s-floor" value="${esc(s.floor||'')}" placeholder="1"></div>
+  </div>
+  <div class="sgrid3">
     <div><label>구역</label><input class="s-zone" value="${esc(s.zone||'')}" placeholder="A / 가"></div>
-    <div><label>번호(열·석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="3열 12번"></div>
+    <div><label>열</label><input class="s-row" value="${esc(s.row||'')}" placeholder="3"></div>
+    <div><label>번호(석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="12"></div>
   </div></div>`;}
 function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
 // 등급에서 끝의 "석" 제거(VIP석→VIP, R석→R). 단 "지정석 P"처럼 끝이 석이 아니면 그대로.
 function normGrade(g){ return String(g||'').trim().replace(/석$/,'').trim(); }
 function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>{
   let grade=normGrade(el.querySelector('.s-grade').value), floor=el.querySelector('.s-floor').value.trim(),
-      zone=el.querySelector('.s-zone').value.trim(), no=el.querySelector('.s-no').value.trim();
+      zone=el.querySelector('.s-zone').value.trim(),
+      row=el.querySelector('.s-row').value.trim().replace(/열$/,'').trim(),
+      no=el.querySelector('.s-no').value.trim().replace(/번$/,'').trim();
   // OP(오피)는 등급이 아니라 구역으로
-  if(grade.toUpperCase()==='OP'){ if(!zone)zone='OP'; grade=''; no=no.replace(/^\s*OP\s*/i,''); }
-  return {grade,floor,zone,no};
-}).filter(s=>s.grade||s.floor||s.zone||s.no);}
+  if(grade.toUpperCase()==='OP'){ if(!zone)zone='OP'; grade=''; }
+  return {grade,floor,zone,row,no};
+}).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
 
 /* ===== transfer ===== */
 function toggleTransfer(){document.getElementById('transferBox').classList.toggle('on',document.getElementById('fTransfer').checked);}
@@ -1044,8 +1051,9 @@ function ticketText(t){
   if(t.date)L.push(`일시: ${fmtDate(t.date,t.time)}`);
   if(Number(t.qty))L.push(`매수: ${Number(t.qty)}`);
   if(Number(t.price))L.push(`가격: ${won(t.price)}원`);
-  const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.no)
-    .map(s=>[s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),s.no].filter(Boolean).join(' ')).join(' / ');
+  const seatStr=s=>{const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';
+    return [s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ');};
+  const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no).map(seatStr).join(' / ');
   if(ss)L.push(`좌석: ${ss}`);
   if(t.transfer&&t.transfer.done)L.push(`양도: ${[t.transfer.price?won(t.transfer.price)+'원':'',t.transfer.to,t.transfer.platform].filter(Boolean).join(' · ')||'완료'}`);
   if(t.memo)L.push(`메모: ${t.memo}`);
