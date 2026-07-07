@@ -94,19 +94,20 @@
 
   /* tile grid — 위:언제 / 가운데:공연명 / 아래:등급·가격 */
   .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;align-items:stretch}
-  .tk{position:relative;display:flex;flex-direction:column;height:122px;overflow:hidden;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:14px;padding:9px 11px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
+  .tk{position:relative;display:flex;flex-direction:column;height:142px;overflow:hidden;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:14px;padding:10px 11px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
   .tk:active{transform:scale(.98)}
   .tk-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px;margin-bottom:5px}
-  .tk-when{font-size:14px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px;white-space:nowrap}
-  .tk-when small{font-size:10px;font-weight:700;color:var(--ink-faint);margin-left:3px}
+  .tk-when{font-size:15px;font-weight:800;color:var(--accent-ink);letter-spacing:-.3px;white-space:nowrap}
+  .tk-when small{font-size:10.5px;font-weight:700;color:var(--ink-faint);margin-left:3px}
   .tk-when.nodate{color:var(--ink-faint)}
-  .tk-vendor{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--ink-soft);white-space:nowrap;overflow:hidden;max-width:52%}
+  .tk-vendor{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--ink-soft);white-space:nowrap;overflow:hidden;max-width:50%}
   .tk-vendor i{width:6px;height:6px;border-radius:99px;flex:none}
   .tk-vendor span{overflow:hidden;text-overflow:ellipsis}
-  .tk-name{font-size:13px;font-weight:800;letter-spacing:-.3px;line-height:1.28;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .tk-bottom{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:6px}
-  .tk-price{font-size:12.5px;font-weight:800;color:var(--ink);white-space:nowrap}
-  .tk-price small{font-size:10px;font-weight:700;color:var(--ink-faint);margin-left:3px}
+  .tk-name{font-size:13.5px;font-weight:800;letter-spacing:-.3px;line-height:1.28;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:5px}
+  .tk-seatline{font-size:11.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);border-radius:7px;padding:3px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:flex-start;max-width:100%}
+  .tk-bottom{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:7px;border-top:1px solid var(--line)}
+  .tk-qty{font-size:12px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
+  .tk-price{font-size:14px;font-weight:800;color:var(--ink);white-space:nowrap}
   .tk-cam{font-size:12px;line-height:1}
   .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .xtag{font-size:9.5px;font-weight:800;color:#fff;background:var(--warn);padding:2px 6px;border-radius:999px;white-space:nowrap}
@@ -135,7 +136,9 @@
   .lbody{flex:1;min-width:0}
   .lname{font-size:14px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
   .lname .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lseat{font-size:11px;font-weight:700;color:var(--accent-ink);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lsub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lsub b{color:var(--ink);font-weight:800}
   .ldot{flex:none;width:9px;height:9px;border-radius:99px}
 
   /* 다가오는 공연 요약 */
@@ -779,12 +782,25 @@ function dayLabel(t){
   const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);
   return {main:`${p[1]}/${p[2]}`, sub:`${WD[dt.getDay()]}${t.time?' '+esc(t.time):''}`};
 }
+// 자리 요약: 등급 층 구역 열 번호(스탠딩 등 자유텍스트면 N석)
+function seatLine(t){
+  const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);
+  if(!ss.length)return '';
+  const g=(ss.find(s=>s.grade)||{}).grade||'';
+  const f=(ss.find(s=>s.floor)||{}).floor||'';
+  const z=(ss.find(s=>s.zone)||{}).zone||'';
+  const r=(ss.find(s=>s.row)||{}).row||'';
+  const nos=ss.map(s=>s.no).filter(Boolean);
+  let numStr='';
+  if(nos.length&&nos.every(n=>/^\d+$/.test(n))) numStr=nos.join(',')+'번';
+  else if(nos.length) numStr=ss.length+'석';
+  return [g, f&&f+'층', z&&z+'구역', r&&r+'열', numStr].filter(Boolean).join(' ');
+}
 function tileCard(t){
   const c=colorFor(t.vendor);
-  const seat=(t.seats||[]).find(s=>s.grade)||{};
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
-  const d=dayLabel(t);
+  const d=dayLabel(t); const sl=seatLine(t);
   return `<div class="tk ${selectMode?'sel-mode':''}" data-id="${t.id}" onclick="${click}">
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="tk-top">
@@ -792,9 +808,10 @@ function tileCard(t){
       <span class="tk-vendor"><i style="background:${c}"></i><span>${esc(t.vendor||'')}</span></span>
     </div>
     <div class="tk-name">${esc(t.name||'(공연명 없음)')}${t.transfer&&t.transfer.done?' <span class="xtag">양도</span>':''}</div>
+    ${sl?`<div class="tk-seatline">🎫 ${esc(sl)}</div>`:''}
     <div class="tk-bottom">
-      ${seat.grade?`<span class="tk-seat">${esc(seat.grade)}</span>`:'<span></span>'}
-      <span class="tk-price">₩${won(t.price)}<small>${Number(t.qty)||0}매</small></span>
+      <span class="tk-qty">🎟 ${Number(t.qty)||0}매</span>
+      <span class="tk-price">₩${won(t.price)}</span>
     </div>
   </div>`;
 }
@@ -809,7 +826,8 @@ function listRow(t){
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
       <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}</div>
-      <div class="lsub">${esc(t.vendor||'')} · 🎟${Number(t.qty)||0} · ₩${won(t.price)}${t.time?' · '+esc(t.time):''}</div>
+      ${seatLine(t)?`<div class="lseat">🎫 ${esc(seatLine(t))}</div>`:''}
+      <div class="lsub">🎟 ${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${t.vendor?' · '+esc(t.vendor):''}</div>
     </div>
     ${t.hasImg?'<span class="tk-cam">📷</span>':''}
     ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
@@ -931,8 +949,8 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
       zone=el.querySelector('.s-zone').value.trim(),
       row=el.querySelector('.s-row').value.trim().replace(/열$/,'').trim(),
       no=el.querySelector('.s-no').value.trim().replace(/번$/,'').trim();
-  // OP(오피): 구역을 OP로 두고 등급도 "오피"로
-  if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='오피'; }
+  // OP(오피): 구역을 OP로 두고 등급도 "OP"(영어)로
+  if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }
   return {grade,floor,zone,row,no};
 }).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
 
