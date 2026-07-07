@@ -290,6 +290,10 @@
   .gbtn.placeholder{color:var(--ink-faint);font-weight:400}
   .gbtn .chev{color:var(--ink-faint);font-size:11px}
   .add-seat{width:100%;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent-ink);border-radius:11px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:4px}
+  .cancel-note{margin-top:10px;border:1px solid var(--danger-bd);background:var(--danger-soft);border-radius:11px;padding:10px 12px}
+  .cancel-note .cn-t{font-size:12px;font-weight:800;color:var(--danger-ink);margin-bottom:6px}
+  .cancel-note .cn-row{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;color:var(--ink-soft);padding:3px 0}
+  .cancel-note .cn-row button{border:1px solid var(--line);background:var(--card);color:var(--accent-ink);border-radius:8px;padding:4px 10px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit}
   /* switch */
   .switch-row{display:flex;align-items:center;justify-content:space-between;background:#fbfcff;border:1px solid var(--line);border-radius:11px;padding:11px 12px}
   .switch-row .sl{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:7px}
@@ -471,6 +475,7 @@
       <label>자리</label>
       <div id="seatBox"></div>
       <button class="add-seat" type="button" onclick="addSeatRow()">+ 자리 추가 (등급·층·구역·번호)</button>
+      <div id="canceledNote"></div>
     </div>
 
     <div class="field">
@@ -628,7 +633,7 @@ let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
 let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
 let gradeTargetBtn=null;
 let view=load(LS_VIEW,'tile');
-let editingId=null, formVendor='', formPlatform='';
+let editingId=null, formVendor='', formPlatform='', editCanceled=[];
 let sb=null, mode='local', loading=false;
 const _now=new Date();
 let calY=_now.getFullYear(), calM=_now.getMonth(); // 0-based
@@ -1104,6 +1109,19 @@ function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edi
   if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }
   const o={grade,floor,zone,row,no}; if(x)o.x=true; return o;
 }).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
+// 취소된 좌석 요약 노트(편집 목록엔 안 보이지만 여기 표시 + 복원 가능)
+function renderCanceledNote(){
+  const el=document.getElementById('canceledNote'); if(!el)return;
+  if(!editCanceled.length){ el.innerHTML=''; return; }
+  const seatStr=s=>{const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';return [s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ')||'좌석';};
+  el.innerHTML=`<div class="cancel-note"><div class="cn-t">🚫 취소된 좌석 ${editCanceled.length}</div>${editCanceled.map((s,i)=>`<div class="cn-row"><span>${esc(seatStr(s))}</span><button type="button" onclick="restoreCanceled(${i})">복원</button></div>`).join('')}</div>`;
+}
+function restoreCanceled(i){
+  const s=editCanceled[i]; if(!s)return;
+  editCanceled.splice(i,1);
+  const c={...s}; delete c.x; addSeatRow(c);
+  renderCanceledNote(); toast('좌석 복원됨(저장 시 반영)');
+}
 
 /* ===== transfer ===== */
 function toggleTransfer(){document.getElementById('transferBox').classList.toggle('on',document.getElementById('fTransfer').checked);}
@@ -1122,11 +1140,11 @@ function closeAddMenu(){
 function fabManual(){ closeAddMenu(); openModal(); }
 function fabPhoto(){ closeAddMenu(); document.getElementById('aiFile').click(); }
 function openModal(){
-  editingId=null; formVendor=''; formPlatform='';
+  editingId=null; formVendor=''; formPlatform=''; editCanceled=[];
   document.getElementById('modalTitle').textContent='티켓 추가';
   ['fName','fDate','fTime','fQty','fPrice','fMemo','fTPrice','fTTo'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fTransfer').checked=false; toggleTransfer();
-  document.getElementById('seatBox').innerHTML=''; addSeatRow();
+  document.getElementById('seatBox').innerHTML=''; addSeatRow(); renderCanceledNote();
   document.getElementById('delBtn').style.display='none';
   document.getElementById('modalHeadActions').style.display='none';
   syncVendorBtn(); syncPlatformBtn();
@@ -1149,7 +1167,11 @@ function edit(id){
   document.getElementById('fTTo').value=tr.to||'';
   formPlatform=tr.platform||'';
   const box=document.getElementById('seatBox'); box.innerHTML='';
-  (t.seats&&t.seats.length?t.seats:[null]).forEach(s=>addSeatRow(s));
+  // 취소된 좌석은 편집 목록에서 빼고 별도 보존(부분취소 표시·복원용)
+  const active=(t.seats||[]).filter(s=>!s.x);
+  editCanceled=(t.seats||[]).filter(s=>s.x).map(s=>({...s}));
+  (active.length?active:[null]).forEach(s=>addSeatRow(s));
+  renderCanceledNote();
   document.getElementById('delBtn').style.display='block';
   document.getElementById('modalHeadActions').style.display='flex';
   document.getElementById('modalImgBtn').style.display=t.hasImg?'flex':'none';
@@ -1225,7 +1247,7 @@ async function save(){
     qty:document.getElementById('fQty').value,
     price:document.getElementById('fPrice').value,
     memo:document.getElementById('fMemo').value.trim(),
-    seats:collectSeats(),
+    seats:[...collectSeats(), ...editCanceled],
     transfer:{done,
       price:done?numOrNull(document.getElementById('fTPrice').value):null,
       to:done?document.getElementById('fTTo').value.trim():'',
