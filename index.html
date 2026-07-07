@@ -32,7 +32,7 @@
     --card-solid:rgba(255,255,255,.86); /* 스크롤 카드용: 블러 없이 글래스 느낌(깜빡임 방지) */
     --glass-bd:rgba(255,255,255,.75);
     --blur:saturate(180%) blur(14px);
-    --sheen:rgba(255,255,255,.42); /* 리퀴드 글래스 상단 빛반사 */
+    --sheen:rgba(255,255,255,.3); /* 리퀴드 글래스 상단 빛반사(라이트는 은은하게) */
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -203,6 +203,11 @@
   .cal-cell.sun .cal-day{color:#ff7a7a}.cal-cell.sat .cal-day{color:#6f93ff}
   .cal-dots{display:flex;gap:3px;align-items:center;justify-content:center;flex-wrap:wrap;line-height:1}
   .cal-dots i{width:7px;height:7px;border-radius:50%;display:block}
+  /* 다가올 공연 있는 날: 점 통통 + 셀 은은한 강조로 일정 있음을 알림 */
+  .cal-cell.up .cal-dots i{animation:calDot 1.6s ease-in-out infinite}
+  @keyframes calDot{0%,100%{transform:scale(1);opacity:.9}50%{transform:scale(1.45);opacity:1}}
+  .cal-cell.up{animation:calCell 2.6s ease-in-out infinite}
+  @keyframes calCell{0%,100%{box-shadow:0 0 0 0 rgba(109,140,255,0)}50%{box-shadow:0 0 0 2px var(--accent-soft),0 3px 10px -4px var(--accent-soft)}}
   .cal-dots em{font-size:9px;font-style:normal;font-weight:800;color:var(--ink-soft)}
   .cal-grid{touch-action:pan-y}
   .cal-hint{text-align:center;font-size:10.5px;color:var(--ink-faint);margin-top:10px;user-select:none}
@@ -716,6 +721,9 @@ function colorFor(v){v=v||'';if(vcolors[v])return vcolors[v];if(VENDOR_COLORS[v]
 function hexA(hex,a){const m=/^#?([0-9a-f]{6})$/i.exec(String(hex||''));if(!m)return `rgba(108,140,255,${a})`;const n=parseInt(m[1],16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
 // 리퀴드 글래스 배경: 상단 빛반사 스펙큘러 + 예매처색 그라데이션 + 카드 표면
 function glassBg(c,top,bot){return `radial-gradient(135% 95% at 12% -18%,var(--sheen),transparent 52%),linear-gradient(155deg,${hexA(c,top)},${hexA(c,bot)} 74%),var(--card-solid)`;}
+// 테마별 틴트 세기: 라이트는 아주 옅게(흰 카드+색 힌트 → 진한 글자 편하게), 다크는 진하게(예쁨 유지)
+function tintBg(c,strong){const dark=document.documentElement.getAttribute('data-theme')==='dark';
+  return dark?glassBg(c,strong?.17:.15,strong?.04:.03):glassBg(c,strong?.075:.055,strong?.02:.014);}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function numOrNull(v){return v===''||v==null?null:Number(v);}
@@ -946,7 +954,7 @@ function renderUpcoming(){
   if(!up.length){ el.innerHTML=''; return; }
   const cal=view==='calendar';
   const cards=up.map((t,i)=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
-    return `<div class="up-card${dd.soon?' is-soon':''}" onclick="edit('${t.id}')" style="background:${glassBg(c,.17,.04)};animation-delay:${i*55}ms">
+    return `<div class="up-card${dd.soon?' is-soon':''}" onclick="edit('${t.id}')" style="background:${tintBg(c,true)};animation-delay:${i*55}ms">
       <span class="up-dday ${dd.soon?'soon':''}">${dd.label}</span>
       <span class="up-name">${esc(t.name||'공연')}</span>
       <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
@@ -992,8 +1000,8 @@ function tileCard(t){
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  // 리퀴드 글래스: 예매처색 그라데이션 + 상단 빛반사
-  const tint=(!xf&&!xc)?` style="background:${glassBg(c,.15,.03)}"`:'';
+  // 리퀴드 글래스: 예매처색 그라데이션 + 상단 빛반사(라이트/다크 세기 다름)
+  const tint=(!xf&&!xc)?` style="background:${tintBg(c)}"`:'';
   return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     ${xf?'<span class="tk-ribbon">양도완료</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':'')}
@@ -1016,7 +1024,7 @@ function listRow(t){
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t);
-  const tint=(!xf&&!xc)?` style="background:${glassBg(c,.11,.02)}"`:'';
+  const tint=(!xf&&!xc)?` style="background:${tintBg(c)}"`:'';
   return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
@@ -1042,8 +1050,9 @@ function renderCalendar(){
     const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const wd=(start+d-1)%7;
     const list=byDay[ds]||[];
-    const dots=list.length?`<span class="cal-dots">${list.slice(0,3).map(t=>`<i style="background:${colorFor(t.vendor)}"></i>`).join('')}${list.length>3?`<em>+${list.length-3}</em>`:''}</span>`:'';
-    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''}" onclick="calOpen('${ds}')">
+    const upcoming=list.length&&ds>=today; // 오늘 이후 = 다가올 공연 → 애니메이션
+    const dots=list.length?`<span class="cal-dots">${list.slice(0,3).map((t,di)=>`<i style="background:${colorFor(t.vendor)};animation-delay:${di*220}ms"></i>`).join('')}${list.length>3?`<em>+${list.length-3}</em>`:''}</span>`:'';
+    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''} ${upcoming?'up':''}" onclick="calOpen('${ds}')">
       <span class="cal-day">${d}</span>${dots}</div>`;
   }
   const wdh=WD.map((w,i)=>`<div class="cal-wd ${i===0?'sun':''} ${i===6?'sat':''}">${w}</div>`).join('');
@@ -1114,11 +1123,11 @@ function resetVendorColor(){
 /* ===== 테마 / 설정 ===== */
 function resolveTheme(){ const s=localStorage.getItem('tm_theme')||'auto'; if(s==='dark')return 'dark'; if(s==='light')return 'light'; return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'; }
 function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#0b0e15':'#f4f6fb'; }
-function setTheme(s){ localStorage.setItem('tm_theme',s); applyTheme(); renderThemeSeg(); }
+function setTheme(s){ localStorage.setItem('tm_theme',s); applyTheme(); renderThemeSeg(); render(); }
 function renderThemeSeg(){ const s=localStorage.getItem('tm_theme')||'auto'; document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.th===s)); }
 function openSettings(){ renderThemeSeg(); openOv('settingsOverlay'); }
 function closeSettings(){ closeOv('settingsOverlay'); }
-try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if((localStorage.getItem('tm_theme')||'auto')==='auto')applyTheme(); }); }catch(e){}
+try{ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if((localStorage.getItem('tm_theme')||'auto')==='auto'){applyTheme(); if(typeof render==='function')render();} }); }catch(e){}
 function selectVendor(v){ formVendor=v; syncVendorBtn(); closeVendor(); }
 function syncVendorBtn(){
   const btn=document.getElementById('fVendorBtn'), dot=document.getElementById('fVendorDot'), txt=document.getElementById('fVendorText');
