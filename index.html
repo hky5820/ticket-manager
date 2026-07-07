@@ -15,284 +15,267 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
-    --bg:#f4f6fb;
     --bg-grad:linear-gradient(160deg,#f8fafc 0%,#eef2fb 100%);
-    --card:#ffffff;
-    --ink:#1f2637;
-    --ink-soft:#5b6474;
-    --ink-faint:#98a0b3;
-    --line:#e9edf5;
-    --accent:#6c8cff;
-    --accent-ink:#4361ee;
-    --accent-soft:#eef2ff;
-    --danger:#ff6b7a;
-    --ok:#3ecf8e;
-    --radius:20px;
-    --shadow-sm:0 2px 6px rgba(31,46,84,.05);
-    --shadow:0 10px 30px -12px rgba(31,46,84,.22), 0 4px 10px -6px rgba(31,46,84,.12);
-    --shadow-lg:0 24px 48px -20px rgba(31,46,84,.32), 0 8px 20px -10px rgba(31,46,84,.18);
-    --shadow-inset:inset 0 1px 0 rgba(255,255,255,.7);
+    --card:#ffffff; --ink:#1f2637; --ink-soft:#5b6474; --ink-faint:#98a0b3;
+    --line:#e9edf5; --accent:#6c8cff; --accent-ink:#4361ee; --accent-soft:#eef2ff;
+    --danger:#ff6b7a; --ok:#3ecf8e; --warn:#f5a524;
+    --shadow-sm:0 1px 3px rgba(31,46,84,.06);
+    --shadow:0 6px 18px -8px rgba(31,46,84,.20), 0 2px 6px -3px rgba(31,46,84,.12);
+    --shadow-lg:0 20px 44px -18px rgba(31,46,84,.32);
+    --inset:inset 0 1px 0 rgba(255,255,255,.7);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
-  body{
-    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
-    background:var(--bg);
-    background:var(--bg-grad);
-    background-attachment:fixed;
-    color:var(--ink);
-    -webkit-font-smoothing:antialiased;
-    line-height:1.5;
-    min-height:100vh;
-  }
-  .wrap{max-width:720px;margin:0 auto;padding:22px 16px 120px}
+  body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+    background:var(--bg-grad);background-attachment:fixed;color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.4;min-height:100vh}
+  .wrap{max-width:680px;margin:0 auto;padding:12px 12px 96px}
 
-  /* Header */
-  header{margin:8px 2px 18px}
-  .topbar{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .title{display:flex;align-items:center;gap:10px}
-  .title h1{font-size:24px;font-weight:800;letter-spacing:-.5px;margin:0}
-  .logo{
-    width:40px;height:40px;border-radius:14px;flex:none;
-    display:grid;place-items:center;font-size:20px;
-    background:linear-gradient(145deg,#ffffff,#eef2ff);
-    box-shadow:var(--shadow),var(--shadow-inset);
-  }
-  .subtitle{color:var(--ink-soft);font-size:13.5px;margin:10px 2px 0}
-  .pill{
-    border:1px solid var(--line);background:var(--card);border-radius:999px;
-    padding:8px 13px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;
-    color:var(--ink-soft);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:6px;white-space:nowrap;
-  }
+  /* top bar */
+  .topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
+  .seg{display:inline-flex;background:#eef1f8;border-radius:11px;padding:3px;box-shadow:var(--inset)}
+  .seg button{border:none;background:transparent;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s}
+  .seg button.on{background:#fff;color:var(--accent-ink);box-shadow:var(--shadow-sm)}
+  .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-soft);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:5px;white-space:nowrap}
   .pill .dot{width:7px;height:7px;border-radius:99px;background:var(--ink-faint)}
   .pill.on{color:var(--accent-ink);border-color:#d6def8;background:#f4f7ff}
   .pill.on .dot{background:var(--ok)}
 
-  /* Stats */
-  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:18px 0}
-  .stat{
-    background:var(--card);border-radius:16px;padding:14px 12px;text-align:center;
-    box-shadow:var(--shadow-sm),var(--shadow-inset);border:1px solid var(--line);
-  }
-  .stat .num{font-size:20px;font-weight:800;letter-spacing:-.5px}
-  .stat .lbl{font-size:11.5px;color:var(--ink-faint);margin-top:2px}
+  /* stats strip */
+  .stats{display:flex;gap:6px;flex-wrap:wrap;font-size:12px;color:var(--ink-soft);margin:2px 2px 10px}
+  .stats b{color:var(--ink);font-weight:800}
+  .stats .sep{color:var(--ink-faint)}
+  .stats .x b{color:var(--warn)}
 
-  /* Search */
-  .toolbar{display:flex;gap:10px;margin:16px 0 6px;align-items:center}
-  .search{flex:1;position:relative}
-  .search input{
-    width:100%;border:1px solid var(--line);background:var(--card);
-    border-radius:14px;padding:12px 14px 12px 40px;font-size:15px;color:var(--ink);
-    box-shadow:var(--shadow-sm);outline:none;transition:.15s;
-  }
+  /* search */
+  .search{position:relative;margin-bottom:12px}
+  .search input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px 10px 36px;font-size:14px;color:var(--ink);box-shadow:var(--shadow-sm);outline:none}
   .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-  .search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
+  .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
 
-  /* Cards */
-  .list{display:flex;flex-direction:column;gap:14px;margin-top:14px}
-  .ticket{
-    background:var(--card);border-radius:var(--radius);padding:16px 16px 14px;
-    box-shadow:var(--shadow),var(--shadow-inset);border:1px solid var(--line);
-    position:relative;transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .18s;
-    animation:pop .28s cubic-bezier(.2,.8,.2,1);
-  }
-  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
-  .ticket:active{transform:translateY(1px)}
-  .ticket .row1{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .badge{
-    font-size:12px;font-weight:700;padding:5px 11px;border-radius:999px;color:#fff;
-    box-shadow:var(--shadow-sm);white-space:nowrap;letter-spacing:-.2px;
-  }
-  .ticket h3{margin:10px 0 2px;font-size:18px;font-weight:800;letter-spacing:-.5px;line-height:1.3}
-  .when{font-size:13px;color:var(--ink-soft);display:flex;align-items:center;gap:5px}
-  .meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-  .chip{
-    background:#f7f9fe;border:1px solid var(--line);border-radius:11px;
-    padding:7px 11px;font-size:12.5px;color:var(--ink-soft);display:flex;gap:6px;align-items:center;
-  }
-  .chip b{color:var(--ink);font-weight:700}
-  .chip.price b{color:var(--accent-ink)}
-  .seats{margin-top:12px;display:flex;flex-direction:column;gap:7px}
-  .seat{
-    background:linear-gradient(145deg,#fbfcff,#f2f5fd);border:1px dashed #dbe2f3;border-radius:12px;
-    padding:9px 12px;font-size:13px;display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;
-  }
-  .seat .g{font-weight:800;color:var(--accent-ink);background:var(--accent-soft);padding:2px 8px;border-radius:7px;font-size:12px}
-  .seat span{color:var(--ink-soft)}
-  .seat span b{color:var(--ink);font-weight:700}
-  .memo{margin-top:10px;font-size:13px;color:var(--ink-soft);background:#fffdf3;border:1px solid #f3ecd0;border-radius:11px;padding:8px 11px;white-space:pre-wrap}
-  .actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
-  .actions button{
-    flex:1;border:none;border-radius:11px;padding:9px;font-size:13.5px;font-weight:700;cursor:pointer;
-    background:#f2f4fa;color:var(--ink-soft);transition:.15s;font-family:inherit;
-  }
-  .actions button:active{transform:scale(.97)}
-  .actions .del{color:var(--danger);background:#fff1f2}
+  /* tile grid */
+  .tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+  .tk{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:11px 12px;box-shadow:var(--shadow),var(--inset);cursor:pointer;transition:transform .15s;animation:pop .2s}
+  .tk:active{transform:scale(.98)}
+  @keyframes pop{from{opacity:0;transform:translateY(5px)}to{opacity:1}}
+  .tk-row{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:7px}
+  .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .tk-name{font-size:14.5px;font-weight:800;letter-spacing:-.3px;line-height:1.25;margin-bottom:5px;word-break:keep-all}
+  .tk-date{font-size:12px;color:var(--accent-ink);font-weight:700;margin-bottom:4px}
+  .tk-meta{font-size:11.5px;color:var(--ink-soft)}
+  .xtag{font-size:10px;font-weight:800;color:#fff;background:var(--warn);padding:2px 7px;border-radius:999px;white-space:nowrap}
+  .tk-seat{display:inline-block;font-size:10.5px;font-weight:700;color:var(--accent-ink);background:var(--accent-soft);padding:2px 6px;border-radius:6px;margin-top:6px;margin-right:4px}
 
-  /* Empty / loading */
-  .empty{text-align:center;padding:60px 20px;color:var(--ink-faint)}
-  .empty .ico{font-size:52px;margin-bottom:10px}
-  .empty p{margin:4px 0}
-  .spinner{width:34px;height:34px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
+  /* list */
+  .list{display:flex;flex-direction:column;gap:7px}
+  .lrow{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 12px;box-shadow:var(--shadow-sm);cursor:pointer}
+  .lrow:active{background:#fafbff}
+  .ldate{flex:none;width:42px;text-align:center;line-height:1.1}
+  .ldate b{display:block;font-size:15px;font-weight:800;color:var(--ink)}
+  .ldate span{font-size:10.5px;color:var(--ink-faint);font-weight:700}
+  .ldate.none b{font-size:16px;color:var(--ink-faint)}
+  .lbody{flex:1;min-width:0}
+  .lname{font-size:14px;font-weight:800;letter-spacing:-.3px;display:flex;align-items:center;gap:6px}
+  .lname .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lsub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ldot{flex:none;width:9px;height:9px;border-radius:99px}
+
+  /* calendar */
+  .cal{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:10px;box-shadow:var(--shadow),var(--inset)}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding:2px 4px}
+  .cal-head .mon{font-size:15px;font-weight:800}
+  .cal-head button{border:none;background:#f2f4fa;border-radius:9px;width:32px;height:32px;font-size:17px;cursor:pointer;color:var(--ink-soft);font-weight:800}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+  .cal-wd{text-align:center;font-size:10.5px;font-weight:700;color:var(--ink-faint);padding:2px 0}
+  .cal-wd.sun{color:#ff8a8a}.cal-wd.sat{color:#8aa5ff}
+  .cal-cell{min-height:52px;border-radius:9px;padding:3px;background:#fafbfe;border:1px solid transparent;cursor:pointer;overflow:hidden}
+  .cal-cell.empty{background:transparent;cursor:default}
+  .cal-cell.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .cal-cell.today .cal-day{background:var(--accent);color:#fff;border-radius:6px}
+  .cal-day{font-size:11px;font-weight:700;color:var(--ink-soft);width:19px;height:17px;display:flex;align-items:center;justify-content:center}
+  .cal-cell.sun .cal-day{color:#ff8a8a}.cal-cell.sat .cal-day{color:#8aa5ff}
+  .cal-chip{display:block;font-size:9.5px;font-weight:700;color:#fff;border-radius:4px;padding:1px 4px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.5}
+  .cal-more{font-size:9px;color:var(--ink-faint);font-weight:700;margin-top:1px;padding-left:2px}
+  .cal-daylist{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:7px}
+  .cal-daylist .dl-title{font-size:12.5px;font-weight:800;color:var(--ink-soft);margin:0 2px 2px}
+  .cal-empty{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:14px 0}
+  .undated{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+  .undated .u-t{font-size:11.5px;color:var(--ink-faint);font-weight:700;margin:0 2px 6px}
+
+  /* empty state */
+  .empty{text-align:center;padding:52px 20px;color:var(--ink-faint)}
+  .empty .ico{font-size:46px;margin-bottom:8px}
+  .empty p{margin:3px 0;font-size:13.5px}
+  .spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* FAB */
-  .fab{
-    position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:40;
-    background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border:none;
-    padding:15px 26px;border-radius:999px;font-size:15.5px;font-weight:800;cursor:pointer;
-    box-shadow:0 14px 30px -8px rgba(67,97,238,.6),var(--shadow-inset);
-    display:flex;align-items:center;gap:8px;font-family:inherit;transition:.18s;
-  }
+  /* util + fab */
+  .util{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+  .util button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm)}
+  .fab{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:40;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border:none;padding:13px 24px;border-radius:999px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 12px 26px -8px rgba(67,97,238,.6),var(--inset);display:flex;align-items:center;gap:7px;font-family:inherit}
   .fab:active{transform:translateX(-50%) scale(.96)}
 
-  /* Modal */
-  .overlay{
-    position:fixed;inset:0;background:rgba(31,38,55,.42);backdrop-filter:blur(3px);
-    z-index:50;display:none;align-items:flex-end;justify-content:center;
-  }
-  .overlay.on{display:flex;animation:fade .2s}
+  /* sheets / overlays */
+  .overlay{position:fixed;inset:0;background:rgba(31,38,55,.44);backdrop-filter:blur(3px);z-index:50;display:none;align-items:flex-end;justify-content:center}
+  .overlay.on{display:flex;animation:fade .18s}
   @keyframes fade{from{opacity:0}to{opacity:1}}
-  .sheet{
-    background:var(--card);width:100%;max-width:720px;border-radius:26px 26px 0 0;
-    max-height:92vh;overflow-y:auto;padding:8px 18px 28px;
-    box-shadow:0 -20px 50px -12px rgba(31,46,84,.3);animation:up .28s cubic-bezier(.2,.8,.2,1);
-  }
-  @keyframes up{from{transform:translateY(40px)}to{transform:none}}
-  .grab{width:44px;height:5px;background:#dfe4f0;border-radius:99px;margin:8px auto 6px}
-  .sheet h2{font-size:19px;font-weight:800;margin:6px 2px 4px;letter-spacing:-.5px}
-  .sheet .hint{font-size:13px;color:var(--ink-soft);margin:0 2px 16px}
-  .field{margin-bottom:14px}
-  .field label{display:block;font-size:13px;font-weight:700;color:var(--ink-soft);margin:0 2px 6px}
-  .field input,.field select,.field textarea{
-    width:100%;border:1px solid var(--line);background:#fbfcff;border-radius:13px;
-    padding:12px 13px;font-size:15px;color:var(--ink);outline:none;font-family:inherit;transition:.15s;
-  }
-  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
-  .field textarea{resize:vertical;min-height:60px}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .venmix{display:flex;gap:8px}
-  .venmix select{flex:1}
-  .icon-btn{
-    border:1px solid var(--line);background:#fbfcff;border-radius:13px;width:48px;flex:none;
-    font-size:20px;cursor:pointer;color:var(--accent-ink);font-weight:700;
-  }
-  .seat-edit{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;background:#fafbff;position:relative}
-  .seat-edit .four{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-  .seat-edit .rm{position:absolute;top:8px;right:8px;border:none;background:#fff1f2;color:var(--danger);border-radius:8px;width:26px;height:26px;font-size:15px;cursor:pointer;line-height:1}
-  .seat-edit label{font-size:11.5px}
-  .add-seat{width:100%;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent-ink);
-    border-radius:13px;padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:6px}
-  .save-row{display:flex;gap:10px;margin-top:18px}
-  .save-row button{flex:1;border:none;border-radius:14px;padding:15px;font-size:16px;font-weight:800;cursor:pointer;font-family:inherit}
-  .save-row .cancel{background:#f2f4fa;color:var(--ink-soft);flex:0 0 34%}
-  .save-row .save{background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;box-shadow:0 10px 22px -8px rgba(67,97,238,.55)}
+  .sheet{background:var(--card);width:100%;max-width:680px;border-radius:24px 24px 0 0;max-height:92vh;overflow-y:auto;padding:6px 16px 24px;box-shadow:0 -18px 44px -12px rgba(31,46,84,.3);animation:up .26s cubic-bezier(.2,.8,.2,1)}
+  @keyframes up{from{transform:translateY(36px)}to{transform:none}}
+  .grab{width:42px;height:5px;background:#dfe4f0;border-radius:99px;margin:8px auto 8px}
+  .sheet h2{font-size:17px;font-weight:800;margin:4px 2px 14px;letter-spacing:-.4px}
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin:0 2px 5px}
+  .field input,.field textarea{width:100%;border:1px solid var(--line);background:#fbfcff;border-radius:11px;padding:11px 12px;font-size:15px;color:var(--ink);outline:none;font-family:inherit}
+  .field input:focus,.field textarea:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px var(--accent-soft)}
+  .field textarea{resize:vertical;min-height:52px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  /* vendor button */
+  .vbtn{width:100%;border:1px solid var(--line);background:#fbfcff;border-radius:11px;padding:11px 12px;font-size:15px;color:var(--ink);font-family:inherit;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between}
+  .vbtn .vlabel{display:flex;align-items:center;gap:8px}
+  .vbtn .vdot{width:12px;height:12px;border-radius:99px}
+  .vbtn .chev{color:var(--ink-faint);font-size:13px}
+  .vbtn.placeholder{color:var(--ink-faint)}
+  /* seat editor */
+  .seat-edit{border:1px solid var(--line);border-radius:12px;padding:10px;margin-bottom:8px;background:#fafbff;position:relative}
+  .seat-edit .four{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .seat-edit .rm{position:absolute;top:7px;right:7px;border:none;background:#fff1f2;color:var(--danger);border-radius:7px;width:24px;height:24px;font-size:14px;cursor:pointer;line-height:1}
+  .seat-edit label{font-size:11px}
+  .seat-edit input{padding:9px 10px;font-size:14px}
+  .add-seat{width:100%;border:1px dashed var(--accent);background:var(--accent-soft);color:var(--accent-ink);border-radius:11px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;margin-bottom:4px}
+  /* switch */
+  .switch-row{display:flex;align-items:center;justify-content:space-between;background:#fbfcff;border:1px solid var(--line);border-radius:11px;padding:11px 12px}
+  .switch-row .sl{font-size:14px;font-weight:700;color:var(--ink);display:flex;align-items:center;gap:7px}
+  .switch{position:relative;display:inline-block;width:46px;height:27px;flex:none}
+  .switch input{opacity:0;width:0;height:0}
+  .switch .track{position:absolute;inset:0;background:#d7dced;border-radius:99px;transition:.2s}
+  .switch .track:before{content:"";position:absolute;width:21px;height:21px;left:3px;top:3px;background:#fff;border-radius:99px;transition:.2s;box-shadow:var(--shadow-sm)}
+  .switch input:checked+.track{background:var(--warn)}
+  .switch input:checked+.track:before{transform:translateX(19px)}
+  .transfer-box{margin-top:10px;padding:12px;border-radius:12px;background:#fffaf0;border:1px solid #f3e6c4;display:none}
+  .transfer-box.on{display:block}
+  /* save row */
+  .save-row{display:flex;gap:9px;margin-top:16px}
+  .save-row button{flex:1;border:none;border-radius:13px;padding:14px;font-size:15.5px;font-weight:800;cursor:pointer;font-family:inherit}
+  .save-row .cancel{background:#f2f4fa;color:var(--ink-soft);flex:0 0 32%}
+  .save-row .save{background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;box-shadow:0 8px 20px -8px rgba(67,97,238,.55)}
   .save-row .save:disabled{opacity:.6}
 
-  /* Sync sheet extras */
-  .seg{display:flex;background:#f2f4fa;border-radius:12px;padding:4px;margin-bottom:14px}
-  .seg button{flex:1;border:none;background:transparent;border-radius:9px;padding:9px;font-size:14px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit}
-  .seg button.on{background:#fff;color:var(--accent-ink);box-shadow:var(--shadow-sm)}
-  .statusbox{border-radius:14px;padding:14px;font-size:13.5px;margin-bottom:14px;border:1px solid var(--line)}
+  /* vendor picker */
+  .vlist{display:flex;flex-direction:column;gap:7px;margin-bottom:14px;max-height:46vh;overflow-y:auto;padding:2px}
+  .vitem{display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:#fbfcff;border-radius:12px;padding:11px 12px;cursor:pointer;transition:.12s}
+  .vitem:active{background:#f2f5ff}
+  .vitem.sel{border-color:var(--accent);background:var(--accent-soft)}
+  .vitem .vd{width:14px;height:14px;border-radius:99px;flex:none}
+  .vitem .vn{flex:1;font-size:14.5px;font-weight:700}
+  .vitem .vchk{color:var(--accent-ink);font-weight:800;font-size:15px}
+  .vitem .vdel{border:none;background:transparent;color:var(--ink-faint);font-size:17px;cursor:pointer;padding:2px 4px;border-radius:6px}
+  .vitem .vdel:active{background:#fff1f2;color:var(--danger)}
+  .vadd{display:flex;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+  .vadd input{flex:1;border:1px solid var(--line);background:#fbfcff;border-radius:11px;padding:11px 12px;font-size:15px;outline:none;font-family:inherit}
+  .vadd input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .vadd button{border:none;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;border-radius:11px;padding:0 18px;font-size:14px;font-weight:800;cursor:pointer;font-family:inherit}
+
+  .statusbox{border-radius:12px;padding:13px;font-size:13px;margin-bottom:12px;border:1px solid var(--line)}
   .statusbox.good{background:#f1fbf6;border-color:#c9efdd;color:#1f7a4d}
   .statusbox.warn{background:#fffaf0;border-color:#f3e6c4;color:#8a6d1f}
-  .statusbox b{font-weight:800}
-  .btn-primary{width:100%;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff;box-shadow:0 10px 22px -8px rgba(67,97,238,.55)}
-  .btn-primary:disabled{opacity:.6}
-  .btn-ghost{width:100%;border:1px solid var(--line);border-radius:14px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink-soft);margin-top:10px}
-  .btn-danger-ghost{color:var(--danger)}
-  details.guide{margin-top:8px;border:1px solid var(--line);border-radius:13px;padding:2px 14px;background:#fbfcff}
-  details.guide summary{cursor:pointer;font-size:13.5px;font-weight:700;color:var(--accent-ink);padding:11px 0}
-  details.guide ol{margin:4px 0 12px;padding-left:18px;font-size:13px;color:var(--ink-soft);line-height:1.7}
-  details.guide code{background:#eef2ff;color:var(--accent-ink);padding:1px 6px;border-radius:5px;font-size:12px}
-  details.guide pre{background:#1f2637;color:#e6ebf5;padding:12px;border-radius:10px;overflow-x:auto;font-size:11.5px;line-height:1.5}
-  details.guide a{color:var(--accent-ink);font-weight:700}
+  .btn-ghost{width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;background:var(--card);color:var(--ink-soft);margin-top:8px}
+  .btn-primary{width:100%;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;background:linear-gradient(145deg,#7d97ff,#4361ee);color:#fff}
 
-  /* Utility bar */
-  .util{display:flex;gap:8px;justify-content:center;margin-top:26px;flex-wrap:wrap}
-  .util button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);
-    border-radius:11px;padding:9px 14px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:var(--shadow-sm)}
-  .toast{
-    position:fixed;bottom:96px;left:50%;transform:translateX(-50%);z-index:60;
-    background:#1f2637;color:#fff;padding:11px 18px;border-radius:12px;font-size:13.5px;font-weight:600;
-    box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:88vw;text-align:center;
-  }
+  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:60;background:#1f2637;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header>
-    <div class="topbar">
-      <div class="title">
-        <div class="logo">🎫</div>
-        <h1>티켓 보관함</h1>
-      </div>
-      <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">로컬 저장</span></button>
+  <div class="topbar">
+    <div class="seg" id="viewSeg">
+      <button data-v="calendar" onclick="setView('calendar')">📅 캘린더</button>
+      <button data-v="tile" onclick="setView('tile')">▦ 타일</button>
+      <button data-v="list" onclick="setView('list')">☰ 리스트</button>
     </div>
-    <p class="subtitle">내가 예매한 공연들, 한눈에 정리하고 안 까먹기</p>
-  </header>
-
-  <div class="stats">
-    <div class="stat"><div class="num" id="stCount">0</div><div class="lbl">공연</div></div>
-    <div class="stat"><div class="num" id="stQty">0</div><div class="lbl">총 매수</div></div>
-    <div class="stat"><div class="num" id="stPrice">0</div><div class="lbl">총 지출(원)</div></div>
+    <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
   </div>
 
-  <div class="toolbar">
-    <div class="search">
-      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
-      <input id="search" type="text" placeholder="공연명 · 예매처 검색" oninput="render()">
-    </div>
+  <div class="stats" id="stats"></div>
+
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input id="search" type="text" placeholder="공연명 · 예매처 검색" oninput="render()">
   </div>
 
-  <div class="list" id="list"></div>
+  <div id="viewRoot"></div>
 
   <div class="util">
-    <button onclick="exportData()">⬇ 백업 내보내기</button>
-    <button onclick="document.getElementById('importFile').click()">⬆ 백업 불러오기</button>
+    <button onclick="exportData()">⬇ 백업</button>
+    <button onclick="document.getElementById('importFile').click()">⬆ 복원</button>
     <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
   </div>
 </div>
 
 <button class="fab" onclick="openModal()">
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-  티켓 추가
+  <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  추가
 </button>
 
-<!-- Ticket Modal -->
+<!-- Ticket modal -->
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
   <div class="sheet">
     <div class="grab"></div>
     <h2 id="modalTitle">티켓 추가</h2>
+
     <div class="field">
       <label>예매처</label>
-      <div class="venmix">
-        <select id="fVendor"></select>
-        <button class="icon-btn" type="button" onclick="addVendor()" title="예매처 추가">+</button>
-      </div>
+      <button type="button" class="vbtn placeholder" id="fVendorBtn" onclick="openVendorPicker()">
+        <span class="vlabel"><span class="vdot" id="fVendorDot" style="display:none"></span><span id="fVendorText">예매처 선택</span></span>
+        <span class="chev">▾</span>
+      </button>
     </div>
+
     <div class="field">
       <label>공연명</label>
       <input id="fName" type="text" placeholder="예: 뮤지컬 〈오페라의 유령〉">
     </div>
-    <div class="field">
-      <label>공연 날짜 · 시간 (선택)</label>
-      <input id="fDate" type="text" placeholder="예: 2026-08-15 (토) 19:00">
+
+    <div class="two">
+      <div class="field"><label>공연 날짜</label><input id="fDate" type="date"></div>
+      <div class="field"><label>시간</label><input id="fTime" type="time"></div>
     </div>
+
     <div class="two">
       <div class="field"><label>매수</label><input id="fQty" type="number" inputmode="numeric" min="0" placeholder="0"></div>
       <div class="field"><label>가격 (원)</label><input id="fPrice" type="number" inputmode="numeric" min="0" placeholder="0"></div>
     </div>
+
     <div class="field">
       <label>자리</label>
       <div id="seatBox"></div>
       <button class="add-seat" type="button" onclick="addSeatRow()">+ 자리 추가 (등급·층·구역·번호)</button>
     </div>
+
+    <div class="field">
+      <label>양도</label>
+      <div class="switch-row">
+        <span class="sl">🔁 이 티켓을 양도했어요</span>
+        <label class="switch"><input type="checkbox" id="fTransfer" onchange="toggleTransfer()"><span class="track"></span></label>
+      </div>
+      <div class="transfer-box" id="transferBox">
+        <div class="two">
+          <div class="field" style="margin-bottom:10px"><label>양도 금액 (원)</label><input id="fTPrice" type="number" inputmode="numeric" placeholder="0"></div>
+          <div class="field" style="margin-bottom:10px"><label>양도한 곳(플랫폼)</label><input id="fTPlatform" list="platformList" placeholder="티켓베이 등"></div>
+        </div>
+        <div class="field" style="margin-bottom:0"><label>누구에게 (대상)</label><input id="fTTo" type="text" placeholder="예: 홍길동 / @아이디"></div>
+        <datalist id="platformList">
+          <option value="티켓베이"><option value="중고나라"><option value="당근마켓"><option value="번개장터"><option value="트위터/X"><option value="지인"><option value="기타">
+        </datalist>
+      </div>
+    </div>
+
     <div class="field">
       <label>메모 (선택)</label>
-      <textarea id="fMemo" placeholder="예: 티켓 수령 방법, 동행인, 취소 마감일 등"></textarea>
+      <textarea id="fMemo" placeholder="티켓 수령 방법, 동행인, 취소 마감일 등"></textarea>
     </div>
+
+    <button type="button" id="delBtn" class="btn-ghost" style="display:none;color:var(--danger)" onclick="delCurrent()">🗑 이 티켓 삭제</button>
+
     <div class="save-row">
       <button class="cancel" type="button" onclick="closeModal()">취소</button>
       <button class="save" id="saveBtn" type="button" onclick="save()">저장하기</button>
@@ -300,225 +283,297 @@
   </div>
 </div>
 
-<!-- Sync Sheet -->
-<div class="overlay" id="syncOverlay" onclick="if(event.target===this)closeSync()">
+<!-- Vendor picker -->
+<div class="overlay" id="vendorOverlay" onclick="if(event.target===this)closeVendor()">
   <div class="sheet">
     <div class="grab"></div>
-    <div id="syncBody"></div>
+    <h2>예매처 선택</h2>
+    <div class="vlist" id="vlist"></div>
+    <div class="vadd">
+      <input id="newVendor" type="text" placeholder="새 예매처 이름" onkeydown="if(event.key==='Enter')addVendorInline()">
+      <button type="button" onclick="addVendorInline()">추가</button>
+    </div>
   </div>
+</div>
+
+<!-- Sync sheet -->
+<div class="overlay" id="syncOverlay" onclick="if(event.target===this)closeSync()">
+  <div class="sheet"><div class="grab"></div><div id="syncBody"></div></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ================= storage keys ================= */
-const LS_TICKETS='tm_tickets_v1';
-const LS_VENDORS='tm_vendors_v1';
-const LS_CFG='tm_cfg_v1';
+/* ===== storage ===== */
+const LS_TICKETS='tm_tickets_v1', LS_VENDORS='tm_vendors_v1', LS_CFG='tm_cfg_v1', LS_VIEW='tm_view_v1';
 const DEFAULT_VENDORS=['티켓링크','멜론티켓','세종문화회관','YES24','클립서비스','NOL 인터파크','샤롯데씨어터'];
 const PALETTE=['#6c8cff','#ff8fb1','#ffa94d','#4dd4ac','#b088ff','#5bc0eb','#ff6b7a','#7bc86c','#f4a259','#5d9cec'];
+const WD=['일','월','화','수','목','금','토'];
+const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
 
 let tickets=load(LS_TICKETS,[]);
 let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
-let editingId=null;
-
-/* cloud state */
+let view=load(LS_VIEW,'tile');
+let editingId=null, formVendor='';
 let sb=null, mode='local', loading=false;
+const _now=new Date();
+let calY=_now.getFullYear(), calM=_now.getMonth(); // 0-based
+let selDay=ymd(_now);
 
 function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def;}catch(e){return def;}}
 function saveLocal(){localStorage.setItem(LS_TICKETS,JSON.stringify(tickets));localStorage.setItem(LS_VENDORS,JSON.stringify(vendors));}
-/* 내장 백엔드 연결 정보 (본인 Supabase 프로젝트, 브라우저 공개용 publishable 키 — RLS로 보호됨) */
-const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
 function getCfg(){const c=load(LS_CFG,null);return (c&&c.url&&c.key)?c:{...BUILTIN_CFG};}
-function setCfg(c){localStorage.setItem(LS_CFG,JSON.stringify(c));}
-function colorFor(v){let h=0;for(let i=0;i<(v||'').length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
+function colorFor(v){let h=0;v=v||'';for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function numOrNull(v){return v===''||v==null?null:Number(v);}
+function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function fmtDate(d,t){ if(!d)return ''; const p=d.split('-').map(Number); if(p.length<3)return d+(t?' '+t:''); const dt=new Date(p[0],p[1]-1,p[2]); return `${p[1]}/${p[2]} (${WD[dt.getDay()]})`+(t?` ${t}`:''); }
 
-/* map between DB row and UI ticket (DB uses show_date) */
-function rowToTicket(r){return {id:r.id,vendor:r.vendor,name:r.name,date:r.show_date,qty:r.qty,price:r.price,memo:r.memo,seats:r.seats||[]};}
-function ticketToDB(t){return {vendor:t.vendor,name:t.name,show_date:t.date||null,qty:numOrNull(t.qty),price:numOrNull(t.price),memo:t.memo||null,seats:t.seats||[]};}
+/* ===== blob mapping (time + transfer packed into jsonb 'seats' column, no DB change) ===== */
+function parseBlob(raw){
+  if(Array.isArray(raw)) return {seats:raw,time:'',transfer:{done:false}};
+  raw=(raw&&typeof raw==='object')?raw:{};
+  return {seats:Array.isArray(raw.seats)?raw.seats:[], time:raw.time||'', transfer:raw.transfer||{done:false}};
+}
+function rowToTicket(r){const b=parseBlob(r.seats);return {id:r.id,vendor:r.vendor,name:r.name,date:r.show_date||'',time:b.time,qty:r.qty,price:r.price,memo:r.memo,seats:b.seats,transfer:b.transfer};}
+function ticketToDB(t){return {vendor:t.vendor,name:t.name,show_date:t.date||null,qty:numOrNull(t.qty),price:numOrNull(t.price),memo:t.memo||null,
+  seats:{seats:t.seats||[],time:t.time||'',transfer:t.transfer||{done:false}}};}
 
-/* ================= backend ================= */
+/* ===== backend ===== */
 async function boot(){
   render();
   const cfg=getCfg();
-  if(cfg.url && cfg.key && window.supabase){
-    try{
-      sb=window.supabase.createClient(cfg.url,cfg.key);
-      mode='cloud';
-      await refresh();
-    }catch(e){ console.error(e); mode='local'; tickets=load(LS_TICKETS,[]); render(); }
+  if(cfg.url&&cfg.key&&window.supabase){
+    try{ sb=window.supabase.createClient(cfg.url,cfg.key); mode='cloud'; await refresh(); }
+    catch(e){ console.error(e); mode='local'; tickets=load(LS_TICKETS,[]); render(); }
   }
   updateSyncPill();
 }
-
 async function refresh(){
-  if(mode!=='cloud'||!sb) return;
+  if(mode!=='cloud'||!sb)return;
   loading=true; render();
   const {data,error}=await sb.from('tickets').select('*').order('created_at',{ascending:true});
   loading=false;
   if(error){ toast('불러오기 실패: '+error.message); render(); return; }
-  tickets=(data||[]).map(rowToTicket);
-  render();
+  tickets=(data||[]).map(rowToTicket); render();
 }
-
 function updateSyncPill(){
-  const pill=document.getElementById('syncPill');
-  const txt=document.getElementById('syncPillTxt');
-  if(mode==='cloud'){ pill.classList.add('on'); txt.textContent='동기화 켜짐'; }
-  else{ pill.classList.remove('on'); txt.textContent='오프라인'; }
+  const pill=document.getElementById('syncPill'), txt=document.getElementById('syncPillTxt');
+  if(mode==='cloud'){pill.classList.add('on');txt.textContent='동기화';}else{pill.classList.remove('on');txt.textContent='오프라인';}
 }
 
-/* ================= render ================= */
-function render(){
+/* ===== render ===== */
+function setView(v){view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));render();}
+function filtered(){
   const q=(document.getElementById('search').value||'').trim().toLowerCase();
-  const list=document.getElementById('list');
+  let a=tickets.slice();
+  if(q)a=a.filter(t=>(t.name||'').toLowerCase().includes(q)||(t.vendor||'').toLowerCase().includes(q));
+  return a;
+}
+function byDate(a){return a.slice().sort((x,y)=>{const dx=x.date||'9999',dy=y.date||'9999';if(dx!==dy)return dx<dy?-1:1;return (x.time||'')<(y.time||'')?-1:1;});}
 
-  document.getElementById('stCount').textContent=tickets.length;
-  document.getElementById('stQty').textContent=tickets.reduce((s,t)=>s+(Number(t.qty)||0),0);
-  document.getElementById('stPrice').textContent=won(tickets.reduce((s,t)=>s+(Number(t.price)||0),0));
+function render(){
+  // seg
+  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  // stats
+  const tq=tickets.reduce((s,t)=>s+(Number(t.qty)||0),0);
+  const tp=tickets.reduce((s,t)=>s+(Number(t.price)||0),0);
+  const tx=tickets.filter(t=>t.transfer&&t.transfer.done).length;
+  document.getElementById('stats').innerHTML=
+    `<span>공연 <b>${tickets.length}</b></span><span class="sep">·</span>`+
+    `<span>매수 <b>${tq}</b></span><span class="sep">·</span>`+
+    `<span>지출 <b>₩${won(tp)}</b></span>`+
+    (tx?`<span class="sep">·</span><span class="x">양도 <b>${tx}</b></span>`:'');
 
-  if(loading && tickets.length===0){
-    list.innerHTML=`<div class="empty"><div class="spinner"></div><p>클라우드에서 불러오는 중…</p></div>`;
-    return;
+  const root=document.getElementById('viewRoot');
+  if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;return;}
+  if(view==='calendar'){root.innerHTML=renderCalendar();return;}
+  const a=byDate(filtered());
+  if(a.length===0){root.innerHTML=emptyHTML();return;}
+  root.innerHTML = view==='list' ? `<div class="list">${a.map(listRow).join('')}</div>`
+                                 : `<div class="tiles">${a.map(tileCard).join('')}</div>`;
+}
+function emptyHTML(){const has=tickets.length>0;return `<div class="empty"><div class="ico">🎭</div><p><b>${has?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${has?'다른 키워드로 찾아보세요':'아래 + 버튼으로 추가해 보세요'}</p></div>`;}
+
+function tileCard(t){
+  const c=colorFor(t.vendor);
+  const seat=(t.seats||[]).find(s=>s.grade)||{};
+  return `<div class="tk" onclick="edit('${t.id}')">
+    <div class="tk-row"><span class="badge" style="background:${c}">${esc(t.vendor||'예매처')}</span>${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}</div>
+    <div class="tk-name">${esc(t.name||'(공연명 없음)')}</div>
+    ${t.date?`<div class="tk-date">📅 ${esc(fmtDate(t.date,t.time))}</div>`:''}
+    <div class="tk-meta">🎟 ${Number(t.qty)||0} · ₩${won(t.price)}</div>
+    ${seat.grade?`<span class="tk-seat">${esc(seat.grade)}</span>`:''}
+    ${t.transfer&&t.transfer.done&&t.transfer.price?`<span class="tk-seat" style="color:#8a6d1f;background:#fff3d6">양도 ₩${won(t.transfer.price)}</span>`:''}
+  </div>`;
+}
+function listRow(t){
+  const c=colorFor(t.vendor);
+  let dm='—',dw='';
+  if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dm=p[1]+'/'+p[2];dw=WD[dt.getDay()];}
+  return `<div class="lrow" onclick="edit('${t.id}')">
+    <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
+    <div class="lbody">
+      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}</div>
+      <div class="lsub">${esc(t.vendor||'')} · 🎟${Number(t.qty)||0} · ₩${won(t.price)}${t.time?' · '+esc(t.time):''}</div>
+    </div>
+    <span class="ldot" style="background:${c}"></span>
+  </div>`;
+}
+
+function renderCalendar(){
+  const first=new Date(calY,calM,1), start=first.getDay(), days=new Date(calY,calM+1,0).getDate();
+  const today=ymd(new Date());
+  const byDay={};
+  tickets.forEach(t=>{if(t.date){(byDay[t.date]=byDay[t.date]||[]).push(t);}});
+  let cells='';
+  for(let i=0;i<start;i++)cells+=`<div class="cal-cell empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const wd=(start+d-1)%7;
+    const list=byDay[ds]||[];
+    const chips=list.slice(0,2).map(t=>`<span class="cal-chip" style="background:${colorFor(t.vendor)}" onclick="event.stopPropagation();edit('${t.id}')">${esc(t.name||'공연')}</span>`).join('');
+    const more=list.length>2?`<div class="cal-more">+${list.length-2}</div>`:'';
+    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${ds===selDay?'sel':''}" onclick="calSelect('${ds}')">
+      <div class="cal-day">${d}</div>${chips}${more}</div>`;
   }
+  const wdh=WD.map((w,i)=>`<div class="cal-wd ${i===0?'sun':''} ${i===6?'sat':''}">${w}</div>`).join('');
+  // selected day list
+  const sel=byDay[selDay]||[];
+  const selTitle=(()=>{const p=selDay.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);return `${p[1]}월 ${p[2]}일 (${WD[dt.getDay()]})`;})();
+  const dayList = sel.length? byDate(sel).map(listRow).join('') : `<div class="cal-empty">이 날 등록된 티켓이 없어요</div>`;
+  // undated
+  const undated=tickets.filter(t=>!t.date);
+  const undHTML=undated.length?`<div class="undated"><div class="u-t">📌 날짜 미정 ${undated.length}건</div><div class="list">${undated.map(listRow).join('')}</div></div>`:'';
+  return `<div class="cal">
+    <div class="cal-head"><button onclick="calMove(-1)">‹</button><div class="mon">${calY}년 ${calM+1}월</div><button onclick="calMove(1)">›</button></div>
+    <div class="cal-grid">${wdh}${cells}</div>
+    <div class="cal-daylist"><div class="dl-title">${selTitle}</div>${dayList}</div>
+    ${undHTML}
+  </div>`;
+}
+function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}render();}
+function calSelect(ds){selDay=ds;render();}
 
-  let shown=tickets.slice().reverse();
-  if(q) shown=shown.filter(t=>(t.name||'').toLowerCase().includes(q)||(t.vendor||'').toLowerCase().includes(q));
-
-  if(shown.length===0){
-    list.innerHTML=`<div class="empty"><div class="ico">🎭</div><p><b>${tickets.length?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${tickets.length?'다른 키워드로 찾아보세요':'아래 + 버튼으로 첫 티켓을 추가해 보세요'}</p></div>`;
-    return;
-  }
-  list.innerHTML=shown.map(t=>{
-    const c=colorFor(t.vendor||'');
-    const seats=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.no).map(s=>{
-      const bits=[];
-      if(s.floor)bits.push(`<span>${esc(s.floor)}층</span>`);
-      if(s.zone)bits.push(`<span>${esc(s.zone)}구역</span>`);
-      if(s.no)bits.push(`<span><b>${esc(s.no)}</b></span>`);
-      return `<div class="seat">${s.grade?`<span class="g">${esc(s.grade)}</span>`:''}${bits.join('')}</div>`;
-    }).join('');
-    return `<div class="ticket">
-      <div class="row1"><span class="badge" style="background:${c}">${esc(t.vendor||'예매처')}</span></div>
-      <h3>${esc(t.name||'(공연명 없음)')}</h3>
-      ${t.date?`<div class="when">📅 ${esc(t.date)}</div>`:''}
-      <div class="meta">
-        <div class="chip">🎟 매수 <b>${Number(t.qty)||0}</b></div>
-        <div class="chip price">💳 <b>${won(t.price)}원</b></div>
-      </div>
-      ${seats?`<div class="seats">${seats}</div>`:''}
-      ${t.memo?`<div class="memo">📝 ${esc(t.memo)}</div>`:''}
-      <div class="actions">
-        <button onclick="edit('${t.id}')">✏️ 수정</button>
-        <button class="del" onclick="del('${t.id}')">🗑 삭제</button>
-      </div>
+/* ===== vendor picker ===== */
+function openVendorPicker(){ renderVendorList(); document.getElementById('vendorOverlay').classList.add('on'); }
+function closeVendor(){ document.getElementById('vendorOverlay').classList.remove('on'); }
+function allVendors(){const set=new Set(vendors);tickets.forEach(t=>{if(t.vendor)set.add(t.vendor);});return [...set];}
+function renderVendorList(){
+  const box=document.getElementById('vlist');
+  box.innerHTML=allVendors().map(v=>{
+    const del=!DEFAULT_VENDORS.includes(v);
+    return `<div class="vitem ${v===formVendor?'sel':''}" onclick="selectVendor('${esc(v).replace(/'/g,"\\'")}')">
+      <span class="vd" style="background:${colorFor(v)}"></span>
+      <span class="vn">${esc(v)}</span>
+      ${v===formVendor?'<span class="vchk">✓</span>':''}
+      ${del?`<button class="vdel" onclick="event.stopPropagation();deleteVendor('${esc(v).replace(/'/g,"\\'")}')">×</button>`:''}
     </div>`;
   }).join('');
 }
-
-/* ================= vendors ================= */
-function allVendors(){const set=new Set(vendors);tickets.forEach(t=>{if(t.vendor)set.add(t.vendor);});return [...set];}
-function fillVendors(sel){
-  const s=document.getElementById('fVendor');
-  s.innerHTML=allVendors().map(v=>`<option${v===sel?' selected':''}>${esc(v)}</option>`).join('');
+function selectVendor(v){ formVendor=v; syncVendorBtn(); closeVendor(); }
+function syncVendorBtn(){
+  const btn=document.getElementById('fVendorBtn'), dot=document.getElementById('fVendorDot'), txt=document.getElementById('fVendorText');
+  if(formVendor){btn.classList.remove('placeholder');dot.style.display='inline-block';dot.style.background=colorFor(formVendor);txt.textContent=formVendor;}
+  else{btn.classList.add('placeholder');dot.style.display='none';txt.textContent='예매처 선택';}
 }
-function addVendor(){
-  const name=prompt('추가할 예매처 이름을 입력하세요');
-  if(!name)return;const n=name.trim();if(!n)return;
+function addVendorInline(){
+  const inp=document.getElementById('newVendor'); const n=(inp.value||'').trim();
+  if(!n)return;
   if(!vendors.includes(n))vendors.push(n);
-  saveLocal();fillVendors(n);toast('예매처 추가됨');
+  saveLocal(); inp.value=''; formVendor=n; renderVendorList(); syncVendorBtn(); toast('예매처 추가됨');
+}
+function deleteVendor(v){
+  if(!confirm(`예매처 "${v}"를 목록에서 지울까요?`))return;
+  vendors=vendors.filter(x=>x!==v);
+  if(formVendor===v)formVendor='';
+  saveLocal(); renderVendorList(); syncVendorBtn();
 }
 
-/* ================= seat rows ================= */
-function seatRowHTML(s={}){
-  return `<div class="seat-edit">
-    <button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
-    <div class="four">
-      <div><label>등급</label><input class="s-grade" value="${esc(s.grade||'')}" placeholder="VIP / R / S"></div>
-      <div><label>층</label><input class="s-floor" value="${esc(s.floor||'')}" placeholder="1"></div>
-      <div><label>구역</label><input class="s-zone" value="${esc(s.zone||'')}" placeholder="A / 가"></div>
-      <div><label>번호(열·석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="3열 12번"></div>
-    </div>
-  </div>`;
-}
+/* ===== seats ===== */
+function seatRowHTML(s={}){return `<div class="seat-edit"><button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
+  <div class="four">
+    <div><label>등급</label><input class="s-grade" value="${esc(s.grade||'')}" placeholder="VIP / R / S"></div>
+    <div><label>층</label><input class="s-floor" value="${esc(s.floor||'')}" placeholder="1"></div>
+    <div><label>구역</label><input class="s-zone" value="${esc(s.zone||'')}" placeholder="A / 가"></div>
+    <div><label>번호(열·석)</label><input class="s-no" value="${esc(s.no||'')}" placeholder="3열 12번"></div>
+  </div></div>`;}
 function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
-function collectSeats(){
-  return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>({
-    grade:el.querySelector('.s-grade').value.trim(),
-    floor:el.querySelector('.s-floor').value.trim(),
-    zone:el.querySelector('.s-zone').value.trim(),
-    no:el.querySelector('.s-no').value.trim(),
-  })).filter(s=>s.grade||s.floor||s.zone||s.no);
-}
+function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>({
+  grade:el.querySelector('.s-grade').value.trim(),floor:el.querySelector('.s-floor').value.trim(),
+  zone:el.querySelector('.s-zone').value.trim(),no:el.querySelector('.s-no').value.trim()})).filter(s=>s.grade||s.floor||s.zone||s.no);}
 
-/* ================= ticket modal ================= */
+/* ===== transfer ===== */
+function toggleTransfer(){document.getElementById('transferBox').classList.toggle('on',document.getElementById('fTransfer').checked);}
+
+/* ===== modal ===== */
 function openModal(){
-  editingId=null;
+  editingId=null; formVendor='';
   document.getElementById('modalTitle').textContent='티켓 추가';
-  fillVendors();
-  ['fName','fDate','fQty','fPrice','fMemo'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('seatBox').innerHTML='';
-  addSeatRow();
-  document.getElementById('overlay').classList.add('on');
-  document.body.style.overflow='hidden';
+  ['fName','fDate','fTime','fQty','fPrice','fMemo','fTPrice','fTTo','fTPlatform'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fTransfer').checked=false; toggleTransfer();
+  document.getElementById('seatBox').innerHTML=''; addSeatRow();
+  document.getElementById('delBtn').style.display='none';
+  syncVendorBtn();
+  document.getElementById('overlay').classList.add('on'); document.body.style.overflow='hidden';
 }
 function closeModal(){document.getElementById('overlay').classList.remove('on');document.body.style.overflow='';}
 function edit(id){
-  const t=tickets.find(x=>String(x.id)===String(id));if(!t)return;
-  editingId=t.id;
+  const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
+  editingId=t.id; formVendor=t.vendor||'';
   document.getElementById('modalTitle').textContent='티켓 수정';
-  if(t.vendor&&!vendors.includes(t.vendor))vendors.push(t.vendor);
-  fillVendors(t.vendor);
   document.getElementById('fName').value=t.name||'';
   document.getElementById('fDate').value=t.date||'';
+  document.getElementById('fTime').value=t.time||'';
   document.getElementById('fQty').value=t.qty??'';
   document.getElementById('fPrice').value=t.price??'';
   document.getElementById('fMemo').value=t.memo||'';
-  const box=document.getElementById('seatBox');box.innerHTML='';
+  const tr=t.transfer||{};
+  document.getElementById('fTransfer').checked=!!tr.done; toggleTransfer();
+  document.getElementById('fTPrice').value=tr.price??'';
+  document.getElementById('fTTo').value=tr.to||'';
+  document.getElementById('fTPlatform').value=tr.platform||'';
+  const box=document.getElementById('seatBox'); box.innerHTML='';
   (t.seats&&t.seats.length?t.seats:[null]).forEach(s=>addSeatRow(s));
-  document.getElementById('overlay').classList.add('on');
-  document.body.style.overflow='hidden';
+  document.getElementById('delBtn').style.display='block';
+  syncVendorBtn();
+  document.getElementById('overlay').classList.add('on'); document.body.style.overflow='hidden';
 }
 async function save(){
   const name=document.getElementById('fName').value.trim();
   if(!name){toast('공연명을 입력해 주세요');return;}
+  const done=document.getElementById('fTransfer').checked;
   const data={
-    vendor:document.getElementById('fVendor').value,
-    name,
-    date:document.getElementById('fDate').value.trim(),
+    vendor:formVendor||'기타', name,
+    date:document.getElementById('fDate').value,
+    time:document.getElementById('fTime').value,
     qty:document.getElementById('fQty').value,
     price:document.getElementById('fPrice').value,
     memo:document.getElementById('fMemo').value.trim(),
     seats:collectSeats(),
+    transfer:{done,
+      price:done?numOrNull(document.getElementById('fTPrice').value):null,
+      to:done?document.getElementById('fTTo').value.trim():'',
+      platform:done?document.getElementById('fTPlatform').value.trim():''}
   };
-  const btn=document.getElementById('saveBtn');btn.disabled=true;
+  const btn=document.getElementById('saveBtn'); btn.disabled=true;
   try{
     if(mode==='cloud'&&sb){
       if(editingId){
         const {data:row,error}=await sb.from('tickets').update(ticketToDB(data)).eq('id',editingId).select().single();
-        if(error)throw error;
-        const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]=rowToTicket(row);
-        toast('수정되었어요');
+        if(error)throw error; const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]=rowToTicket(row); toast('수정되었어요');
       }else{
         const {data:row,error}=await sb.from('tickets').insert(ticketToDB(data)).select().single();
-        if(error)throw error;
-        tickets.push(rowToTicket(row));
-        toast('추가되었어요 🎉');
+        if(error)throw error; tickets.push(rowToTicket(row)); toast('추가되었어요 🎉');
       }
     }else{
-      if(editingId){
-        const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]={...tickets[i],...data};
-        toast('수정되었어요');
-      }else{
-        tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...data});
-        toast('추가되었어요 🎉');
-      }
+      if(editingId){const i=tickets.findIndex(x=>x.id===editingId);if(i>-1)tickets[i]={...tickets[i],...data};toast('수정되었어요');}
+      else{tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...data});toast('추가되었어요 🎉');}
       saveLocal();
     }
-    render();closeModal();
+    if(data.date){const p=data.date.split('-').map(Number);calY=p[0];calM=p[1]-1;selDay=data.date;}
+    render(); closeModal();
   }catch(e){ toast('저장 실패: '+(e.message||e)); }
   finally{ btn.disabled=false; }
 }
@@ -526,80 +581,55 @@ async function del(id){
   const t=tickets.find(x=>String(x.id)===String(id));
   if(!confirm(`"${t?t.name:'이 티켓'}"을(를) 삭제할까요?`))return;
   try{
-    if(mode==='cloud'&&sb){
-      const {error}=await sb.from('tickets').delete().eq('id',id);
-      if(error)throw error;
-    }
+    if(mode==='cloud'&&sb){const {error}=await sb.from('tickets').delete().eq('id',id);if(error)throw error;}
     tickets=tickets.filter(x=>String(x.id)!==String(id));
     if(mode!=='cloud')saveLocal();
-    render();toast('삭제되었어요');
+    render(); closeModal(); toast('삭제되었어요');
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
 }
 
-/* ================= sync status sheet ================= */
-function openSync(){ renderSync(); document.getElementById('syncOverlay').classList.add('on'); document.body.style.overflow='hidden'; }
-function closeSync(){ document.getElementById('syncOverlay').classList.remove('on'); document.body.style.overflow=''; }
+/* delete button inside edit modal */
+function delCurrent(){ if(editingId)del(editingId); }
 
+/* ===== sync sheet ===== */
+function openSync(){ renderSync(); document.getElementById('syncOverlay').classList.add('on'); }
+function closeSync(){ document.getElementById('syncOverlay').classList.remove('on'); }
 function renderSync(){
   const box=document.getElementById('syncBody');
   if(mode==='cloud'){
-    box.innerHTML=`<h2>동기화 상태</h2>
-      <div class="statusbox good">✅ 클라우드에 <b>자동 저장</b> 중이에요.<br>폰·PC 어디서 열어도 같은 목록이 보입니다. 로그인 필요 없어요.</div>
+    box.innerHTML=`<h2>동기화 상태</h2><div class="statusbox good">✅ 클라우드에 자동 저장 중이에요. 폰·PC 어디서 열어도 같은 목록이 보입니다. 로그인 필요 없어요.</div>
       <button class="btn-ghost" onclick="refresh().then(()=>toast('새로고침됨'))">🔄 지금 새로고침</button>
       <button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }else{
-    box.innerHTML=`<h2>동기화 상태</h2>
-      <div class="statusbox warn">⚠️ 지금은 <b>오프라인</b>이라 이 기기에 임시 저장돼요.<br>인터넷 연결 후 새로고침하면 다시 동기화됩니다.</div>
-      <button class="btn-primary" onclick="location.reload()">새로고침</button>
-      <button class="btn-ghost" onclick="closeSync()">닫기</button>`;
+    box.innerHTML=`<h2>동기화 상태</h2><div class="statusbox warn">⚠️ 지금은 오프라인이라 이 기기에 임시 저장돼요. 인터넷 연결 후 새로고침하면 다시 동기화됩니다.</div>
+      <button class="btn-primary" onclick="location.reload()">새로고침</button><button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }
 }
 
-/* ================= backup ================= */
+/* ===== backup ===== */
 function exportData(){
   const blob=new Blob([JSON.stringify({tickets,vendors},null,2)],{type:'application/json'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='티켓보관함_백업.json';a.click();
-  toast('백업 파일을 저장했어요');
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='티켓보관함_백업.json';a.click();toast('백업 저장됨');
 }
 async function importData(e){
-  const f=e.target.files[0];if(!f)return;
-  const r=new FileReader();
-  r.onload=async()=>{
-    try{
-      const d=JSON.parse(r.result);
-      if(!Array.isArray(d.tickets))throw 0;
-      if(!confirm('백업을 현재 데이터에 합칠까요?')){e.target.value='';return;}
-      if(Array.isArray(d.vendors))d.vendors.forEach(v=>{if(!vendors.includes(v))vendors.push(v);});
-      if(mode==='cloud'&&sb){
-        const rows=d.tickets.map(ticketToDB);
-        const {error}=await sb.from('tickets').insert(rows);
-        if(error)throw error;
-        await refresh();
-      }else{
-        const ids=new Set(tickets.map(t=>String(t.id)));
-        d.tickets.forEach(t=>{if(!ids.has(String(t.id)))tickets.push(t);});
-        saveLocal();render();
-      }
-      toast('불러오기 완료');
-    }catch(err){toast('올바른 백업 파일이 아니에요');}
-  };
+  const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>{try{
+    const d=JSON.parse(r.result); if(!Array.isArray(d.tickets))throw 0;
+    if(!confirm('백업을 현재 데이터에 합칠까요?')){e.target.value='';return;}
+    if(Array.isArray(d.vendors))d.vendors.forEach(v=>{if(!vendors.includes(v))vendors.push(v);});
+    if(mode==='cloud'&&sb){const {error}=await sb.from('tickets').insert(d.tickets.map(ticketToDB));if(error)throw error;await refresh();}
+    else{const ids=new Set(tickets.map(t=>String(t.id)));d.tickets.forEach(t=>{if(!ids.has(String(t.id)))tickets.push(t);});saveLocal();render();}
+    toast('불러오기 완료');
+  }catch(err){toast('올바른 백업 파일이 아니에요');}};
   r.readAsText(f);e.target.value='';
 }
 
-/* ================= toast ================= */
+/* ===== toast ===== */
 let toastT;
-function toast(msg){
-  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('on');
-  clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2200);
-}
+function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2000);}
 
 boot();
-
-/* PWA: 홈 화면 앱 + 오프라인 지원 */
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-}
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
 </script>
 </body>
 </html>
