@@ -108,6 +108,12 @@
   .tk-bottom{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:6px;border-top:1px solid var(--line)}
   .tk-qty{font-size:11.5px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
   .tk-price{font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap}
+  .tk-price.xf{color:var(--warn)}
+  /* 양도된 티켓: 카드 자체를 다르게 */
+  .tk.is-transfer{background:linear-gradient(180deg,#fff8ea,#fff2dc);border-color:#eeddb0}
+  .tk.is-transfer .tk-when{color:#b07d17}
+  .tk.is-transfer .tk-name{color:#7a5b12}
+  .tk-ribbon{position:absolute;top:12px;right:-30px;width:110px;transform:rotate(40deg);background:linear-gradient(145deg,#ffbe52,#f5a524);color:#fff;font-size:9px;font-weight:800;text-align:center;padding:3px 0;letter-spacing:.4px;box-shadow:0 4px 9px -3px rgba(180,120,0,.55);pointer-events:none;z-index:1}
   .tk-cam{font-size:12px;line-height:1}
   .badge{font-size:10.5px;font-weight:800;padding:3px 8px;border-radius:999px;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .xtag{font-size:9.5px;font-weight:800;color:#fff;background:var(--warn);padding:2px 6px;border-radius:999px;white-space:nowrap}
@@ -139,6 +145,10 @@
   .lseat{font-size:11px;font-weight:700;color:var(--accent-ink);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lsub{font-size:11.5px;color:var(--ink-soft);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .lsub b{color:var(--ink);font-weight:800}
+  .lsub .lxf{color:var(--warn);font-weight:800}
+  .lrow.is-transfer{position:relative;background:linear-gradient(90deg,#fff6e2,#fffaf0);border-color:#eeddb0;padding-left:16px}
+  .lrow.is-transfer::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:4px;border-radius:99px;background:linear-gradient(180deg,#ffbe52,#f5a524)}
+  .lrow.is-transfer .nm{color:#7a5b12}
   .ldot{flex:none;width:9px;height:9px;border-radius:99px}
 
   /* 다가오는 공연 요약 */
@@ -408,12 +418,14 @@
       <div class="transfer-box" id="transferBox">
         <div class="two">
           <div class="field" style="margin-bottom:10px"><label>양도 금액 (원)</label><input id="fTPrice" type="number" inputmode="numeric" placeholder="0"></div>
-          <div class="field" style="margin-bottom:10px"><label>양도한 곳(플랫폼)</label><input id="fTPlatform" list="platformList" placeholder="티켓베이 등"></div>
+          <div class="field" style="margin-bottom:10px"><label>양도한 곳(플랫폼)</label>
+            <button type="button" class="vbtn placeholder" id="fPlatformBtn" onclick="openPlatformPicker()">
+              <span class="vlabel"><span class="vdot" id="fPlatformDot" style="display:none"></span><span id="fPlatformText">플랫폼 선택</span></span>
+              <span class="chev">▾</span>
+            </button>
+          </div>
         </div>
         <div class="field" style="margin-bottom:0"><label>누구에게 (대상)</label><input id="fTTo" type="text" placeholder="예: 홍길동 / @아이디"></div>
-        <datalist id="platformList">
-          <option value="티켓베이"><option value="중고나라"><option value="당근마켓"><option value="번개장터"><option value="트위터/X"><option value="지인"><option value="기타">
-        </datalist>
       </div>
     </div>
 
@@ -440,6 +452,19 @@
     <div class="vadd">
       <input id="newVendor" type="text" placeholder="새 예매처 이름" onkeydown="if(event.key==='Enter')addVendorInline()">
       <button type="button" onclick="addVendorInline()">추가</button>
+    </div>
+  </div>
+</div>
+
+<!-- Platform picker (양도) -->
+<div class="overlay" id="platformOverlay" onclick="if(event.target===this)closePlatform()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2>양도 플랫폼 선택</h2>
+    <div class="vlist" id="plist"></div>
+    <div class="vadd">
+      <input id="newPlatform" type="text" placeholder="새 플랫폼 이름" onkeydown="if(event.key==='Enter')addPlatformInline()">
+      <button type="button" onclick="addPlatformInline()">추가</button>
     </div>
   </div>
 </div>
@@ -524,9 +549,10 @@
 
 <script>
 /* ===== storage ===== */
-const LS_TICKETS='tm_tickets_v1', LS_VENDORS='tm_vendors_v1', LS_CFG='tm_cfg_v1', LS_VIEW='tm_view_v1', LS_GRADES='tm_grades_v1';
+const LS_TICKETS='tm_tickets_v1', LS_VENDORS='tm_vendors_v1', LS_CFG='tm_cfg_v1', LS_VIEW='tm_view_v1', LS_GRADES='tm_grades_v1', LS_PLATFORMS='tm_platforms_v1';
 const DEFAULT_VENDORS=['티켓링크','멜론티켓','세종문화회관','YES24','클립서비스','NOL 인터파크','샤롯데씨어터'];
 const DEFAULT_GRADES=['VIP','R','S','A'];
+const DEFAULT_PLATFORMS=['티켓베이','중고나라','당근마켓','번개장터','트위터/X','지인','기타'];
 const PALETTE=['#6c8cff','#ff8fb1','#ffa94d','#4dd4ac','#b088ff','#5bc0eb','#ff6b7a','#7bc86c','#f4a259','#5d9cec'];
 const WD=['일','월','화','수','목','금','토'];
 const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
@@ -535,9 +561,10 @@ let tickets=load(LS_TICKETS,[]);
 let pendings=[];
 let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
 let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
+let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
 let gradeTargetBtn=null;
 let view=load(LS_VIEW,'tile');
-let editingId=null, formVendor='';
+let editingId=null, formVendor='', formPlatform='';
 let sb=null, mode='local', loading=false;
 const _now=new Date();
 let calY=_now.getFullYear(), calM=_now.getMonth(); // 0-based
@@ -818,17 +845,19 @@ function tileCard(t){
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
-  return `<div class="tk ${selectMode?'sel-mode':''}" data-id="${t.id}" onclick="${click}">
+  const xf=t.transfer&&t.transfer.done;
+  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''}" data-id="${t.id}" onclick="${click}">
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
+    ${xf?'<span class="tk-ribbon">양도완료</span>':''}
     <div class="tk-top">
       <span class="tk-when ${t.date?'':'nodate'}">${d.main}${d.sub?`<small>${d.sub}</small>`:''}</span>
       <span class="tk-vendor"><i style="background:${c}"></i><span>${esc(t.vendor||'')}</span></span>
     </div>
-    <div class="tk-name">${esc(t.name||'(공연명 없음)')}${t.transfer&&t.transfer.done?' <span class="xtag">양도</span>':''}</div>
+    <div class="tk-name">${esc(t.name||'(공연명 없음)')}</div>
     ${sl?`<div class="tk-seatline">🎫 ${esc(sl)}</div>`:''}
     <div class="tk-bottom">
       <span class="tk-qty">🎟 ${Number(t.qty)||0}매</span>
-      <span class="tk-price">₩${won(t.price)}</span>
+      ${xf?`<span class="tk-price xf">→ ₩${won(t.transfer.price)}</span>`:`<span class="tk-price">₩${won(t.price)}</span>`}
     </div>
   </div>`;
 }
@@ -838,13 +867,14 @@ function listRow(t){
   if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dm=p[1]+'/'+p[2];dw=WD[dt.getDay()];}
   const sel=selectedIds.has(String(t.id));
   const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
-  return `<div class="lrow" data-id="${t.id}" onclick="${click}">
+  const xf=t.transfer&&t.transfer.done;
+  return `<div class="lrow ${xf?'is-transfer':''}" data-id="${t.id}" onclick="${click}">
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
-      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${t.transfer&&t.transfer.done?'<span class="xtag">양도</span>':''}</div>
+      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':''}</div>
       ${seatLine(t)?`<div class="lseat">🎫 ${esc(seatLine(t))}</div>`:''}
-      <div class="lsub">🎟 ${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${t.vendor?' · '+esc(t.vendor):''}</div>
+      <div class="lsub">🎟 ${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${xf&&t.transfer.price?` · <span class="lxf">→ ₩${won(t.transfer.price)}</span>`:''}${t.vendor?' · '+esc(t.vendor):''}</div>
     </div>
     ${t.hasImg?'<span class="tk-cam">📷</span>':''}
     ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
@@ -923,6 +953,41 @@ function deleteVendor(v){
   saveLocal(); renderVendorList(); syncVendorBtn();
 }
 
+/* ===== platform picker (양도) ===== */
+function savePlatforms(){ localStorage.setItem(LS_PLATFORMS,JSON.stringify(platforms)); }
+function openPlatformPicker(){ renderPlatformList(); openOv('platformOverlay'); }
+function closePlatform(){ closeOv('platformOverlay'); }
+function renderPlatformList(){
+  document.getElementById('plist').innerHTML=platforms.map(p=>{
+    const del=!DEFAULT_PLATFORMS.includes(p);
+    const e=esc(p).replace(/'/g,"\\'");
+    return `<div class="vitem ${p===formPlatform?'sel':''}" onclick="selectPlatform('${e}')">
+      <span class="vd" style="background:${colorFor(p)}"></span>
+      <span class="vn">${esc(p)}</span>
+      ${p===formPlatform?'<span class="vchk">✓</span>':''}
+      ${del?`<button class="vdel" onclick="event.stopPropagation();deletePlatform('${e}')">×</button>`:''}
+    </div>`;
+  }).join('');
+}
+function selectPlatform(p){ formPlatform=p; syncPlatformBtn(); closePlatform(); }
+function syncPlatformBtn(){
+  const btn=document.getElementById('fPlatformBtn'), dot=document.getElementById('fPlatformDot'), txt=document.getElementById('fPlatformText');
+  if(formPlatform){btn.classList.remove('placeholder');dot.style.display='inline-block';dot.style.background=colorFor(formPlatform);txt.textContent=formPlatform;}
+  else{btn.classList.add('placeholder');dot.style.display='none';txt.textContent='플랫폼 선택';}
+}
+function addPlatformInline(){
+  const inp=document.getElementById('newPlatform'); const n=(inp.value||'').trim();
+  if(!n)return;
+  if(!platforms.includes(n))platforms.push(n);
+  savePlatforms(); inp.value=''; formPlatform=n; renderPlatformList(); syncPlatformBtn(); toast('플랫폼 추가됨');
+}
+function deletePlatform(p){
+  if(!confirm(`플랫폼 "${p}"를 목록에서 지울까요?`))return;
+  platforms=platforms.filter(x=>x!==p);
+  if(formPlatform===p)formPlatform='';
+  savePlatforms(); renderPlatformList(); syncPlatformBtn();
+}
+
 /* ===== grade picker ===== */
 function openGradePicker(btn){ gradeTargetBtn=btn; renderGradeList(); openOv('gradeOverlay'); }
 function closeGrade(){ closeOv('gradeOverlay'); }
@@ -988,14 +1053,14 @@ function closeAddMenu(){
 function fabManual(){ closeAddMenu(); openModal(); }
 function fabPhoto(){ closeAddMenu(); document.getElementById('aiFile').click(); }
 function openModal(){
-  editingId=null; formVendor='';
+  editingId=null; formVendor=''; formPlatform='';
   document.getElementById('modalTitle').textContent='티켓 추가';
-  ['fName','fDate','fTime','fQty','fPrice','fMemo','fTPrice','fTTo','fTPlatform'].forEach(id=>document.getElementById(id).value='');
+  ['fName','fDate','fTime','fQty','fPrice','fMemo','fTPrice','fTTo'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('fTransfer').checked=false; toggleTransfer();
   document.getElementById('seatBox').innerHTML=''; addSeatRow();
   document.getElementById('delBtn').style.display='none';
   document.getElementById('modalHeadActions').style.display='none';
-  syncVendorBtn();
+  syncVendorBtn(); syncPlatformBtn();
   openOv('overlay');
 }
 function closeModal(){closeOv('overlay');}
@@ -1013,13 +1078,13 @@ function edit(id){
   document.getElementById('fTransfer').checked=!!tr.done; toggleTransfer();
   document.getElementById('fTPrice').value=tr.price??'';
   document.getElementById('fTTo').value=tr.to||'';
-  document.getElementById('fTPlatform').value=tr.platform||'';
+  formPlatform=tr.platform||'';
   const box=document.getElementById('seatBox'); box.innerHTML='';
   (t.seats&&t.seats.length?t.seats:[null]).forEach(s=>addSeatRow(s));
   document.getElementById('delBtn').style.display='block';
   document.getElementById('modalHeadActions').style.display='flex';
   document.getElementById('modalImgBtn').style.display=t.hasImg?'flex':'none';
-  syncVendorBtn();
+  syncVendorBtn(); syncPlatformBtn();
   openOv('overlay');
 }
 function shareCurrent(){ if(!editingId)return; const id=editingId; closeModal(); openShare(id); }
@@ -1095,7 +1160,7 @@ async function save(){
     transfer:{done,
       price:done?numOrNull(document.getElementById('fTPrice').value):null,
       to:done?document.getElementById('fTTo').value.trim():'',
-      platform:done?document.getElementById('fTPlatform').value.trim():''},
+      platform:done?formPlatform:''},
     hasImg: editingId ? !!((tickets.find(x=>String(x.id)===String(editingId))||{}).hasImg) : false
   };
   const btn=document.getElementById('saveBtn'); btn.disabled=true;
