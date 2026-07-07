@@ -194,8 +194,10 @@
   .modal-head h2{margin:0}
   .modal-head-actions{display:flex;gap:6px}
   .img-view-overlay{background:rgba(10,12,20,.92)}
-  .img-view-overlay .sheet{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px}
-  .img-view-overlay img{max-width:100%;max-height:80vh;border-radius:14px;box-shadow:var(--shadow-lg)}
+  .img-view-overlay .sheet{background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none;border:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:20px;overflow:hidden}
+  .img-view-stage{width:100%;flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:none}
+  .img-view-overlay img{max-width:100%;max-height:80vh;border-radius:14px;box-shadow:var(--shadow-lg);transform-origin:0 0;will-change:transform;user-select:none;-webkit-user-drag:none}
+  .img-view-hint{color:rgba(255,255,255,.55);font-size:12px;margin-top:6px}
   .img-view-close{margin-top:16px;border:none;background:rgba(255,255,255,.15);color:#fff;border-radius:999px;padding:10px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
   .sheet h2{font-size:17px;font-weight:800;margin:4px 2px 14px;letter-spacing:-.4px}
   .field{margin-bottom:12px}
@@ -440,7 +442,10 @@
 <!-- Image viewer -->
 <div class="overlay img-view-overlay" id="imgViewOverlay" onclick="if(event.target===this)closeImgView()">
   <div class="sheet">
-    <img id="imgViewImg" alt="예매내역 사진">
+    <div class="img-view-stage" id="imgViewStage">
+      <img id="imgViewImg" alt="예매내역 사진">
+    </div>
+    <div class="img-view-hint">손가락으로 확대·이동 · 더블탭 확대</div>
     <button type="button" class="img-view-close" onclick="closeImgView()">닫기</button>
   </div>
 </div>
@@ -572,10 +577,16 @@ function renderPendList(){
   }).join('');
 }
 function closePend(){ closeOv('pendOverlay'); }
+function openImgView(b64){
+  const im=document.getElementById('imgViewImg');
+  im.src='data:image/jpeg;base64,'+b64;
+  ivReset();
+  im.onload=()=>{ ivReset(); };
+  openOv('imgViewOverlay');
+}
 function viewPendImage(id){
   const p=pendFull.find(x=>String(x.id)===String(id)); if(!p||!p.image_b64)return;
-  document.getElementById('imgViewImg').src='data:image/jpeg;base64,'+p.image_b64;
-  openOv('imgViewOverlay');
+  openImgView(p.image_b64);
 }
 function dismissPending(id){ cancelPending(id); }
 function cancelPending(id){
@@ -881,11 +892,60 @@ function viewCurrentImage(){
   const id=editingId;
   sb.from('tickets').select('img').eq('id',id).single().then(({data})=>{
     if(!data||!data.img){ toast('사진을 불러올 수 없어요'); return; }
-    document.getElementById('imgViewImg').src='data:image/jpeg;base64,'+data.img;
-    openOv('imgViewOverlay');
+    openImgView(data.img);
   });
 }
 function closeImgView(){ closeOv('imgViewOverlay'); }
+
+/* ===== 이미지 뷰어 확대/이동 (사진 영역만, 앱 전체 아님) ===== */
+let _iv={scale:1,tx:0,ty:0};
+function ivApply(){ const im=document.getElementById('imgViewImg'); im.style.transform=`translate(${_iv.tx}px,${_iv.ty}px) scale(${_iv.scale})`; }
+function ivReset(){ _iv={scale:1,tx:0,ty:0}; ivApply(); }
+function ivClamp(){
+  const st=document.getElementById('imgViewStage'), im=document.getElementById('imgViewImg');
+  if(!st||!im)return;
+  const sw=st.clientWidth, sh=st.clientHeight;
+  const iw=im.clientWidth*_iv.scale, ih=im.clientHeight*_iv.scale;
+  // 이미지가 스테이지보다 크면 가장자리 넘지 않게, 작으면 가운데 정렬
+  const minX=Math.min(0, sw-iw), minY=Math.min(0, sh-ih);
+  const cx=iw<=sw?(sw-iw)/2:Math.max(minX,Math.min(0,_iv.tx));
+  const cy=ih<=sh?(sh-ih)/2:Math.max(minY,Math.min(0,_iv.ty));
+  _iv.tx=cx; _iv.ty=cy;
+}
+function initImgZoom(){
+  const st=document.getElementById('imgViewStage'); if(!st)return;
+  let pts=new Map(), startDist=0, startScale=1, lastX=0,lastY=0, panId=null, lastTap=0;
+  const dist=()=>{ const a=[...pts.values()]; return Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y); };
+  const mid=()=>{ const a=[...pts.values()]; return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2}; };
+  st.addEventListener('touchstart',e=>{
+    for(const t of e.changedTouches)pts.set(t.identifier,{x:t.clientX,y:t.clientY});
+    if(pts.size===2){ startDist=dist(); startScale=_iv.scale; }
+    else if(pts.size===1){ const t=e.touches[0]; lastX=t.clientX; lastY=t.clientY; panId=t.identifier;
+      const now=Date.now();
+      if(now-lastTap<300){ // 더블탭 토글
+        if(_iv.scale>1){ ivReset(); }
+        else { _iv.scale=2.5; ivClamp(); ivApply(); }
+      }
+      lastTap=now;
+    }
+  },{passive:false});
+  st.addEventListener('touchmove',e=>{
+    for(const t of e.changedTouches){ if(pts.has(t.identifier))pts.set(t.identifier,{x:t.clientX,y:t.clientY}); }
+    if(pts.size===2){ e.preventDefault();
+      const s=Math.max(1,Math.min(5, startScale*(dist()/startDist)));
+      _iv.scale=s; ivClamp(); ivApply();
+    } else if(pts.size===1 && _iv.scale>1){ e.preventDefault();
+      const t=[...e.changedTouches].find(x=>x.identifier===panId)||e.touches[0];
+      _iv.tx+=t.clientX-lastX; _iv.ty+=t.clientY-lastY; lastX=t.clientX; lastY=t.clientY;
+      ivClamp(); ivApply();
+    }
+  },{passive:false});
+  const end=e=>{ for(const t of e.changedTouches)pts.delete(t.identifier);
+    if(pts.size===0 && _iv.scale<=1){ ivReset(); }
+    else if(pts.size===1){ const t=e.touches[0]; lastX=t.clientX; lastY=t.clientY; panId=t.identifier; }
+  };
+  st.addEventListener('touchend',end); st.addEventListener('touchcancel',end);
+}
 async function save(){
   const name=document.getElementById('fName').value.trim();
   if(!name){toast('공연명을 입력해 주세요');return;}
@@ -1090,32 +1150,32 @@ async function aiUpload(e){
 let toastT;
 function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2000);}
 
-/* ===== overlay manager: history(back) + swipe-to-close ===== */
-let _trap=false, _ignorePop=false;
+/* ===== overlay manager: 팝업마다 history 항목 1개 → 뒤로가기가 항상 최상단 팝업만 닫음 ===== */
+let _ovStack=[], _ignorePop=false;
 function openOv(id){
   const el=document.getElementById(id), sh=el.querySelector('.sheet');
   if(sh){sh.style.transition='';sh.style.transform='';}
   el.classList.add('on'); document.body.style.overflow='hidden';
-  if(!_trap){_trap=true;history.pushState({ov:1},'');}
+  _ovStack.push(id);
+  history.pushState({ov:_ovStack.length},'');
 }
 function closeOv(id){
+  const idx=_ovStack.lastIndexOf(id);
   document.getElementById(id).classList.remove('on');
-  if(!document.querySelector('.overlay.on')){
-    document.body.style.overflow='';
-    if(_trap){_trap=false;_ignorePop=true;history.back();}
-  }
+  if(idx===-1){ if(!_ovStack.length)document.body.style.overflow=''; return; }
+  _ovStack.splice(idx,1);
+  if(!_ovStack.length)document.body.style.overflow='';
+  // 이 팝업을 위해 push했던 history 항목 1개 소비(뒤로가기 유발하되 popstate는 무시)
+  _ignorePop=true; history.back();
 }
 window.addEventListener('popstate',()=>{
   if(_ignorePop){_ignorePop=false;return;}
-  const open=[...document.querySelectorAll('.overlay.on')];
-  if(open.length){
-    open[open.length-1].classList.remove('on');
-    if(document.querySelector('.overlay.on')){history.pushState({ov:1},'');}
-    else{document.body.style.overflow='';_trap=false;}
-  }else{_trap=false;}
+  // 사용자가 뒤로가기 → 최상단 팝업만 닫기(앱은 유지)
+  const id=_ovStack.pop();
+  if(id){ document.getElementById(id).classList.remove('on'); if(!_ovStack.length)document.body.style.overflow=''; }
 });
 function initSheetDrag(){
-  document.querySelectorAll('.overlay .sheet').forEach(sheet=>{
+  document.querySelectorAll('.overlay:not(.img-view-overlay) .sheet').forEach(sheet=>{
     let sy=0,cy=0,drag=false;
     sheet.addEventListener('touchstart',e=>{ if(sheet.scrollTop>2){drag=false;return;} sy=e.touches[0].clientY;cy=0;drag=true;sheet.style.transition='none'; },{passive:true});
     sheet.addEventListener('touchmove',e=>{ if(!drag)return; cy=e.touches[0].clientY-sy; sheet.style.transform=cy>0?('translateY('+cy+'px)'):''; },{passive:true});
@@ -1174,6 +1234,7 @@ boot();
 initLongPress();
 initCalSwipe();
 initSheetDrag();
+initImgZoom();
 /* 처리 현황·새 티켓 자동 갱신(팝업 열려있을 땐 건너뜀) */
 setInterval(()=>{ if(mode==='cloud'&&sb&&!document.querySelector('.overlay.on')&&!document.hidden)refresh(); }, 25000);
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
