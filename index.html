@@ -300,14 +300,11 @@
   .seat-edit{border:1px solid var(--line);border-radius:12px;padding:34px 10px 10px;margin-bottom:8px;background:#fafbff;position:relative}
   .seat-edit .sgrid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
   .seat-edit .sgrid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
-  .seat-flags{position:absolute;top:9px;left:11px;display:flex;gap:12px}
-  .seat-edit .seat-x{font-size:11.5px;font-weight:700;color:var(--ink-soft);display:flex;align-items:center;gap:5px;cursor:pointer}
-  .seat-edit .seat-x input{width:15px;height:15px}
-  .seat-edit .seat-x:first-child input{accent-color:var(--danger)}
-  .seat-edit .seat-x:last-child input{accent-color:var(--warn)}
-  .seat-edit.canceled{background:var(--danger-soft);border-color:var(--danger-bd)}
-  .seat-edit.xferred{background:rgba(245,181,68,.12);border-color:rgba(245,181,68,.4)}
-  .seat-edit.canceled .sgrid2,.seat-edit.canceled .sgrid3,.seat-edit.xferred .sgrid2,.seat-edit.xferred .sgrid3{opacity:.55}
+  .seat-flags{position:absolute;top:8px;left:10px;display:flex;gap:7px}
+  .seat-btn{font-size:11.5px;font-weight:800;border-radius:8px;height:26px;padding:0 12px;cursor:pointer;font-family:inherit;line-height:24px;border:1px solid}
+  .seat-btn.cancel{color:var(--danger-ink);background:var(--danger-soft);border-color:var(--danger-bd)}
+  .seat-btn.xfer{color:#8a6100;background:rgba(245,181,68,.16);border-color:rgba(245,181,68,.5)}
+  :root[data-theme="dark"] .seat-btn.xfer{color:#ffd464}
   .cn-tag{font-size:10px;color:#fff;background:var(--danger);padding:1px 6px;border-radius:99px}
   .cn-tag.xf{background:var(--warn)}
   .seat-edit .rm{position:absolute;top:7px;right:8px;border:1px solid var(--danger-bd);background:var(--danger-soft);color:var(--danger-ink);border-radius:8px;height:24px;padding:0 10px;font-size:12px;font-weight:700;cursor:pointer;line-height:22px}
@@ -1226,10 +1223,10 @@ function addGradeInline(){ const inp=document.getElementById('newGrade'); const 
 function deleteGrade(g){ if(!confirm(`등급 "${g}"를 목록에서 지울까요?`))return; grades=grades.filter(x=>x!==g); localStorage.setItem(LS_GRADES,JSON.stringify(grades)); renderGradeList(); }
 
 /* ===== seats ===== */
-function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''} ${s.t?'xferred':''}" data-tp="${s.tp!=null?esc(String(s.tp)):''}" data-tvia="${esc(s.tvia||'')}" data-tto="${esc(s.tto||'')}"><button class="rm" type="button" onclick="this.parentNode.remove();syncTransferUI()">×</button>
+function seatRowHTML(s={}){return `<div class="seat-edit"><button class="rm" type="button" onclick="this.parentNode.remove()">×</button>
   <span class="seat-flags">
-    <label class="seat-x"><input type="checkbox" class="s-x" ${s.x?'checked':''} onchange="this.closest('.seat-edit').classList.toggle('canceled',this.checked)"> 취소</label>
-    <label class="seat-x"><input type="checkbox" class="s-t" ${s.t?'checked':''} onchange="onSeatXfer(this)"> 양도</label>
+    <button type="button" class="seat-btn cancel" onclick="markSeat(this,'x')">취소</button>
+    <button type="button" class="seat-btn xfer" onclick="markSeat(this,'t')">양도</button>
   </span>
   <div class="sgrid2">
     <div class="gwrap"><label>등급</label>
@@ -1246,21 +1243,25 @@ function seatRowHTML(s={}){return `<div class="seat-edit ${s.x?'canceled':''} ${
 function addSeatRow(s){document.getElementById('seatBox').insertAdjacentHTML('beforeend',seatRowHTML(s&&s.grade!==undefined?s:{}));}
 // 등급에서 끝의 "석" 제거(VIP석→VIP, R석→R). 단 "지정석 P"처럼 끝이 석이 아니면 그대로.
 function normGrade(g){ return String(g||'').trim().replace(/석$/,'').trim(); }
-function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edit')].map(el=>{
+// 한 좌석 행(active)에서 정규화된 좌석 객체 추출
+function seatFromEl(el){
   let grade=normGrade(el.querySelector('.s-grade').value), floor=el.querySelector('.s-floor').value.trim(),
       zone=el.querySelector('.s-zone').value.trim(),
       row=el.querySelector('.s-row').value.trim().replace(/열$/,'').trim(),
       no=el.querySelector('.s-no').value.trim().replace(/번$/,'').trim();
-  const x=el.querySelector('.s-x').checked, tr=el.querySelector('.s-t').checked;
-  // OP(오피): 구역을 OP로 두고 등급도 "OP"(영어)로
-  if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }
-  const o={grade,floor,zone,row,no}; if(x)o.x=true;
-  if(tr){ o.t=true;
-    const tp=(el.dataset.tp||'').trim(), tvia=(el.dataset.tvia||'').trim(), tto=(el.dataset.tto||'').trim();
-    if(tp!=='')o.tp=Number(tp); if(tvia)o.tvia=tvia; if(tto)o.tto=tto;
-  }
-  return o;
-}).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);}
+  if(grade.toUpperCase()==='OP'||grade==='오피'){ if(!zone)zone='OP'; grade='OP'; }  // OP(오피)
+  return {grade,floor,zone,row,no};
+}
+function seatEmpty(s){ return !(s.grade||s.floor||s.zone||s.row||s.no); }
+function collectSeats(){return [...document.querySelectorAll('#seatBox .seat-edit')].map(seatFromEl).filter(s=>!seatEmpty(s));}
+// 취소/양도 버튼: 그 좌석을 요약(editCanceled)으로 내리고 편집 목록에서 제거
+function markSeat(btn,flag){
+  const el=btn.closest('.seat-edit'); const s=seatFromEl(el);
+  if(seatEmpty(s)){ el.remove(); return; }   // 빈 행이면 그냥 삭제
+  s[flag]=true; editCanceled.push(s); el.remove();
+  renderCanceledNote(); syncTransferUI();
+  toast(flag==='t'?'양도로 이동(내역에서 입력)':'취소로 이동');
+}
 // 취소·양도된 좌석 요약 노트(편집 목록엔 안 보이지만 여기 표시 + 복원 가능)
 function renderCanceledNote(){
   const el=document.getElementById('canceledNote'); if(!el)return;
@@ -1275,39 +1276,38 @@ function renderCanceledNote(){
 function restoreCanceled(i){
   const s=editCanceled[i]; if(!s)return;
   editCanceled.splice(i,1);
-  const c={...s}; delete c.x; delete c.t; addSeatRow(c);
-  renderCanceledNote(); toast('좌석 복원됨(저장 시 반영)');
+  const c={...s}; delete c.x; delete c.t; delete c.tp; delete c.tvia; delete c.tto; addSeatRow(c);
+  renderCanceledNote(); syncTransferUI(); toast('좌석 복원됨(저장 시 반영)');
 }
 
 /* ===== transfer ===== */
-// 좌석 라벨(등급 층 구역 열 번호)을 편집 중인 좌석 요소에서 만든다
-function seatLabelFromEl(el){
-  const g=el.querySelector('.s-grade').value.trim(), f=el.querySelector('.s-floor').value.trim(),
-        z=el.querySelector('.s-zone').value.trim(), r=el.querySelector('.s-row').value.trim(),
-        n=el.querySelector('.s-no').value.trim();
-  const no=n?(/^\d+$/.test(n)?n+'번':n):'';
-  return [g,(f?f+'층':''),(z?z+'구역':''),(r?r+'열':''),no].filter(Boolean).join(' ')||'좌석';
+// 좌석 라벨(등급 층 구역 열 번호)을 좌석 객체에서 만든다
+function seatLabel(s){
+  const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';
+  return [s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ')||'좌석';
 }
-// 좌석의 '양도' 체크 토글 → 그 좌석을 양도 표시하고 하단 양도 영역 동기화
-function onSeatXfer(cb){ cb.closest('.seat-edit').classList.toggle('xferred',cb.checked); syncTransferUI(); }
-// 좌석별 양도 입력값을 해당 좌석 요소(dataset)에 되써서 보관 → 재렌더/저장에 반영
-function setSeatXfer(inp,key){ const el=document.querySelectorAll('#seatBox .seat-edit')[+inp.dataset.si]; if(el)el.dataset[key]=inp.value; }
+// 양도 내역: editCanceled의 양도(t) 좌석마다 금액/어디서/누구에게 입력
+function setXferDetail(i,key,val){
+  const s=editCanceled[i]; if(!s)return; val=val.trim();
+  if(key==='tp'){ if(val==='')delete s.tp; else s.tp=Number(val); }
+  else { if(val==='')delete s[key]; else s[key]=val; }
+}
 function renderSeatXferList(){
   const box=document.getElementById('seatXferList'); if(!box)return;
-  const items=[...document.querySelectorAll('#seatBox .seat-edit')].map((el,i)=>({el,i})).filter(o=>o.el.querySelector('.s-t').checked);
+  const items=editCanceled.map((s,i)=>({s,i})).filter(o=>o.s.t);
   if(!items.length){ box.innerHTML=''; return; }
-  box.innerHTML=`<div class="sxl-t">↗ 좌석별 양도 내역 (${items.length})</div>`+items.map(({el,i})=>`
-    <div class="sxl-item"><div class="sxl-seat">${esc(seatLabelFromEl(el))}</div>
+  box.innerHTML=`<div class="sxl-t">↗ 양도 좌석 내역 (${items.length})</div>`+items.map(({s,i})=>`
+    <div class="sxl-item"><div class="sxl-seat">${esc(seatLabel(s))}</div>
       <div class="sgrid3">
-        <div><label>금액(원)</label><input type="number" inputmode="numeric" data-si="${i}" value="${esc(el.dataset.tp||'')}" oninput="setSeatXfer(this,'tp')" placeholder="0"></div>
-        <div><label>어디서</label><input data-si="${i}" value="${esc(el.dataset.tvia||'')}" oninput="setSeatXfer(this,'tvia')" placeholder="티켓베이 등"></div>
-        <div><label>누구에게</label><input data-si="${i}" value="${esc(el.dataset.tto||'')}" oninput="setSeatXfer(this,'tto')" placeholder="홍길동 / @아이디"></div>
+        <div><label>금액(원)</label><input type="number" inputmode="numeric" value="${s.tp!=null?esc(String(s.tp)):''}" oninput="setXferDetail(${i},'tp',this.value)" placeholder="0"></div>
+        <div><label>어디서</label><input value="${esc(s.tvia||'')}" oninput="setXferDetail(${i},'tvia',this.value)" placeholder="티켓베이 등"></div>
+        <div><label>누구에게</label><input value="${esc(s.tto||'')}" oninput="setXferDetail(${i},'tto',this.value)" placeholder="홍길동 / @아이디"></div>
       </div></div>`).join('');
 }
-// 좌석별 양도가 있으면 → 양도 토글 자동 활성화(고정) + 전체양도 입력 숨김 + 좌석별 리스트 표시
+// 양도 좌석이 있으면 → 양도 토글 자동 활성화(고정) + 전체양도 입력 숨김 + 양도 내역 표시
 function syncTransferUI(){
   const fT=document.getElementById('fTransfer');
-  const partial=[...document.querySelectorAll('#seatBox .seat-edit .s-t')].some(c=>c.checked);
+  const partial=editCanceled.some(s=>s.t);
   if(partial){ fT.checked=true; fT.disabled=true; } else { fT.disabled=false; }
   const show=partial||fT.checked;
   document.getElementById('transferBox').classList.toggle('on',show);
@@ -1363,9 +1363,9 @@ function edit(id){
   document.getElementById('fTTo').value=tr.to||'';
   formPlatform=tr.platform||'';
   const box=document.getElementById('seatBox'); box.innerHTML='';
-  // 취소 좌석만 별도 보존(표시·복원용). 양도(t) 좌석은 편집 목록에 남겨 좌석별 양도 입력을 살린다.
-  const active=(t.seats||[]).filter(s=>!s.x);
-  editCanceled=(t.seats||[]).filter(s=>s.x).map(s=>({...s}));
+  // 취소·양도 좌석은 편집 목록에서 빼고 요약(editCanceled)으로 보존(표시·복원·양도내역 입력용)
+  const active=(t.seats||[]).filter(s=>!s.x&&!s.t);
+  editCanceled=(t.seats||[]).filter(s=>s.x||s.t).map(s=>({...s}));
   (active.length?active:[null]).forEach(s=>addSeatRow(s));
   renderCanceledNote(); syncTransferUI();
   document.getElementById('delBtn').style.display='block';
@@ -1436,7 +1436,7 @@ async function save(){
   const name=document.getElementById('fName').value.trim();
   if(!name){toast('공연명을 입력해 주세요');return;}
   const seatsArr=collectSeats();
-  const partial=seatsArr.some(s=>s.t);   // 좌석별(표단위) 양도가 하나라도 있으면 부분 양도
+  const partial=editCanceled.some(s=>s.t);   // 요약으로 내린 양도(표단위) 좌석이 하나라도 있으면 부분 양도
   const done=!partial && document.getElementById('fTransfer').checked; // 전체 양도(양도완료)는 부분 양도가 없을 때만
   const data={
     vendor:formVendor||'기타', name,
