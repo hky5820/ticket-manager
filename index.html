@@ -275,6 +275,23 @@
   .sheet>*{position:relative;z-index:1}
   @keyframes up{from{transform:translateY(36px)}to{transform:none}}
   .grab{width:42px;height:5px;background:#dfe4f0;border-radius:99px;margin:8px auto 8px}
+  /* 중앙에 뜨는 '진짜 팝업'(아래서 올라오는 시트 대신) */
+  .overlay.centered{align-items:center;padding:18px}
+  .overlay.centered .sheet{width:100%;max-width:460px;border-radius:22px;max-height:86vh;animation:popIn .2s cubic-bezier(.2,.85,.25,1)}
+  .overlay.centered .sheet::before{border-radius:22px 22px 0 0}
+  .overlay.centered .grab{display:none}
+  @keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+  /* 금액 상세(실지출·양도차익) */
+  .bd-link{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+  .bd-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:11px 6px;border-bottom:1px solid var(--line);cursor:pointer}
+  .bd-row:active{background:rgba(124,151,255,.08)}
+  .bd-l{min-width:0}
+  .bd-nm{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .bd-calc{font-size:11px;color:var(--ink-soft);margin-top:3px;line-height:1.4}
+  .bd-v{font-weight:800;font-size:14px;white-space:nowrap}
+  .bd-total{display:flex;justify-content:space-between;align-items:center;padding:13px 6px 2px;margin-top:4px;border-top:2px solid var(--line);font-weight:800}
+  .bd-total .bd-v{font-size:16px}
+  .bd-pos{color:var(--accent)} .bd-neg{color:var(--warn)}
   .modal-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .modal-head h2{margin:0}
   .modal-head-actions{display:flex;gap:6px}
@@ -675,11 +692,20 @@
 </div>
 
 <!-- Day tickets popup -->
-<div class="overlay" id="dayOverlay" onclick="if(event.target===this)closeDay()">
+<div class="overlay centered" id="dayOverlay" onclick="if(event.target===this)closeDay()">
   <div class="sheet">
     <div class="grab"></div>
     <h2 id="dayTitle">날짜</h2>
     <div id="dayBody"></div>
+  </div>
+</div>
+
+<!-- 금액 상세(실지출·양도차익) 팝업 -->
+<div class="overlay centered" id="breakdownOverlay" onclick="if(event.target===this)closeBreakdown()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <h2 id="bdTitle">상세</h2>
+    <div id="bdBody"></div>
   </div>
 </div>
 
@@ -976,8 +1002,8 @@ function render(){
   document.getElementById('stats').innerHTML=
     `<span>공연 <b>${tickets.length}</b></span><span class="sep">·</span>`+
     `<span>매수 <b>${acc.held}</b></span><span class="sep">·</span>`+
-    `<span>실지출 <b>${money(acc.spend)}</b></span>`+
-    (prof?`<span class="sep">·</span><span class="x">양도차익 <b>${signMoney(prof)}</b></span>`:'');
+    `<span class="bd-link" onclick="openBreakdown('spend')">실지출 <b>${money(acc.spend)}</b></span>`+
+    (prof?`<span class="sep">·</span><span class="x bd-link" onclick="openBreakdown('profit')">양도차익 <b>${signMoney(prof)}</b></span>`:'');
 
   renderPending();
   renderSelectBar();
@@ -1143,6 +1169,41 @@ function calOpen(ds){
   openOv('dayOverlay');
 }
 function closeDay(){ closeOv('dayOverlay'); }
+// 실지출/양도차익이 어떻게 계산됐는지 티켓별 내역 팝업
+function openBreakdown(kind){
+  const isSpend=kind==='spend';
+  let total=0; const rows=[];
+  tickets.forEach(t=>{
+    const a=ticketAcct(t);
+    const qty=Number(t.qty)||0, price=Number(t.price)||0, unit=qty>0?price/qty:0;
+    const seats=t.seats||[];
+    const canceled=seats.filter(s=>s.x).length;
+    const recv=ticketRecv(t);
+    const xfer=(t.transfer&&t.transfer.done)?Math.max(0,qty-canceled):seats.filter(s=>s.t).length;
+    const dm=t.date?(()=>{const p=t.date.split('-');return p[1]+'/'+p[2];})():'';
+    if(isSpend){
+      total+=a.spend;
+      const parts=[`원가 ₩${won(price)}`];
+      if(canceled)parts.push(`취소 ${canceled}석 −₩${won(Math.round(canceled*unit))}`);
+      if(recv)parts.push(`양도수령 −₩${won(recv)}`);
+      rows.push({t,dm,calc:parts.join(' · '),val:a.spend,cls:a.spend<0?'bd-neg':'',vs:money(a.spend)});
+    }else{
+      if(!recv&&!xfer)return; // 양도 없는 티켓 제외
+      total+=a.profit;
+      rows.push({t,dm,calc:`양도수령 ₩${won(recv)} · 원가 ${xfer}석 ₩${won(Math.round(xfer*unit))}`,val:a.profit,
+        cls:a.profit>0?'bd-pos':a.profit<0?'bd-neg':'',vs:signMoney(a.profit)});
+    }
+  });
+  const body=rows.length?rows.map(r=>`<div class="bd-row" onclick="edit('${jsAttr(String(r.t.id))}')">
+      <div class="bd-l"><div class="bd-nm">${esc(r.t.name||'(공연명 없음)')}</div><div class="bd-calc">${r.dm?r.dm+' · ':''}${r.calc}</div></div>
+      <div class="bd-v ${r.cls}">${r.vs}</div></div>`).join('')
+    :`<div class="empty" style="padding:22px 0"><p>${isSpend?'집계할 내역이 없어요':'양도 내역이 없어요'}</p></div>`;
+  document.getElementById('bdTitle').textContent=isSpend?'실지출 상세':'양도차익 상세';
+  document.getElementById('bdBody').innerHTML=body+
+    `<div class="bd-total"><span>합계</span><span class="bd-v ${total<0?'bd-neg':isSpend?'':'bd-pos'}">${isSpend?money(total):signMoney(total)}</span></div>`;
+  openOv('breakdownOverlay');
+}
+function closeBreakdown(){ closeOv('breakdownOverlay'); }
 
 /* ===== vendor picker ===== */
 function openVendorPicker(){ renderVendorList(); openOv('vendorOverlay'); }
@@ -1424,6 +1485,7 @@ function openModal(){
 function closeModal(){closeOv('overlay');}
 function edit(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
+  closeOv('dayOverlay'); closeOv('breakdownOverlay'); // 목록 팝업(캘린더 날짜·금액상세)에서 아이템 열면 그 팝업은 닫음(안 닫히던 버그)
   editingId=t.id; formVendor=t.vendor||'';
   document.getElementById('modalTitle').textContent='티켓 수정';
   document.getElementById('fName').value=t.name||'';
@@ -1774,7 +1836,7 @@ window.addEventListener('popstate',()=>{
   if(id){ document.getElementById(id).classList.remove('on'); if(!_ovStack.length)document.body.style.overflow=''; }
 });
 function initSheetDrag(){
-  document.querySelectorAll('.overlay:not(.img-view-overlay) .sheet').forEach(sheet=>{
+  document.querySelectorAll('.overlay:not(.img-view-overlay):not(.centered) .sheet').forEach(sheet=>{
     let sy=0,cy=0,drag=false;
     sheet.addEventListener('touchstart',e=>{ if(sheet.scrollTop>2){drag=false;return;} sy=e.touches[0].clientY;cy=0;drag=true;sheet.style.transition='none'; },{passive:true});
     sheet.addEventListener('touchmove',e=>{ if(!drag)return; cy=e.touches[0].clientY-sy; sheet.style.transform=cy>0?('translateY('+cy+'px)'):''; },{passive:true});
