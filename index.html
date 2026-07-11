@@ -46,7 +46,7 @@
       radial-gradient(40% 38% at 6% 88%, rgba(176,136,255,.34), transparent 70%),
       linear-gradient(160deg,#f6f8fe,#e9f0fb);
     transform:translateZ(0);backface-visibility:hidden;}
-  .wrap{max-width:680px;margin:0 auto;padding:12px 12px 96px}
+  .wrap{max-width:680px;margin:0 auto;padding:12px 12px 96px;overflow-x:clip} /* 뷰 전환 슬라이드 시 가로 스크롤바 방지 */
 
   /* top bar */
   .topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
@@ -282,7 +282,11 @@
   .overlay.centered .grab{display:none}
   @keyframes popIn{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
   /* 금액 상세(실지출·양도차익) */
-  .bd-link{cursor:pointer;text-decoration:underline;text-decoration-style:dotted;text-underline-offset:2px}
+  .bd-link{cursor:pointer;display:inline-flex;align-items:center;padding:1px 7px;border-radius:999px;background:rgba(124,151,255,.13);transition:background .15s,transform .08s}
+  .bd-link:hover{background:rgba(124,151,255,.2)}
+  .bd-link:active{transform:scale(.95);background:rgba(124,151,255,.28)}
+  .bd-link::after{content:"›";font-weight:800;opacity:.5;margin-left:3px}
+  :root[data-theme="dark"] .bd-link{background:rgba(124,151,255,.2)}
   .bd-row{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:11px 6px;border-bottom:1px solid var(--line);cursor:pointer}
   .bd-row:active{background:rgba(124,151,255,.08)}
   .bd-l{min-width:0}
@@ -984,7 +988,31 @@ async function bulkDelete(){
     render(); toast(`${ids.length}개 삭제되었어요`);
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
 }
-function setView(v){view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));if(v==='calendar'){selectMode=false;selectedIds.clear();}render();}
+function setView(v){
+  if(v===view)return; // 같은 뷰면 무시
+  const dir=SWIPE_VIEWS.indexOf(v)>SWIPE_VIEWS.indexOf(view)?1:-1; // 오른쪽 뷰=+1(왼쪽으로 밀림)
+  view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));if(v==='calendar'){selectMode=false;selectedIds.clear();}
+  animateViewSwitch(dir);
+}
+// 아이폰 화면 전환처럼: 현재 뷰를 방향대로 밀어 내보내고, 새 뷰를 반대편에서 밀어 들어오게
+let _viewAnim=false;
+function animateViewSwitch(dir){
+  const root=document.getElementById('viewRoot');
+  if(!root||_viewAnim){ render(); return; } // 애니메이션 중 연속 전환이면 즉시 렌더
+  _viewAnim=true;
+  const d=Math.max(40,Math.round((root.offsetWidth||320)*0.22));
+  root.style.transition='transform .14s ease-in, opacity .14s ease-in';
+  root.style.transform='translateX('+(dir>0?-d:d)+'px)'; root.style.opacity='0';
+  setTimeout(()=>{
+    render(); // 새 뷰 내용으로 교체
+    root.style.transition='none';
+    root.style.transform='translateX('+(dir>0?d:-d)+'px)'; root.style.opacity='0';
+    root.getBoundingClientRect(); // 강제 리플로우(시작 위치 확정)
+    root.style.transition='transform .2s cubic-bezier(.2,.85,.25,1), opacity .2s ease-out';
+    root.style.transform='translateX(0)'; root.style.opacity='1';
+    setTimeout(()=>{ root.style.transition=''; root.style.transform=''; root.style.opacity=''; _viewAnim=false; },220);
+  },140);
+}
 function filtered(){
   const q=(document.getElementById('search').value||'').trim().toLowerCase();
   let a=tickets.slice();
