@@ -196,7 +196,7 @@
   .cal-wd{text-align:center;font-size:11px;font-weight:800;color:var(--ink-faint);padding:0 0 4px}
   .cal-wd.sun{color:#ff7a7a}.cal-wd.sat{color:#6f93ff}
   .cal-cell{position:relative;min-height:58px;border-radius:10px;padding:5px 3px 4px;background:#fff;border:1px solid var(--line);cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:4px}
-  .cal-cell.empty{background:transparent;border-color:transparent;cursor:default}
+  .cal-cell.empty{background:transparent;border-color:transparent;cursor:default;padding:5px 3px 4px} /* .empty 플레이스홀더(padding:52px)가 새어들어와 첫 주가 세로로 길어지던 것 차단 */
   .cal-cell.has{background:var(--accent-soft);border-color:#d8e0ff}
   .cal-cell.has:active{filter:brightness(.96)}
   .cal-cell.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
@@ -1848,7 +1848,9 @@ function initSheetDrag(){
 
 /* ===== long-press action menu ===== */
 let actionId=null, lpTimer=null, lpFired=false, lpX=0, lpY=0;
-let calSX=0, calSY=0, calSwiped=false, calTrack=false;
+let calSX=0, calSY=0, calSwiped=false, calTrack=false, swInGrid=false;
+const SWIPE_VIEWS=['calendar','tile','list']; // 좌우 스와이프로 순환할 뷰 순서(세그먼트 버튼 순서와 동일)
+function swipeView(dir){ const i=SWIPE_VIEWS.indexOf(view), n=i+dir; if(i<0||n<0||n>=SWIPE_VIEWS.length)return; setView(SWIPE_VIEWS[n]); } // dir +1=다음(왼쪽 스와이프)·-1=이전. 양끝에선 무시(순환 안 함)
 function openActions(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
   actionId=id; document.getElementById('actTitle').textContent=t.name||'티켓';
@@ -1887,9 +1889,13 @@ function initLongPress(){
 }
 function initCalSwipe(){
   const root=document.getElementById('viewRoot');
-  root.addEventListener('touchstart',e=>{ const g=e.target.closest('.cal-grid'); if(!g){calTrack=false;return;} const t=e.touches[0]; calSX=t.clientX; calSY=t.clientY; calTrack=true; calSwiped=false; },{passive:true});
+  // 좌우 스와이프: 캘린더 그리드 안이면 월 이동, 그 외 영역이면 뷰 전환(캘린더↔타일↔리스트).
+  // 다가오는 공연(#upnext)은 #viewRoot 밖이라 여기서 안 잡힘 → 가로 스크롤 그대로 유지됨.
+  root.addEventListener('touchstart',e=>{ const t=e.touches[0]; calSX=t.clientX; calSY=t.clientY; calTrack=true; calSwiped=false; swInGrid=!!e.target.closest('.cal-grid'); },{passive:true});
   root.addEventListener('touchmove',e=>{ if(!calTrack)return; const t=e.touches[0]; if(Math.abs(t.clientX-calSX)>Math.abs(t.clientY-calSY)&&Math.abs(t.clientX-calSX)>12)calSwiped=true; },{passive:true});
-  root.addEventListener('touchend',e=>{ if(calTrack&&calSwiped){ const dx=e.changedTouches[0].clientX-calSX; if(Math.abs(dx)>45)calMove(dx<0?1:-1); } calTrack=false; });
+  root.addEventListener('touchend',e=>{ if(calTrack&&calSwiped){ const dx=e.changedTouches[0].clientX-calSX;
+      if(Math.abs(dx)>45){ if(swInGrid&&view==='calendar')calMove(dx<0?1:-1); else swipeView(dx<0?1:-1); } }
+    calTrack=false; });
 }
 
 boot();
