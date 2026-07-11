@@ -1970,7 +1970,7 @@ function initCalSwipe(){
   },{passive:false});
   root.addEventListener('touchend',e=>{
     if(!active)return; active=false; if(!decided){ return; }
-    const dx=e.changedTouches[0].clientX-sx, pass=Math.abs(dx)>W*0.28;
+    const dx=e.changedTouches[0].clientX-sx, pass=Math.abs(dx)>W*0.22;
     if(kind==='view'){
       root.style.transition=EASE; pane.style.transition=EASE;
       if(pass){
