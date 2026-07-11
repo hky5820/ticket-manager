@@ -47,8 +47,10 @@
       linear-gradient(160deg,#f6f8fe,#e9f0fb);
     transform:translateZ(0);backface-visibility:hidden;}
   .wrap{max-width:680px;margin:0 auto;padding:12px 12px 96px;overflow-x:clip;position:relative} /* 뷰 전환 슬라이드 시 가로 스크롤바 방지 + 드래그 pane 기준 */
-  #viewRoot{touch-action:pan-y;will-change:transform} /* 세로는 브라우저 스크롤, 가로는 JS가 뷰 전환 드래그로 처리 */
-  .view-pane{will-change:transform;z-index:2} /* 스와이프 중 인입되는 뷰(현재 뷰 위로 슬라이드) */
+  #viewRoot{touch-action:pan-y} /* 세로는 브라우저 스크롤, 가로는 JS가 뷰 전환 드래그로 처리 */
+  body.swiping #viewRoot,body.swiping .view-pane{will-change:transform;backface-visibility:hidden} /* 스와이프 동안만 GPU 레이어로 승격(평소엔 메모리 절약) */
+  .view-pane{z-index:2;contain:content} /* 스와이프 중 인입되는 뷰(현재 뷰 위로 슬라이드) */
+  body.swiping *{animation-play-state:paused!important} /* 슬라이드 중 캘린더 셀 리플·다가오는공연 광택 등 무한 애니메이션을 멈춰 프레임당 리페인트 제거 → 끊김 방지 */
 
   /* top bar */
   .topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
@@ -1930,14 +1932,15 @@ function initCalSwipe(){
   const EASE='transform .2s cubic-bezier(.2,.8,.2,1)'; // 뷰 전환 릴리즈(빠릿)
   const EASE_MONTH='transform .36s cubic-bezier(.3,.1,.3,1)'; // 월 이동 릴리즈(부드럽게 안착 — 쫀드기처럼 빨려가지 않게)
   function clearPane(){ if(pane){ pane.remove(); pane=null; } }
-  function resetRoot(anim){ root.style.transition=anim?settleEase:'none'; root.style.transform='translateX(0)'; }
+  function endSwipe(){ document.body.classList.remove('swiping'); }
+  function resetRoot(anim){ root.style.transition=anim?settleEase:'none'; root.style.transform='translate3d(0,0,0)'; }
   function makePane(html){ // 인입 콘텐츠를 현재 뷰 위에 겹쳐 배치(방향 반대편에서 시작)
     pane=document.createElement('div'); pane.className='view-pane'; pane.style.position='absolute';
     pane.innerHTML=html;
     root.parentNode.insertBefore(pane, root.nextSibling);
     pane.style.top=root.offsetTop+'px'; pane.style.left=root.offsetLeft+'px'; pane.style.width=root.offsetWidth+'px';
     pane.style.transition='none'; root.style.transition='none';
-    pane.style.transform='translateX('+(dir>0?W:-W)+'px)';
+    pane.style.transform='translate3d('+(dir>0?W:-W)+'px,0,0)';
   }
   root.addEventListener('touchstart',e=>{
     if(_viewAnim||e.touches.length>1)return;
@@ -1952,6 +1955,7 @@ function initCalSwipe(){
       if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
       if(Math.abs(dy)>=Math.abs(dx)){ active=false; return; } // 세로 제스처 → 스크롤에 양보
       decided=true; calSwiped=true; dir=dx<0?1:-1;
+      document.body.classList.add('swiping'); // 무한 애니메이션 일시정지 + GPU 레이어 승격
       const inGrid=view==='calendar'&&!!e.target.closest('.cal-grid');
       if(inGrid){ // 캘린더 월 이동도 뷰 전환과 동일하게 인접 달을 실제 렌더해 손가락 따라 슬라이드
         let ty=calY, tm=calM+dir; if(tm<0){tm=11;ty--;} if(tm>11){tm=0;ty++;}
@@ -1967,10 +1971,10 @@ function initCalSwipe(){
     if(kind==='pane'){
       e.preventDefault();
       const dxc=dir>0?Math.max(-W,Math.min(0,dx)):Math.min(W,Math.max(0,dx)); // 방향 고정 + 한 화면 이내
-      root.style.transform='translateX('+dxc+'px)';
-      pane.style.transform='translateX('+((dir>0?W:-W)+dxc)+'px)';
+      root.style.transform='translate3d('+dxc+'px,0,0)';
+      pane.style.transform='translate3d('+((dir>0?W:-W)+dxc)+'px,0,0)';
     }else if(kind==='edge'){
-      e.preventDefault(); root.style.transform='translateX('+dx*0.28+'px)'; // 양끝: 고무줄
+      e.preventDefault(); root.style.transform='translate3d('+dx*0.28+'px,0,0)'; // 양끝: 고무줄
     }
   },{passive:false});
   root.addEventListener('touchend',e=>{
@@ -1979,14 +1983,14 @@ function initCalSwipe(){
     if(kind==='pane'){
       root.style.transition=settleEase; pane.style.transition=settleEase;
       if(pass){ // 전환 확정: 현재 뷰 완전히 밀어내고 인입 뷰를 제자리로
-        root.style.transform='translateX('+(dir>0?-W:W)+'px)'; pane.style.transform='translateX(0)';
-        setTimeout(()=>{ commit(); resetRoot(false); render(); clearPane(); },settleMs);
+        root.style.transform='translate3d('+(dir>0?-W:W)+'px,0,0)'; pane.style.transform='translate3d(0,0,0)';
+        setTimeout(()=>{ commit(); resetRoot(false); render(); clearPane(); endSwipe(); },settleMs);
       }else{ // 임계 미달 → 되돌림
-        resetRoot(true); pane.style.transform='translateX('+(dir>0?W:-W)+'px)'; setTimeout(clearPane,settleMs+10);
+        resetRoot(true); pane.style.transform='translate3d('+(dir>0?W:-W)+'px,0,0)'; setTimeout(()=>{ clearPane(); endSwipe(); },settleMs+10);
       }
-    }else if(kind==='edge'){ resetRoot(true); setTimeout(()=>{root.style.transition='';},settleMs+10); }
+    }else if(kind==='edge'){ resetRoot(true); setTimeout(()=>{root.style.transition=''; endSwipe();},settleMs+10); }
   });
-  root.addEventListener('touchcancel',()=>{ if(active){ active=false; if(kind==='pane'){resetRoot(true);setTimeout(clearPane,settleMs+10);}else resetRoot(true);} });
+  root.addEventListener('touchcancel',()=>{ if(active){ active=false; if(kind==='pane'){resetRoot(true);setTimeout(()=>{clearPane();endSwipe();},settleMs+10);}else{resetRoot(true);endSwipe();} } });
 }
 
 boot();
