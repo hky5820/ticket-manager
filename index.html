@@ -130,8 +130,12 @@
   body[data-cols="3"] .tk-name{font-size:12px;height:31px} body[data-cols="3"] .tk-when{font-size:13px}
   body[data-cols="4"] .tk{height:104px;padding:7px 8px;border-radius:11px}
   body[data-cols="4"] .tk-name{font-size:11px;height:15px;-webkit-line-clamp:1;margin-bottom:2px}
-  body[data-cols="4"] .tk-when{font-size:12px} body[data-cols="4"] .tk-price{font-size:12px} body[data-cols="4"] .tk-qty{font-size:10px}
-  body[data-cols="4"] .tk-seatline{display:none} body[data-cols="4"] .tk-vendor{font-size:8.5px}
+  body[data-cols="4"] .tk-when{font-size:12px} body[data-cols="4"] .tk-qty{font-size:11.5px;font-weight:800}
+  body[data-cols="4"] .tk-vendor{font-size:8.5px}
+  /* 작을수록 가격보다 좌석·매수가 중요 → 4개일 땐 좌석줄 살리고 가격 숨김 */
+  body[data-cols="4"] .tk-seatline{display:block;font-size:9.5px;height:16px;line-height:13px;padding:1px 6px;margin-bottom:2px}
+  body[data-cols="4"] .tk-price{display:none}
+  body[data-cols="4"] .tk-bottom{padding-top:4px}
   /* 양도된 티켓: 카드 자체를 다르게 */
   .tk.is-transfer{background:linear-gradient(180deg,#fff8ea,#fff2dc);border-color:#eeddb0}
   .tk.is-transfer .tk-when{color:#b07d17}
