@@ -175,6 +175,7 @@
   .up-card{position:relative;flex:0 0 auto;width:126px;height:92px;scroll-snap-align:start;background:var(--card-solid);border:1px solid var(--glass-bd);border-radius:13px;padding:8px 10px;box-shadow:var(--shadow),var(--inset);cursor:pointer;display:flex;flex-direction:column;gap:3px;overflow:hidden;animation:upIn .5s cubic-bezier(.2,.85,.25,1) both}
   .up-card:active{transform:scale(.97)}
   @keyframes upIn{from{opacity:0;transform:translateY(12px) scale(.96)}to{opacity:1;transform:none}}
+  .upnext.no-anim .up-card{animation:none} /* 최초 로드 등 등장 애니메이션 생략(is-soon 광택·soon 펄스는 별도 셀렉터라 유지) */
   /* 리퀴드 글래스 광택이 카드 위를 훑고 지나가는 효과 */
   .up-card::after{content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;background:linear-gradient(105deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-18deg);pointer-events:none}
   .up-card.is-soon::after{animation:sheenSweep 3.2s ease-in-out infinite}
@@ -741,6 +742,8 @@ const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publis
 
 let tickets=load(LS_TICKETS,[]);
 let pendings=[];
+let _upSig=null; // 다가오는 공연 이전 렌더 내용 시그니처(DOM 밖 보관) — null=아직 안 그림, ''=비어있음
+let _calSig=null; // 캘린더 이전 렌더 시그니처. root.innerHTML은 브라우저가 재직렬화(#hex→rgb 등)해 원본과 안 맞으므로 DOM 대신 문자열로 비교
 let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
 let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
 let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
@@ -765,6 +768,8 @@ function tintBg(c,strong){const dark=document.documentElement.getAttribute('data
   return dark?glassBg(c,strong?.17:.15,strong?.04:.03):glassBg(c,strong?.13:.11,strong?.035:.028);}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+// inline onclick="f('...')" 처럼 'HTML속성 안의 JS 문자열'에 값을 넣을 때 사용. JS 이스케이프(\ ' 개행) 후 속성용 HTML 인코딩. esc()+replace(/'/)는 esc가 먼저 '를 &#39;로 바꿔 replace가 무효라 깨졌었음
+function jsAttr(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,'\\n').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function numOrNull(v){return v===''||v==null?null:Number(v);}
 function ymd(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
 function fmtDate(d,t){ if(!d)return ''; const p=d.split('-').map(Number); if(p.length<3)return d+(t?' '+t:''); const dt=new Date(p[0],p[1]-1,p[2]); return `${p[1]}/${p[2]} (${WD[dt.getDay()]})`+(t?` ${t}`:''); }
@@ -808,7 +813,9 @@ function renderPending(){
   if(pend&&errs) label=`<span class="pend-spin"></span><span>AI 인식 중 <b>${pend}</b> · 실패 <b>${errs}</b> <span class="pend-sub">· 탭해서 관리</span></span>`;
   else if(pend)  label=`<span class="pend-spin"></span><span>AI가 인식 중… <b>${pend}건</b> <span class="pend-sub">· 탭해서 관리</span></span>`;
   else           label=`<span>⚠️ 인식 실패 <b>${errs}건</b> <span class="pend-sub">· 탭해서 관리</span></span>`;
-  el.innerHTML=`<div class="pend-card ${pend?'':'err'}" onclick="openPendManage()" style="cursor:pointer">${label}<span class="pend-chev">›</span></div>`;
+  const html=`<div class="pend-card ${pend?'':'err'}" onclick="openPendManage()" style="cursor:pointer">${label}<span class="pend-chev">›</span></div>`;
+  if(el.innerHTML===html)return; // 내용 그대로면 재렌더 안 함 → 25초 새로고침마다 인식중 스피너가 리셋되며 튀던 문제 방지
+  el.innerHTML=html;
 }
 // 대기열 관리 팝업 — 썸네일, 보기, 교체, 삭제
 let pendFull=[]; // {id,status,result,image_b64}
@@ -962,8 +969,9 @@ function render(){
   renderUpcoming();
 
   const root=document.getElementById('viewRoot');
-  if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;return;}
-  if(view==='calendar'){ const html=renderCalendar(); if(root.innerHTML!==html)root.innerHTML=html; return; } // 내용 그대로면 재렌더 안 함(다가오는 날짜 테두리·리플 효과가 25초마다 리셋되며 깜빡이던 문제 방지)
+  if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;_calSig=null;return;}
+  if(view==='calendar'){ const html=renderCalendar(); if(_calSig!==html){root.innerHTML=html;_calSig=html;} return; } // 내용 그대로면 재렌더 안 함(다가오는 날짜 테두리·리플 효과가 25초마다 리셋되며 깜빡이던 문제 방지). root.innerHTML은 브라우저가 재직렬화해 원본과 안 맞으므로 시그니처로 비교
+  _calSig=null; // 여기부턴 캘린더가 아닌 뷰 → 시그니처 리셋(다시 캘린더로 돌아오면 무조건 다시 그리게)
   const a=byDate(filtered());
   if(a.length===0){root.innerHTML=emptyHTML();return;}
   const groups=groupByMonth(a);
@@ -985,12 +993,12 @@ function ddayInfo(dateStr,today){
 function renderUpcoming(){
   const el=document.getElementById('upnext'); if(!el)return;
   const q=(document.getElementById('search').value||'').trim();
-  if(q){ el.innerHTML=''; return; }  // 검색 중엔 숨김(캘린더 포함 모든 뷰에서 표시)
+  if(q){ el.innerHTML=''; _upSig=''; return; }  // 검색 중엔 숨김(캘린더 포함 모든 뷰에서 표시)
   const today=ymd(new Date()), now=new Date();
   const endStr=ymd(new Date(now.getFullYear(), now.getMonth()+2, 0)); // 다음 달 말일
   const up=tickets.filter(t=>t.date && t.date>=today && t.date<=endStr)
                   .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:(a.time||'')<(b.time||'')?-1:1));
-  if(!up.length){ el.innerHTML=''; return; }
+  if(!up.length){ el.innerHTML=''; _upSig=''; return; }
   const cal=view==='calendar';
   const cards=up.map((t,i)=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
     return `<div class="up-card${dd.soon?' is-soon':''}" onclick="edit('${t.id}')" style="background:${tintBg(c,true)};animation-delay:${i*55}ms">
@@ -999,8 +1007,10 @@ function renderUpcoming(){
       <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
     </div>`; }).join('');
   const html=`<div class="upnext${cal?' in-cal':''}"><div class="up-h">🎭 다가오는 공연 <span>${up.length}건</span></div><div class="up-scroll">${cards}</div></div>`;
-  if(el.innerHTML===html)return; // 내용 그대로면 다시 안 그림(25초 자동새로고침마다 등장 애니메이션이 재생되며 깜빡이던 문제 방지)
-  el.innerHTML=html;
+  if(_upSig===html)return; // 내용 그대로면 다시 안 그림(25초 자동새로고침마다 등장 애니메이션이 재생되며 깜빡이던 문제 방지). DOM 대신 시그니처로 비교해 재렌더 자체를 막음
+  const animate=!!_upSig; // 이미 카드가 떠있던 상태에서 내용이 바뀔 때만 등장 애니메이션. 최초 로드·검색 해제(빈 상태 → 카드)엔 애니메이션 없이 바로 표시
+  _upSig=html;
+  el.innerHTML=animate?html:html.replace('class="upnext','class="upnext no-anim');
 }
 function groupByMonth(arr){
   const groups=[], map={};
@@ -1127,7 +1137,7 @@ function renderVendorList(){
   const box=document.getElementById('vlist');
   box.innerHTML=allVendors().map(v=>{
     const del=!DEFAULT_VENDORS.includes(v);
-    const e=esc(v).replace(/'/g,"\\'");
+    const e=jsAttr(v);
     return `<div class="vitem ${v===formVendor?'sel':''}" onclick="selectVendor('${e}')">
       <button type="button" class="vd" style="background:${colorFor(v)}" title="색 변경" onclick="event.stopPropagation();openVendorColor('${e}')"></button>
       <span class="vn">${esc(v)}</span>
@@ -1175,7 +1185,7 @@ function closeSettings(){ closeOv('settingsOverlay'); }
 function vcmVendors(){ const set=new Set([...vendors, ...Object.keys(VENDOR_COLORS)]); tickets.forEach(t=>{if(t.vendor)set.add(t.vendor);}); return [...set]; }
 function renderVColorMgr(){
   const box=document.getElementById('vcolorMgrList'); if(!box)return;
-  box.innerHTML=vcmVendors().map(v=>{ const e=esc(v).replace(/'/g,"\\'"); const custom=!!vcolors[v];
+  box.innerHTML=vcmVendors().map(v=>{ const e=jsAttr(v); const custom=!!vcolors[v];
     return `<div class="vitem" onclick="openVendorColor('${e}')">
       <button type="button" class="vd" style="background:${colorFor(v)}"></button>
       <span class="vn">${esc(v)}</span>
@@ -1186,7 +1196,7 @@ function renderVColorMgr(){
 function pcmPlatforms(){ const set=new Set(platforms); tickets.forEach(t=>{if(t.transfer&&t.transfer.platform)set.add(t.transfer.platform);}); return [...set]; }
 function renderPColorMgr(){
   const box=document.getElementById('pcolorMgrList'); if(!box)return;
-  box.innerHTML=pcmPlatforms().map(p=>{ const e=esc(p).replace(/'/g,"\\'"); const custom=!!vcolors[p];
+  box.innerHTML=pcmPlatforms().map(p=>{ const e=jsAttr(p); const custom=!!vcolors[p];
     return `<div class="vitem" onclick="openVendorColor('${e}')">
       <button type="button" class="vd" style="background:${colorFor(p)}"></button>
       <span class="vn">${esc(p)}</span>
@@ -1223,7 +1233,7 @@ function closePlatform(){ closeOv('platformOverlay'); }
 function renderPlatformList(){
   document.getElementById('plist').innerHTML=platforms.map(p=>{
     const del=!DEFAULT_PLATFORMS.includes(p);
-    const e=esc(p).replace(/'/g,"\\'");
+    const e=jsAttr(p);
     return `<div class="vitem ${p===formPlatform?'sel':''}" onclick="selectPlatform('${e}')">
       <span class="vd" style="background:${colorFor(p)}"></span>
       <span class="vn">${esc(p)}</span>
@@ -1259,11 +1269,11 @@ function renderGradeList(){
   const cur=curGrade();
   document.getElementById('glist').innerHTML=grades.map(g=>{
     const del=!DEFAULT_GRADES.includes(g);
-    return `<div class="vitem ${g===cur?'sel':''}" onclick="selectGrade('${esc(g).replace(/'/g,"\\'")}')">
+    return `<div class="vitem ${g===cur?'sel':''}" onclick="selectGrade('${jsAttr(g)}')">
       <span class="vd" style="background:${colorFor(g)}"></span>
       <span class="vn">${esc(g)}</span>
       ${g===cur?'<span class="vchk">✓</span>':''}
-      ${del?`<button class="vdel" onclick="event.stopPropagation();deleteGrade('${esc(g).replace(/'/g,"\\'")}')">×</button>`:''}
+      ${del?`<button class="vdel" onclick="event.stopPropagation();deleteGrade('${jsAttr(g)}')">×</button>`:''}
     </div>`;
   }).join('');
 }
