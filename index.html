@@ -744,6 +744,7 @@ let tickets=load(LS_TICKETS,[]);
 let pendings=[];
 let _upSig=null; // 다가오는 공연 이전 렌더 내용 시그니처(DOM 밖 보관) — null=아직 안 그림, ''=비어있음
 let _calSig=null; // 캘린더 이전 렌더 시그니처. root.innerHTML은 브라우저가 재직렬화(#hex→rgb 등)해 원본과 안 맞으므로 DOM 대신 문자열로 비교
+let dataVer=0; // 로컬 티켓 변경(저장/삭제/복제/import)마다 증가. 조회 도중 로컬 변경이 나면 오래된 새로고침 스냅샷이 덮어쓰지 않도록 하는 가드용
 let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
 let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
 let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
@@ -797,9 +798,11 @@ async function boot(){
 async function refresh(){
   if(mode!=='cloud'||!sb)return;
   loading=true; render();
+  const ver=dataVer; // 조회 시작 시점의 데이터 버전
   const {data,error}=await sb.from('tickets').select('id,vendor,name,show_date,qty,price,memo,seats,created_at').order('created_at',{ascending:true});
   loading=false;
   if(error){ toast('불러오기 실패: '+error.message); render(); return; }
+  if(ver!==dataVer){ render(); return; } // 조회 도중 로컬에서 저장/삭제가 일어남 → 최신 로컬 상태를 오래된 스냅샷으로 되돌리지 않도록 적용 스킵
   tickets=(data||[]).map(rowToTicket);
   try{ const {data:pd}=await sb.from('pending_uploads').select('id,status,result').neq('status','done').order('created_at',{ascending:false}); pendings=pd||[]; }catch(e){}
   render();
@@ -936,7 +939,7 @@ async function bulkDelete(){
   if(!confirm(`선택한 ${ids.length}개 티켓을 삭제할까요?`))return;
   try{
     if(mode==='cloud'&&sb){ const {error}=await sb.from('tickets').delete().in('id',ids); if(error)throw error; }
-    tickets=tickets.filter(t=>!selectedIds.has(String(t.id)));
+    tickets=tickets.filter(t=>!selectedIds.has(String(t.id))); dataVer++;
     if(mode!=='cloud')saveLocal();
     selectMode=false; selectedIds.clear();
     render(); toast(`${ids.length}개 삭제되었어요`);
@@ -1478,7 +1481,7 @@ function initImgZoom(){
   st.addEventListener('touchmove',e=>{
     for(const t of e.changedTouches){ if(pts.has(t.identifier))pts.set(t.identifier,{x:t.clientX,y:t.clientY}); }
     if(pts.size===2){ e.preventDefault();
-      const s=Math.max(1,Math.min(5, startScale*(dist()/startDist)));
+      const s=startDist>0?Math.max(1,Math.min(5, startScale*(dist()/startDist))):_iv.scale; // 두 손가락이 같은 지점이면 startDist=0 → NaN(scale 사라짐) 방지
       _iv.scale=s; ivClamp(); ivApply();
     } else if(pts.size===1 && _iv.scale>1){ e.preventDefault();
       const t=[...e.changedTouches].find(x=>x.identifier===panId)||e.touches[0];
@@ -1502,8 +1505,8 @@ async function save(){
     vendor:formVendor||'기타', name,
     date:document.getElementById('fDate').value,
     time:document.getElementById('fTime').value,
-    qty:document.getElementById('fQty').value,
-    price:document.getElementById('fPrice').value,
+    qty:numOrNull(document.getElementById('fQty').value), // 숫자로 통일(로컬은 문자열, 클라우드는 숫자로 저장되던 불일치 제거)
+    price:numOrNull(document.getElementById('fPrice').value),
     memo:document.getElementById('fMemo').value.trim(),
     seats:[...seatsArr, ...editCanceled],
     transfer:{done,
@@ -1527,6 +1530,7 @@ async function save(){
       else{tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...data});toast('추가되었어요 🎉');}
       saveLocal();
     }
+    dataVer++; // 로컬 상태 변경됨 → 진행 중인 새로고침이 이 저장을 덮어쓰지 않게
     if(data.date){const p=data.date.split('-').map(Number);calY=p[0];calM=p[1]-1;selDay=data.date;}
     render(); closeModal();
   }catch(e){ toast('저장 실패: '+(e.message||e)); }
@@ -1537,7 +1541,7 @@ async function del(id){
   if(!confirm(`"${t?t.name:'이 티켓'}"을(를) 삭제할까요?`))return;
   try{
     if(mode==='cloud'&&sb){const {error}=await sb.from('tickets').delete().eq('id',id);if(error)throw error;}
-    tickets=tickets.filter(x=>String(x.id)!==String(id));
+    tickets=tickets.filter(x=>String(x.id)!==String(id)); dataVer++;
     if(mode!=='cloud')saveLocal();
     render(); closeModal(); toast('삭제되었어요');
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
@@ -1573,8 +1577,10 @@ async function importData(e){
     const d=JSON.parse(r.result); if(!Array.isArray(d.tickets))throw 0;
     if(!confirm('백업을 현재 데이터에 합칠까요?')){e.target.value='';return;}
     if(Array.isArray(d.vendors))d.vendors.forEach(v=>{if(!vendors.includes(v))vendors.push(v);});
-    if(mode==='cloud'&&sb){const {error}=await sb.from('tickets').insert(d.tickets.map(ticketToDB));if(error)throw error;await refresh();}
-    else{const ids=new Set(tickets.map(t=>String(t.id)));d.tickets.forEach(t=>{if(!ids.has(String(t.id)))tickets.push(t);});saveLocal();render();}
+    const have=new Set(tickets.map(t=>String(t.id)));
+    const fresh=d.tickets.filter(t=>!have.has(String(t.id))); // 이미 있는 id는 건너뜀(로컬/클라우드 공통 dedup) → 같은 백업 재import 시 중복 방지
+    if(mode==='cloud'&&sb){ if(fresh.length){const {error}=await sb.from('tickets').insert(fresh.map(ticketToDB));if(error)throw error;} await refresh(); }
+    else{ fresh.forEach(t=>tickets.push(t)); dataVer++; saveLocal(); render(); }
     toast('불러오기 완료');
   }catch(err){toast('올바른 백업 파일이 아니에요');}};
   r.readAsText(f);e.target.value='';
@@ -1787,6 +1793,7 @@ async function duplicateTicket(id){
   try{
     if(mode==='cloud'&&sb){ const {data:row,error}=await sb.from('tickets').insert(ticketToDB(copy)).select().single(); if(error)throw error; tickets.push(rowToTicket(row)); }
     else{ tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...copy}); saveLocal(); }
+    dataVer++;
     render(); toast('복제되었어요 📋');
   }catch(e){ toast('복제 실패: '+(e.message||e)); }
 }
