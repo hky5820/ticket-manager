@@ -128,6 +128,8 @@
   body[data-cols="1"] .tk-memo{display:-webkit-box} /* 1행1개일 때만 메모 노출 */
   body[data-cols="3"] .tk{height:118px;padding:8px 9px}
   body[data-cols="3"] .tk-name{font-size:12px;height:31px} body[data-cols="3"] .tk-when{font-size:13px}
+  body[data-cols="3"] .tk-qty{flex:none} /* 매수는 유지 */
+  body[data-cols="3"] .tk-price{min-width:0;overflow:hidden;text-overflow:ellipsis} /* 넘치는 가격은 말줄임표 */
   body[data-cols="4"] .tk{height:104px;padding:7px 8px;border-radius:11px}
   body[data-cols="4"] .tk-name{font-size:11px;height:15px;-webkit-line-clamp:1;margin-bottom:2px}
   body[data-cols="4"] .tk-when{font-size:12px} body[data-cols="4"] .tk-qty{font-size:11.5px;font-weight:800}
