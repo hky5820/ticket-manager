@@ -768,6 +768,19 @@ function glassBg(c,top,bot){return `radial-gradient(135% 95% at 12% -18%,var(--s
 function tintBg(c,strong){const dark=document.documentElement.getAttribute('data-theme')==='dark';
   return dark?glassBg(c,strong?.17:.15,strong?.04:.03):glassBg(c,strong?.13:.11,strong?.035:.028);}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
+function money(v){v=Math.round(v);return (v<0?'−₩':'₩')+won(Math.abs(v));} // 음수는 −₩ 로
+function signMoney(v){v=Math.round(v);return (v>0?'+₩':v<0?'−₩':'₩')+won(Math.abs(v));} // 양도차익용: +/− 부호 표시
+// 티켓 단위 회계: 매수(취소만 제외)·실지출(원가−취소환불−양도수령)·양도차익(양도수령−양도석 원가). 단가=price/qty
+function ticketAcct(t){
+  const qty=Number(t.qty)||0, price=Number(t.price)||0, unit=qty>0?price/qty:0;
+  const seats=t.seats||[];
+  const canceled=seats.filter(s=>s.x).length;
+  let xfer, recv;
+  if(t.transfer&&t.transfer.done){ recv=Number(t.transfer.price)||0; xfer=Math.max(0,qty-canceled); } // 전체 양도: 취소 뺀 나머지 전부 양도
+  else{ const xs=seats.filter(s=>s.t); xfer=xs.length; recv=xs.reduce((a,s)=>a+(Number(s.tp)||0),0); } // 부분 양도: 좌석별 tp 합
+  return { held: qty-canceled, spend: price - canceled*unit - recv, profit: recv - xfer*unit };
+}
+function ticketRecv(t){ if(t.transfer&&t.transfer.done)return Number(t.transfer.price)||0; return (t.seats||[]).filter(s=>s.t).reduce((a,s)=>a+(Number(s.tp)||0),0); } // 양도로 받은 총액(카드 표시용)
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 // inline onclick="f('...')" 처럼 'HTML속성 안의 JS 문자열'에 값을 넣을 때 사용. JS 이스케이프(\ ' 개행) 후 속성용 HTML 인코딩. esc()+replace(/'/)는 esc가 먼저 '를 &#39;로 바꿔 replace가 무효라 깨졌었음
 function jsAttr(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/\r?\n/g,'\\n').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
@@ -958,14 +971,13 @@ function render(){
   // seg
   document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
   // stats
-  const tq=tickets.reduce((s,t)=>s+(Number(t.qty)||0),0);
-  const tp=tickets.reduce((s,t)=>s+(Number(t.price)||0),0);
-  const tx=tickets.filter(t=>t.transfer&&t.transfer.done).length;
+  const acc=tickets.reduce((a,t)=>{const r=ticketAcct(t);a.held+=r.held;a.spend+=r.spend;a.profit+=r.profit;return a;},{held:0,spend:0,profit:0});
+  const prof=Math.round(acc.profit);
   document.getElementById('stats').innerHTML=
     `<span>공연 <b>${tickets.length}</b></span><span class="sep">·</span>`+
-    `<span>매수 <b>${tq}</b></span><span class="sep">·</span>`+
-    `<span>지출 <b>₩${won(tp)}</b></span>`+
-    (tx?`<span class="sep">·</span><span class="x">양도 <b>${tx}</b></span>`:'');
+    `<span>매수 <b>${acc.held}</b></span><span class="sep">·</span>`+
+    `<span>실지출 <b>${money(acc.spend)}</b></span>`+
+    (prof?`<span class="sep">·</span><span class="x">양도차익 <b>${signMoney(prof)}</b></span>`:'');
 
   renderPending();
   renderSelectBar();
@@ -1068,7 +1080,7 @@ function tileCard(t){
     ${sl?`<div class="tk-seatline">🎫 ${esc(sl)}</div>`:''}
     <div class="tk-bottom">
       <span class="tk-qty">🎟 ${Number(t.qty)||0}매</span>
-      ${xf?`<span class="tk-price xf">→ ₩${won(t.transfer.price)}</span>`:`<span class="tk-price">₩${won(t.price)}</span>`}
+      ${xf?`<span class="tk-price xf">→ ₩${won(ticketRecv(t))}</span>`:pt?`<span class="tk-price">₩${won(t.price)} <span class="xf">→ ₩${won(ticketRecv(t))}</span></span>`:`<span class="tk-price">₩${won(t.price)}</span>`}
     </div>
   </div>`;
 }
@@ -1086,7 +1098,7 @@ function listRow(t){
     <div class="lbody">
       <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span><span class="ltags">${xf?'<span class="xtag">양도완료</span>':(pt?'<span class="xtag">일부 양도</span>':'')}${xc?'<span class="xtag cancel">부분취소</span>':''}</span></div>
       ${seatLine(t)?`<div class="lseat">🎫 ${esc(seatLine(t))}</div>`:''}
-      <div class="lsub">🎟 ${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${xf&&t.transfer.price?` · <span class="lxf">→ ₩${won(t.transfer.price)}</span>`:''}${t.vendor?' · '+esc(t.vendor):''}</div>
+      <div class="lsub">🎟 ${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}${t.vendor?' · '+esc(t.vendor):''}</div>
     </div>
     ${t.hasImg?'<span class="tk-cam">📷</span>':''}
     ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
