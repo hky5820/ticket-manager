@@ -1191,6 +1191,8 @@ function renderCalendar(){
   </div>`;
 }
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}render();}
+// 전역 calY/calM을 안 바꾸고 특정 달 캘린더 HTML 얻기(스와이프 월 이동 pane용)
+function calHTMLFor(y,m){ const oy=calY,om=calM; calY=y;calM=m; const h=renderCalendar(); calY=oy;calM=om; return h; }
 function calOpen(ds){
   const list=tickets.filter(t=>String(t.date)===ds);
   if(!list.length)return;
@@ -1924,13 +1926,21 @@ function initLongPress(){
 // - #upnext는 #viewRoot 밖이라 여기 안 잡힘 → 다가오는 공연 가로 스크롤 유지
 function initCalSwipe(){
   const root=document.getElementById('viewRoot');
-  let sx=0, sy=0, active=false, decided=false, kind=null, dir=0, W=0, targetIdx=-1, pane=null;
+  let sx=0, sy=0, active=false, decided=false, kind=null, dir=0, W=0, pane=null, commit=null;
   const EASE='transform .2s cubic-bezier(.2,.8,.2,1)';
   function clearPane(){ if(pane){ pane.remove(); pane=null; } }
   function resetRoot(anim){ root.style.transition=anim?EASE:'none'; root.style.transform='translateX(0)'; }
+  function makePane(html){ // 인입 콘텐츠를 현재 뷰 위에 겹쳐 배치(방향 반대편에서 시작)
+    pane=document.createElement('div'); pane.className='view-pane'; pane.style.position='absolute';
+    pane.innerHTML=html;
+    root.parentNode.insertBefore(pane, root.nextSibling);
+    pane.style.top=root.offsetTop+'px'; pane.style.left=root.offsetLeft+'px'; pane.style.width=root.offsetWidth+'px';
+    pane.style.transition='none'; root.style.transition='none';
+    pane.style.transform='translateX('+(dir>0?W:-W)+'px)';
+  }
   root.addEventListener('touchstart',e=>{
     if(_viewAnim||e.touches.length>1)return;
-    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; active=true; decided=false; kind=null; dir=0; calSwiped=false;
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; active=true; decided=false; kind=null; dir=0; commit=null; calSwiped=false;
     W=root.offsetWidth||320;
   },{passive:true});
   root.addEventListener('touchmove',e=>{
@@ -1939,31 +1949,23 @@ function initCalSwipe(){
     if(!decided){
       if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
       if(Math.abs(dy)>=Math.abs(dx)){ active=false; return; } // 세로 제스처 → 스크롤에 양보
-      decided=true; calSwiped=true;
-      dir=dx<0?1:-1;
+      decided=true; calSwiped=true; dir=dx<0?1:-1;
       const inGrid=view==='calendar'&&!!e.target.closest('.cal-grid');
-      if(inGrid){ kind='month'; }
-      else{
-        targetIdx=SWIPE_VIEWS.indexOf(view)+dir;
-        if(targetIdx<0||targetIdx>=SWIPE_VIEWS.length){ kind='edge'; }
-        else{
-          kind='view';
-          pane=document.createElement('div'); pane.className='view-pane'; pane.style.position='absolute';
-          pane.innerHTML=viewHTML(SWIPE_VIEWS[targetIdx]);
-          root.parentNode.insertBefore(pane, root.nextSibling);
-          pane.style.top=root.offsetTop+'px'; pane.style.left=root.offsetLeft+'px'; pane.style.width=root.offsetWidth+'px';
-          pane.style.transition='none'; root.style.transition='none';
-          pane.style.transform='translateX('+(dir>0?W:-W)+'px)';
-        }
+      if(inGrid){ // 캘린더 월 이동도 뷰 전환과 동일하게 인접 달을 실제 렌더해 손가락 따라 슬라이드
+        let ty=calY, tm=calM+dir; if(tm<0){tm=11;ty--;} if(tm>11){tm=0;ty++;}
+        kind='pane'; makePane(calHTMLFor(ty,tm)); commit=()=>{ calY=ty; calM=tm; };
+      }else{
+        const ni=SWIPE_VIEWS.indexOf(view)+dir;
+        if(ni<0||ni>=SWIPE_VIEWS.length){ kind='edge'; } // 양끝 → 고무줄
+        else{ kind='pane'; makePane(viewHTML(SWIPE_VIEWS[ni]));
+          commit=()=>{ view=SWIPE_VIEWS[ni]; localStorage.setItem(LS_VIEW,JSON.stringify(view)); if(view==='calendar'){selectMode=false;selectedIds.clear();} }; }
       }
     }
-    if(kind==='view'){
+    if(kind==='pane'){
       e.preventDefault();
       const dxc=dir>0?Math.max(-W,Math.min(0,dx)):Math.min(W,Math.max(0,dx)); // 방향 고정 + 한 화면 이내
       root.style.transform='translateX('+dxc+'px)';
       pane.style.transform='translateX('+((dir>0?W:-W)+dxc)+'px)';
-    }else if(kind==='month'){
-      e.preventDefault(); root.style.transform='translateX('+dx*0.45+'px)'; // 월 이동: 손가락 따라 감쇠 이동
     }else if(kind==='edge'){
       e.preventDefault(); root.style.transform='translateX('+dx*0.28+'px)'; // 양끝: 고무줄
     }
@@ -1971,25 +1973,17 @@ function initCalSwipe(){
   root.addEventListener('touchend',e=>{
     if(!active)return; active=false; if(!decided){ return; }
     const dx=e.changedTouches[0].clientX-sx, pass=Math.abs(dx)>W*0.22;
-    if(kind==='view'){
+    if(kind==='pane'){
       root.style.transition=EASE; pane.style.transition=EASE;
-      if(pass){
+      if(pass){ // 전환 확정: 현재 뷰 완전히 밀어내고 인입 뷰를 제자리로
         root.style.transform='translateX('+(dir>0?-W:W)+'px)'; pane.style.transform='translateX(0)';
-        setTimeout(()=>{ // 전환 확정
-          view=SWIPE_VIEWS[targetIdx]; localStorage.setItem(LS_VIEW,JSON.stringify(view));
-          if(view==='calendar'){selectMode=false;selectedIds.clear();}
-          resetRoot(false); render(); clearPane();
-        },200);
+        setTimeout(()=>{ commit(); resetRoot(false); render(); clearPane(); },200);
       }else{ // 임계 미달 → 되돌림
-        resetRoot(true); pane.style.transform='translateX('+(dir>0?W:-W)+'px)';
-        setTimeout(clearPane,210);
+        resetRoot(true); pane.style.transform='translateX('+(dir>0?W:-W)+'px)'; setTimeout(clearPane,210);
       }
-    }else if(kind==='month'){
-      if(Math.abs(dx)>45){ resetRoot(false); calMove(dir); } // calMove가 render로 새 달 그림(transform 리셋됨)
-      else{ resetRoot(true); setTimeout(()=>{root.style.transition='';},210); }
     }else if(kind==='edge'){ resetRoot(true); setTimeout(()=>{root.style.transition='';},210); }
   });
-  root.addEventListener('touchcancel',()=>{ if(active){ active=false; if(kind==='view'){resetRoot(true);setTimeout(clearPane,210);}else resetRoot(true);} });
+  root.addEventListener('touchcancel',()=>{ if(active){ active=false; if(kind==='pane'){resetRoot(true);setTimeout(clearPane,210);}else resetRoot(true);} });
 }
 
 boot();
