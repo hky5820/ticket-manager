@@ -524,9 +524,9 @@
   @keyframes calRipple{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.14);opacity:0}}
   @keyframes calDot{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
   @media (prefers-reduced-motion:reduce){.cal-cell.up,.cal-cell.up::after,.cal-cell.up .cal-dots i{animation:none}}
-  /* 완전 양도 티켓은 dim(넘겨서 안 가는 표). 부분양도·일반은 정상 */
-  .tk.is-transfer,.lrow.is-transfer{opacity:.55}
-  .tk.is-transfer .tk-ribbon{opacity:.5}
+  /* 완전 양도 티켓은 dim+흑백(넘겨서 안 가는 표). 정상 티켓의 컬러와 확실히 대비 */
+  .tk.is-transfer,.lrow.is-transfer{opacity:.48;filter:grayscale(.75)}
+  .tk.is-transfer .tk-ribbon{opacity:.6}
   /* 검색창 라운드 */
   .search input{border-radius:10px}
   /* 모달: '양도' 관련 UI를 블루 테마로 통일(앰버 잔재 제거. 인식 대기열 앰버는 유지) */
