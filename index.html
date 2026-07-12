@@ -463,10 +463,12 @@
   .xtag.cancel{border-color:var(--cancel-mark);background:var(--chip);color:var(--ink-faint)}
   .badge{color:var(--ink)}
   .up-dday.soon{background:var(--coral);color:#fff}
-  /* 타일: 대각선 밴드 → 우상단 살짝 기운 스탬프 */
-  .tk-ribbon{width:auto;transform:rotate(-8deg);top:9px;right:9px;left:auto;border:1.4px solid var(--accent);background:var(--accent-soft);color:var(--accent-ink);border-radius:7px;font-size:9px;font-weight:800;padding:2px 7px;letter-spacing:.02em;text-align:center;box-shadow:none}
-  .tk-ribbon.cancel{border-color:var(--cancel-mark);background:var(--chip);color:var(--ink-faint)}
-  .tk:has(.tk-ribbon) .tk-vendor{display:none} /* 스탬프와 예매처 겹침 방지 */
+  /* 타일: 중앙에 반투명 '스탬프' 워터마크(내용은 비치되 양도 티켓임을 표시) */
+  .tk-ribbon{top:50%;left:50%;right:auto;bottom:auto;width:auto;transform:translate(-50%,-50%) rotate(-15deg);
+    border:2.5px solid var(--accent);background:transparent;color:var(--accent);border-radius:9px;
+    font-size:17px;font-weight:900;padding:3px 12px;letter-spacing:.04em;text-align:center;
+    opacity:.17;box-shadow:none;pointer-events:none;white-space:nowrap}
+  .tk-ribbon.cancel{border-color:var(--cancel-mark);color:var(--cancel-mark)}
   /* 굵기 절제(Airtable: bold-for-its-own-sake 지양, 500~600) */
   .tk-name,.lname,.up-name,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
   .stats b,.up-h,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
@@ -519,12 +521,10 @@
   /* 모달 입력·버튼을 테마 라운드/톤에 맞춤 */
   .field input,.field textarea,.vbtn,.gbtn,.vadd input{border-radius:12px}
   .sheet{border-radius:22px 22px 0 0}
-  /* 리스트 우측: 예매처(우측 정렬) + 공유 버튼 */
-  .lright{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none;margin-left:4px}
-  .lvendor{display:flex;align-items:center;gap:5px;max-width:100px;color:var(--ink-faint);font-size:11px;font-weight:600}
-  .lvendor .lvdot{width:8px;height:8px;border-radius:3px;flex:none}
-  .lvendor .lvn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .lright .tk-share{margin-left:0}
+  /* 리스트 sub 라인: 좌측 수량·가격 / 우측 예매처(같은 줄 우측 정렬) */
+  .lsub{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  .lsub-l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lsub-v{flex:none;color:var(--ink-faint);font-weight:600;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1215,12 +1215,10 @@ function listRow(t){
     <div class="lbody">
       <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span><span class="ltags">${xf?'<span class="xtag">양도완료</span>':(pt?'<span class="xtag">일부 양도</span>':'')}${xc?'<span class="xtag cancel">부분취소</span>':''}</span></div>
       ${seatLine(t)?`<div class="lseat">${ICON_SEAT}${esc(seatLine(t))}</div>`:''}
-      <div class="lsub">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}</div>
+      <div class="lsub"><span class="lsub-l">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}</span>${t.vendor?`<span class="lsub-v">${esc(t.vendor)}</span>`:''}</div>
     </div>
-    <div class="lright">
-      ${t.vendor?`<span class="lvendor"><i class="lvdot" style="background:${c}"></i><span class="lvn">${esc(t.vendor)}</span></span>`:`<span class="ldot" style="background:${c}"></span>`}
-      ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
-    </div>
+    ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
+    <span class="ldot" style="background:${c}"></span>
   </div>`;
 }
 
