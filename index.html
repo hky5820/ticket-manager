@@ -458,13 +458,15 @@
   .tk-check.on::after{color:var(--canvas)}
   .fab,.fab-item.manual,.fab-item.photo{background:var(--accent)}
   .fab{box-shadow:var(--shadow)}
-  /* 상태 태그: 작고 산뜻한 소프트 블루 칩(기존 큰 검정 pill 대체) */
-  .xtag{background:var(--accent-soft);color:var(--accent-ink);font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:0}
-  .xtag.cancel{background:var(--chip);color:var(--ink-faint)}
+  /* 양도/취소 표시 = 티켓 '스탬프' (아웃라인 뱃지). 양도표임을 바로 알면서 멋스럽게 */
+  .xtag{border:1.2px solid var(--accent);background:var(--accent-soft);color:var(--accent-ink);font-size:9px;font-weight:800;padding:1.5px 6px;border-radius:6px;letter-spacing:0;white-space:nowrap}
+  .xtag.cancel{border-color:var(--cancel-mark);background:var(--chip);color:var(--ink-faint)}
   .badge{color:var(--ink)}
   .up-dday.soon{background:var(--coral);color:#fff}
-  /* 타일 리본: 더 슬림하게(텍스트·두께 축소) */
-  .tk-ribbon{font-size:8px;padding:2px 0;letter-spacing:.02em;top:11px;right:-32px}
+  /* 타일: 대각선 밴드 → 우상단 살짝 기운 스탬프 */
+  .tk-ribbon{width:auto;transform:rotate(-8deg);top:9px;right:9px;left:auto;border:1.4px solid var(--accent);background:var(--accent-soft);color:var(--accent-ink);border-radius:7px;font-size:9px;font-weight:800;padding:2px 7px;letter-spacing:.02em;text-align:center;box-shadow:none}
+  .tk-ribbon.cancel{border-color:var(--cancel-mark);background:var(--chip);color:var(--ink-faint)}
+  .tk:has(.tk-ribbon) .tk-vendor{display:none} /* 스탬프와 예매처 겹침 방지 */
   /* 굵기 절제(Airtable: bold-for-its-own-sake 지양, 500~600) */
   .tk-name,.lname,.up-name,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
   .stats b,.up-h,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
@@ -487,11 +489,12 @@
   .lrow.is-transfer,.lrow.is-cancel{padding-left:13px}
   .tk.is-cancel{background:var(--chip)}
   /* 다가오는 공연: 시그니처 카드(코랄·피치·민트 순환). 첫 카드=코랄(흰 글자) */
-  #upnext .up-card:nth-child(3n+1){background:var(--coral)!important}
-  #upnext .up-card:nth-child(3n+2){background:var(--peach)!important}
-  #upnext .up-card:nth-child(3n){background:var(--mint)!important}
-  #upnext .up-card:nth-child(3n+1) .up-name,#upnext .up-card:nth-child(3n+1) .up-date{color:#fff}
-  #upnext .up-card:nth-child(3n+1) .up-dday{background:#fff;color:var(--coral)}
+  /* 다가오는 공연: 첫 카드만 하이라이트, 나머지는 색 통일 */
+  #upnext .up-card{background:var(--chip)!important}
+  #upnext .up-card:first-child{background:var(--accent)!important}
+  #upnext .up-card:first-child .up-name,#upnext .up-card:first-child .up-date{color:#fff}
+  #upnext .up-card:first-child .up-dday{background:#fff;color:var(--accent-ink)}
+  #upnext .up-card:not(:first-child) .up-dday{background:var(--accent-soft);color:var(--accent-ink)}
   .up-card::after{display:none} /* 잔여 광택 제거 */
   /* 예매처 식별색: 점 → 라운드 사각 스와치 */
   .tk-vendor i{border-radius:3px;width:9px;height:9px}
@@ -507,6 +510,21 @@
   .cal-cell.up .cal-day{color:var(--ink)}
   /* 검색창 라운드 */
   .search input{border-radius:10px}
+  /* 모달: '양도' 관련 UI를 블루 테마로 통일(앰버 잔재 제거. 인식 대기열 앰버는 유지) */
+  .seat-btn.xfer{color:var(--accent-ink);background:var(--accent-soft);border-color:var(--accent-bd)}
+  .transfer-box{background:var(--accent-soft);border-color:var(--accent-bd)}
+  .sxl-item{border-color:var(--accent-bd)}
+  #seatXferList .sxl-t{color:var(--accent-ink)}
+  .cn-tag.xf{background:var(--accent)}
+  /* 모달 입력·버튼을 테마 라운드/톤에 맞춤 */
+  .field input,.field textarea,.vbtn,.gbtn,.vadd input{border-radius:12px}
+  .sheet{border-radius:22px 22px 0 0}
+  /* 리스트 우측: 예매처(우측 정렬) + 공유 버튼 */
+  .lright{display:flex;flex-direction:column;align-items:flex-end;gap:7px;flex:none;margin-left:4px}
+  .lvendor{display:flex;align-items:center;gap:5px;max-width:100px;color:var(--ink-faint);font-size:11px;font-weight:600}
+  .lvendor .lvdot{width:8px;height:8px;border-radius:3px;flex:none}
+  .lvendor .lvn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lright .tk-share{margin-left:0}
 </style>
 </head>
 <body>
@@ -1197,10 +1215,12 @@ function listRow(t){
     <div class="lbody">
       <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span><span class="ltags">${xf?'<span class="xtag">양도완료</span>':(pt?'<span class="xtag">일부 양도</span>':'')}${xc?'<span class="xtag cancel">부분취소</span>':''}</span></div>
       ${seatLine(t)?`<div class="lseat">${ICON_SEAT}${esc(seatLine(t))}</div>`:''}
-      <div class="lsub">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}${t.vendor?' · '+esc(t.vendor):''}</div>
+      <div class="lsub">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}</div>
     </div>
-    ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
-    <span class="ldot" style="background:${c}"></span>
+    <div class="lright">
+      ${t.vendor?`<span class="lvendor"><i class="lvdot" style="background:${c}"></i><span class="lvn">${esc(t.vendor)}</span></span>`:`<span class="ldot" style="background:${c}"></span>`}
+      ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
+    </div>
   </div>`;
 }
 
