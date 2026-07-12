@@ -50,7 +50,7 @@ seats(jsonb) = {
 
 ## 3. 렌더 dedup — 깜빡임 방지 (중요 함정)
 
-`render()`는 25초 자동새로고침·뷰 전환 등으로 자주 불린다. 무한 CSS 애니메이션이 있는
+`render()`는 25초 자동새로고침·뷰 전환 등으로 자주 불린다. CSS 애니메이션(카드 등장 등)이 붙은
 블록을 매번 `innerHTML=`로 다시 그리면 **애니메이션이 리셋되며 깜빡인다.**
 
 - **절대 `el.innerHTML === 생성한html`로 비교하지 말 것.** 브라우저가 `innerHTML`을 재직렬화
@@ -83,8 +83,9 @@ seats(jsonb) = {
 | 월 이동 | `.36s cubic-bezier(.3,.1,.3,1)` (부드럽게 안착) | `0.14` (더 민감) |
 
 **끊김(jank) 방지 3종** (드래그 동안 `body.swiping`):
-1. `body.swiping *{animation-play-state:paused}` → 셀 리플·다가오는공연 광택 등 무한
-   애니메이션 정지(프레임당 리페인트 제거, 끊김의 주원인).
+1. `body.swiping *{animation-play-state:paused}` → 드래그 중 애니메이션 정지(프레임당
+   리페인트 제거). 플랫 리디자인(`ef50bdf`) 전엔 셀 리플·카드 광택 등 무한 장식 애니메이션이
+   끊김의 주원인이었고, 지금은 스피너·카드 등장만 남았지만 규칙은 유지.
 2. `translate3d(x,0,0)` → GPU 합성 레이어.
 3. 스와이프 동안만 `will-change:transform` 승격(평소 메모리 절약).
 
