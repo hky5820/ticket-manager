@@ -23,15 +23,15 @@
     --canvas:#ffffff; --page:#ffffff; --card:#ffffff; --chip:#f7f7f7;
     --ink:#222222; --ink-soft:#3f3f3f; --ink-faint:#767676;
     --line:#dddddd; --line-soft:#ebebeb;
-    /* accent = Rausch. 모든 CTA·활성·강조를 담당하는 단일 브랜드색 */
-    --accent:#ff385c; --accent-ink:#e00b41; --accent-soft:#ffe9ee; --accent-bd:#ff385c;
+    /* accent = 블루. 모든 CTA·활성·강조를 담당하는 단일 브랜드색 */
+    --accent:#2f80ed; --accent-ink:#1b63d6; --accent-soft:#eaf2fe; --accent-bd:#2f80ed;
     --danger:#c13515; --danger-ink:#b32505; --danger-soft:#fbeceb; --danger-bd:#f3ccc4;
     --ok:#008a05;
     /* warn = 인식 대기열 전용 */
-    --warn:#a0761f; --warn-strong:#ff385c; --warn-soft:#fbf3e0; --warn-bd:#ecdcb4; --warn-ink:#7a5a12;
+    --warn:#a0761f; --warn-strong:#2f80ed; --warn-soft:#fbf3e0; --warn-bd:#ecdcb4; --warn-ink:#7a5a12;
     --cancel-mark:#b0b0b0;
-    /* 보조 시그니처(거의 안 씀) */
-    --coral:#ff385c; --peach:#ffd1da; --mint:#eef7f2; --cream:#fff5f6; --forest:#460479; --yellow:#f4d35e; --mustard:#d9a441; --navy:#222222; --lilac:#ffd1da; --lime:#eef7f2; --pink:#fff5f6; --magenta:#ff385c;
+    /* 다가오는 공연 카드색(블루 계열) */
+    --coral:#2f80ed; --peach:#e4ecfb; --mint:#e0eef6; --cream:#eef4fd; --forest:#1b63d6; --yellow:#f4d35e; --mustard:#d9a441; --navy:#222222; --lilac:#e4ecfb; --lime:#e0eef6; --pink:#eef4fd; --magenta:#2f80ed;
     --shadow-sm:none;
     /* Airbnb 단일 섀도우 티어 — 카드를 은은히 띄운다 */
     --shadow:rgba(0,0,0,.04) 0 2px 6px 0,rgba(0,0,0,.09) 0 4px 12px -4px;
@@ -415,13 +415,13 @@
     --canvas:#181819; --page:#181819; --card:#222224; --chip:#2a2a2c;
     --ink:#f2f2f2; --ink-soft:#c4c4c6; --ink-faint:#8a8a8e;
     --line:#38383b; --line-soft:#333335;
-    /* accent = Rausch(다크에서 약간 밝게) */
-    --accent:#ff5a76; --accent-ink:#ff7d92; --accent-soft:rgba(255,88,118,.16); --accent-bd:#ff5a76;
+    /* accent = 블루(다크에서 약간 밝게) */
+    --accent:#4e9bff; --accent-ink:#7db4ff; --accent-soft:rgba(78,155,255,.16); --accent-bd:#4e9bff;
     --danger:#ff6f57; --danger-ink:#ff8f7c; --danger-soft:rgba(255,111,87,.14); --danger-bd:rgba(255,111,87,.4);
     --ok:#4caf50;
-    --warn:#d9a441; --warn-strong:#ff5a76; --warn-soft:rgba(217,164,65,.12); --warn-bd:rgba(217,164,65,.3); --warn-ink:#e6bf6a;
+    --warn:#d9a441; --warn-strong:#4e9bff; --warn-soft:rgba(217,164,65,.12); --warn-bd:rgba(217,164,65,.3); --warn-ink:#e6bf6a;
     --cancel-mark:#8a8a8e;
-    --coral:#ff5a76; --peach:#4a2f38; --mint:#243430; --cream:#3a2a2e; --forest:#3a1a52; --yellow:#4a4020; --mustard:#4a3a1c; --navy:#2a2a2d; --lilac:#4a2f38; --lime:#243430; --pink:#3a2a2e; --magenta:#ff5a76;
+    --coral:#4e9bff; --peach:#26344a; --mint:#22323f; --cream:#242f42; --forest:#7db4ff; --yellow:#4a4020; --mustard:#4a3a1c; --navy:#2a2a2d; --lilac:#26344a; --lime:#22323f; --pink:#242f42; --magenta:#4e9bff;
     --shadow-sm:none;
     --shadow:0 2px 12px -5px rgba(0,0,0,.5);
     --shadow-lg:0 16px 40px -12px rgba(0,0,0,.6);
@@ -458,11 +458,13 @@
   .tk-check.on::after{color:var(--canvas)}
   .fab,.fab-item.manual,.fab-item.photo{background:var(--accent)}
   .fab{box-shadow:var(--shadow)}
-  /* 상태 태그·리본을 잉크로 통일 */
-  .xtag{background:var(--ink);color:var(--canvas)}
-  .xtag.cancel{background:var(--cancel-mark);color:var(--canvas)}
+  /* 상태 태그: 작고 산뜻한 소프트 블루 칩(기존 큰 검정 pill 대체) */
+  .xtag{background:var(--accent-soft);color:var(--accent-ink);font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:6px;letter-spacing:0}
+  .xtag.cancel{background:var(--chip);color:var(--ink-faint)}
   .badge{color:var(--ink)}
   .up-dday.soon{background:var(--coral);color:#fff}
+  /* 타일 리본: 더 슬림하게(텍스트·두께 축소) */
+  .tk-ribbon{font-size:8px;padding:2px 0;letter-spacing:.02em;top:11px;right:-32px}
   /* 굵기 절제(Airtable: bold-for-its-own-sake 지양, 500~600) */
   .tk-name,.lname,.up-name,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
   .stats b,.up-h,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
@@ -480,7 +482,9 @@
   .tk-price.xf,.lsub .lxf{color:var(--accent-ink)}
   .lrow.is-transfer{background:var(--card)}
   .lrow.is-transfer .nm{color:var(--ink)}
-  .lrow.is-transfer::before{background:var(--accent)}
+  /* 리스트 좌측 세로선 제거 */
+  .lrow.is-transfer::before,.lrow.is-cancel::before{display:none}
+  .lrow.is-transfer,.lrow.is-cancel{padding-left:13px}
   .tk.is-cancel{background:var(--chip)}
   /* 다가오는 공연: 시그니처 카드(코랄·피치·민트 순환). 첫 카드=코랄(흰 글자) */
   #upnext .up-card:nth-child(3n+1){background:var(--coral)!important}
