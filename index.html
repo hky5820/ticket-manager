@@ -25,6 +25,7 @@
     --line:#dddddd; --line-soft:#ebebeb;
     /* accent = 블루. 모든 CTA·활성·강조를 담당하는 단일 브랜드색 */
     --accent:#2f80ed; --accent-ink:#1b63d6; --accent-soft:#eaf2fe; --accent-bd:#2f80ed;
+    --partial:#0d9488; --partial-soft:#e6f7f4; /* 일부 양도 구분색(청록) */
     --danger:#c13515; --danger-ink:#b32505; --danger-soft:#fbeceb; --danger-bd:#f3ccc4;
     --ok:#008a05;
     /* warn = 인식 대기열 전용 */
@@ -417,6 +418,7 @@
     --line:#38383b; --line-soft:#333335;
     /* accent = 블루(다크에서 약간 밝게) */
     --accent:#4e9bff; --accent-ink:#7db4ff; --accent-soft:rgba(78,155,255,.16); --accent-bd:#4e9bff;
+    --partial:#2dd4bf; --partial-soft:rgba(45,212,191,.15); /* 일부 양도 구분색(청록) */
     --danger:#ff6f57; --danger-ink:#ff8f7c; --danger-soft:rgba(255,111,87,.14); --danger-bd:rgba(255,111,87,.4);
     --ok:#4caf50;
     --warn:#d9a441; --warn-strong:#4e9bff; --warn-soft:rgba(217,164,65,.12); --warn-bd:rgba(217,164,65,.3); --warn-ink:#e6bf6a;
@@ -461,6 +463,7 @@
   /* 양도/취소 표시 = 티켓 '스탬프' (아웃라인 뱃지). 양도표임을 바로 알면서 멋스럽게 */
   .xtag{border:1.2px solid var(--accent);background:var(--accent-soft);color:var(--accent-ink);font-size:9px;font-weight:800;padding:1.5px 6px;border-radius:6px;letter-spacing:0;white-space:nowrap}
   .xtag.cancel{border-color:var(--cancel-mark);background:var(--chip);color:var(--ink-faint)}
+  .xtag.partial{border-color:var(--partial);background:var(--partial-soft);color:var(--partial)}
   .badge{color:var(--ink)}
   .up-dday.soon{background:var(--coral);color:#fff}
   /* 타일: 중앙에 반투명 '스탬프' 워터마크(내용은 비치되 양도 티켓임을 표시) */
@@ -469,6 +472,7 @@
     font-size:17px;font-weight:900;padding:3px 12px;letter-spacing:.04em;text-align:center;
     opacity:.17;box-shadow:none;pointer-events:none;white-space:nowrap}
   .tk-ribbon.cancel{border-color:var(--cancel-mark);color:var(--cancel-mark)}
+  .tk-ribbon.partial{border-color:var(--partial);color:var(--partial);opacity:.22} /* 일부 양도=청록, 살짝 더 진하게 */
   /* 굵기 절제(Airtable: bold-for-its-own-sake 지양, 500~600) */
   .tk-name,.lname,.up-name,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
   .stats b,.up-h,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
@@ -521,10 +525,12 @@
   /* 모달 입력·버튼을 테마 라운드/톤에 맞춤 */
   .field input,.field textarea,.vbtn,.gbtn,.vadd input{border-radius:12px}
   .sheet{border-radius:22px 22px 0 0}
-  /* 리스트 sub 라인: 좌측 수량·가격 / 우측 예매처(같은 줄 우측 정렬) */
-  .lsub{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+  /* 리스트 sub 라인: 좌측 수량·가격 / 우측 예매처(색점+이름, 우측 정렬) */
+  .lsub{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .lsub-l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .lsub-v{flex:none;color:var(--ink-faint);font-weight:600;max-width:45%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .lsub-v{flex:none;display:inline-flex;align-items:center;gap:5px;color:var(--ink-faint);font-weight:600;max-width:48%}
+  .lsub-v .lvdot{width:8px;height:8px;border-radius:3px;flex:none}
+  .lsub-v .lvn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1187,7 +1193,7 @@ function tileCard(t){
   const tint='';
   return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
-    ${xf?'<span class="tk-ribbon">양도완료</span>':(pt?'<span class="tk-ribbon">일부 양도</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':''))}
+    ${xf?'<span class="tk-ribbon">양도완료</span>':(pt?'<span class="tk-ribbon partial">일부 양도</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':''))}
     <div class="tk-top">
       <span class="tk-when ${t.date?'':'nodate'}">${d.main}${d.sub?`<small>${d.sub}</small>`:''}</span>
       <span class="tk-vendor"><i style="background:${c}"></i><span>${esc(t.vendor||'')}</span></span>
@@ -1213,12 +1219,11 @@ function listRow(t){
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
-      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span><span class="ltags">${xf?'<span class="xtag">양도완료</span>':(pt?'<span class="xtag">일부 양도</span>':'')}${xc?'<span class="xtag cancel">부분취소</span>':''}</span></div>
+      <div class="lname"><span class="nm">${esc(t.name||'(공연명 없음)')}</span><span class="ltags">${xf?'<span class="xtag">양도완료</span>':(pt?'<span class="xtag partial">일부 양도</span>':'')}${xc?'<span class="xtag cancel">부분취소</span>':''}</span></div>
       ${seatLine(t)?`<div class="lseat">${ICON_SEAT}${esc(seatLine(t))}</div>`:''}
-      <div class="lsub"><span class="lsub-l">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}</span>${t.vendor?`<span class="lsub-v">${esc(t.vendor)}</span>`:''}</div>
+      <div class="lsub"><span class="lsub-l">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}</span>${t.vendor?`<span class="lsub-v"><i class="lvdot" style="background:${c}"></i><span class="lvn">${esc(t.vendor)}</span></span>`:''}</div>
     </div>
     ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
-    <span class="ldot" style="background:${c}"></span>
   </div>`;
 }
 
