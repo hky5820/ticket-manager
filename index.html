@@ -470,9 +470,9 @@
   .tk-ribbon{top:50%;left:50%;right:auto;bottom:auto;width:auto;transform:translate(-50%,-50%) rotate(-15deg);
     border:2.5px solid var(--accent);background:transparent;color:var(--accent);border-radius:9px;
     font-size:17px;font-weight:900;padding:3px 12px;letter-spacing:.04em;text-align:center;
-    opacity:.17;box-shadow:none;pointer-events:none;white-space:nowrap}
+    opacity:.26;box-shadow:none;pointer-events:none;white-space:nowrap}
   .tk-ribbon.cancel{border-color:var(--cancel-mark);color:var(--cancel-mark)}
-  .tk-ribbon.partial{border-color:var(--partial);border-style:dashed;color:var(--partial);opacity:.32} /* 일부 양도=핑크 점선(파랑과 대비로 눈에 띔) */
+  .tk-ribbon.partial{border-color:var(--partial);border-style:dashed;color:var(--partial);opacity:.42} /* 일부 양도=핑크 점선(파랑과 대비로 눈에 띔) */
   /* 굵기 절제(Airtable: bold-for-its-own-sake 지양, 500~600) */
   .tk-name,.lname,.up-name,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
   .stats b,.up-h,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
@@ -530,10 +530,23 @@
   .field label{font-weight:600;color:var(--ink-faint);font-size:12px;letter-spacing:.01em;margin-bottom:6px}
   .vbtn,.gbtn{padding:12px 13px}
   .vbtn.placeholder,.gbtn.placeholder{color:var(--ink-faint)}
-  .seat-edit{background:var(--chip);border-color:var(--line)}
-  .seat-edit input{border-radius:10px}
   .two{gap:11px}
   .sheet{border-radius:22px 22px 0 0}
+  /* 모달 폴리시: 회색/색면 청크·촌스러운 버튼 정리(아웃라인·화이트 기반) */
+  .seat-edit{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:40px 13px 13px}
+  .seat-edit input{border-radius:10px}
+  .seat-btn{background:transparent;color:var(--ink-soft);font-weight:600}
+  .seat-btn.cancel{background:transparent;color:var(--danger-ink);border-color:var(--danger-bd)}
+  .seat-btn.xfer{background:transparent;color:var(--accent-ink);border-color:var(--accent-bd)}
+  .seat-edit .rm{background:transparent;border:none;color:var(--ink-faint);font-weight:600;padding:0 4px}
+  .seat-edit .rm:active{color:var(--danger-ink)}
+  .transfer-box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .cancel-note{background:var(--card);border:1px solid var(--line);border-radius:14px}
+  .add-seat{background:transparent;border:1px dashed var(--line);color:var(--accent-ink);font-weight:600}
+  .btn-danger{background:transparent;border:1px solid var(--line);color:var(--danger-ink);font-weight:600}
+  .btn-danger:active{background:var(--danger-soft)}
+  .btn-ghost{font-weight:600}
+  .switch-row{background:var(--card);border:1px solid var(--line)}
   /* 리스트 sub 라인: 좌측 수량·가격 / 우측 예매처(색점+이름, 우측 정렬) */
   .lsub{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .lsub-l{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
