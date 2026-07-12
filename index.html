@@ -18,26 +18,26 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* ===== 디자인 토큰: Airtable 언어 — 네이비 잉크 + 따뜻한 시그니처 색 ===== */
+  /* ===== 디자인 토큰: Airbnb 언어 — 흰 캔버스 + Rausch 단일 포인트 + 소프트 섀도우 ===== */
   :root{
-    --canvas:#ffffff; --page:#ffffff; --card:#ffffff; --chip:#f8fafc;
-    --ink:#181d26; --ink-soft:#333840; --ink-faint:#767c86;
-    --line:#dddddd;
-    /* accent = 네이비 잉크. CTA·활성·강조 담당 */
-    --accent:#181d26; --accent-ink:#181d26; --accent-soft:#f8fafc; --accent-bd:#181d26;
-    --danger:#c0362c; --danger-ink:#a52a22; --danger-soft:#fbeceb; --danger-bd:#f0c4c0;
-    --ok:#006400;
-    /* warn = 인식 대기열(머스터드) 전용. 양도는 별도(크림 블록·잉크 리본) */
-    --warn:#a0761f; --warn-strong:#181d26; --warn-soft:#fbf3e0; --warn-bd:#ecdcb4; --warn-ink:#7a5a12;
-    --cancel-mark:#9297a0;
-    /* Airtable 시그니처 컬러(따뜻한 면) */
-    --coral:#aa2d00; --peach:#fcab79; --mint:#a8d8c4; --cream:#f5e9d4; --forest:#0a2e0e; --yellow:#f4d35e; --mustard:#d9a441; --navy:#181d26; --lilac:#fcab79; --lime:#a8d8c4; --pink:#f5e9d4; --magenta:#aa2d00;
+    --canvas:#ffffff; --page:#ffffff; --card:#ffffff; --chip:#f7f7f7;
+    --ink:#222222; --ink-soft:#3f3f3f; --ink-faint:#767676;
+    --line:#dddddd; --line-soft:#ebebeb;
+    /* accent = Rausch. 모든 CTA·활성·강조를 담당하는 단일 브랜드색 */
+    --accent:#ff385c; --accent-ink:#e00b41; --accent-soft:#ffe9ee; --accent-bd:#ff385c;
+    --danger:#c13515; --danger-ink:#b32505; --danger-soft:#fbeceb; --danger-bd:#f3ccc4;
+    --ok:#008a05;
+    /* warn = 인식 대기열 전용 */
+    --warn:#a0761f; --warn-strong:#ff385c; --warn-soft:#fbf3e0; --warn-bd:#ecdcb4; --warn-ink:#7a5a12;
+    --cancel-mark:#b0b0b0;
+    /* 보조 시그니처(거의 안 씀) */
+    --coral:#ff385c; --peach:#ffd1da; --mint:#eef7f2; --cream:#fff5f6; --forest:#460479; --yellow:#f4d35e; --mustard:#d9a441; --navy:#222222; --lilac:#ffd1da; --lime:#eef7f2; --pink:#fff5f6; --magenta:#ff385c;
     --shadow-sm:none;
-    --shadow:0 2px 10px -6px rgba(24,29,38,.14);
-    --shadow-lg:0 16px 40px -12px rgba(24,29,38,.22);
-    /* 카드는 그림자 대신 헤어라인 테두리 */
-    --card-bd:var(--line);
-    --card-sh:none;
+    /* Airbnb 단일 섀도우 티어 — 카드를 은은히 띄운다 */
+    --shadow:rgba(0,0,0,.04) 0 2px 6px 0,rgba(0,0,0,.09) 0 4px 12px -4px;
+    --shadow-lg:0 16px 40px -12px rgba(0,0,0,.22);
+    --card-bd:var(--line-soft);
+    --card-sh:var(--shadow);
   }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
@@ -410,19 +410,18 @@
   .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:60;background:#18181b;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
 
-  /* ===== 다크모드 (data-theme='dark') — 네이비 잉크 반전 ===== */
+  /* ===== 다크모드 (data-theme='dark') — Rausch 유지, 다크 캔버스 ===== */
   :root[data-theme="dark"]{
-    --canvas:#14161a; --page:#14161a; --card:#1d2027; --chip:#232730;
-    --ink:#eceef2; --ink-soft:#b0b4bc; --ink-faint:#797f8a;
-    --line:#2f333c;
-    /* accent = 밝은 잉크(반전) */
-    --accent:#eceef2; --accent-ink:#eceef2; --accent-soft:#232730; --accent-bd:#eceef2;
-    --danger:#e5776e; --danger-ink:#ee948c; --danger-soft:rgba(229,119,110,.14); --danger-bd:rgba(229,119,110,.4);
+    --canvas:#181819; --page:#181819; --card:#222224; --chip:#2a2a2c;
+    --ink:#f2f2f2; --ink-soft:#c4c4c6; --ink-faint:#8a8a8e;
+    --line:#38383b; --line-soft:#333335;
+    /* accent = Rausch(다크에서 약간 밝게) */
+    --accent:#ff5a76; --accent-ink:#ff7d92; --accent-soft:rgba(255,88,118,.16); --accent-bd:#ff5a76;
+    --danger:#ff6f57; --danger-ink:#ff8f7c; --danger-soft:rgba(255,111,87,.14); --danger-bd:rgba(255,111,87,.4);
     --ok:#4caf50;
-    --warn:#d9a441; --warn-strong:#eceef2; --warn-soft:rgba(217,164,65,.12); --warn-bd:rgba(217,164,65,.3); --warn-ink:#e6bf6a;
-    --cancel-mark:#797f8a;
-    /* 시그니처는 다크에서 톤다운 */
-    --coral:#7a2200; --peach:#5a3d28; --mint:#274a3c; --cream:#443c28; --forest:#183a1c; --yellow:#4a4020; --mustard:#4a3a1c; --navy:#2a2f3d; --lilac:#5a3d28; --lime:#274a3c; --pink:#443c28; --magenta:#7a2200;
+    --warn:#d9a441; --warn-strong:#ff5a76; --warn-soft:rgba(217,164,65,.12); --warn-bd:rgba(217,164,65,.3); --warn-ink:#e6bf6a;
+    --cancel-mark:#8a8a8e;
+    --coral:#ff5a76; --peach:#4a2f38; --mint:#243430; --cream:#3a2a2e; --forest:#3a1a52; --yellow:#4a4020; --mustard:#4a3a1c; --navy:#2a2a2d; --lilac:#4a2f38; --lime:#243430; --pink:#3a2a2e; --magenta:#ff5a76;
     --shadow-sm:none;
     --shadow:0 2px 12px -5px rgba(0,0,0,.5);
     --shadow-lg:0 16px 40px -12px rgba(0,0,0,.6);
@@ -470,18 +469,18 @@
   .seg button,.pill,.btn-primary,.save-row button,.up-dday,.tk-qty,.tk-vendor{font-weight:500}
   /* 좌석줄: pill 배경 제거하고 담백한 캡션으로 */
   .tk-seatline{background:transparent;padding:0;height:auto;font-weight:400;color:var(--ink-soft);letter-spacing:0}
-  /* 카드 라운드(Airtable: 절제된 10~12px) */
-  .tk{border-radius:12px}
-  .lrow{border-radius:12px}
-  .up-card{border-radius:12px}
-  .cal{border-radius:12px}
-  /* 양도 = 크림 컬러블록 + 잉크 리본 + 코랄 가격 */
-  .tk.is-transfer{background:var(--cream);border-color:transparent}
+  /* 카드 라운드(Airbnb: 부드러운 14~16px) */
+  .tk{border-radius:16px}
+  .lrow{border-radius:14px}
+  .up-card{border-radius:16px}
+  .cal{border-radius:16px}
+  /* 양도 = 흰 카드 유지 + Rausch 리본·가격·스트라이프로만 표시(과한 색면 지양) */
+  .tk.is-transfer{background:var(--card)}
   .tk.is-transfer .tk-when,.tk.is-transfer .tk-name{color:var(--ink)}
-  .tk-price.xf,.lsub .lxf{color:var(--coral)}
-  .lrow.is-transfer{background:var(--cream)}
+  .tk-price.xf,.lsub .lxf{color:var(--accent-ink)}
+  .lrow.is-transfer{background:var(--card)}
   .lrow.is-transfer .nm{color:var(--ink)}
-  .lrow.is-transfer::before{background:var(--coral)}
+  .lrow.is-transfer::before{background:var(--accent)}
   .tk.is-cancel{background:var(--chip)}
   /* 다가오는 공연: 시그니처 카드(코랄·피치·민트 순환). 첫 카드=코랄(흰 글자) */
   #upnext .up-card:nth-child(3n+1){background:var(--coral)!important}
@@ -1196,7 +1195,6 @@ function listRow(t){
       ${seatLine(t)?`<div class="lseat">${ICON_SEAT}${esc(seatLine(t))}</div>`:''}
       <div class="lsub">${Number(t.qty)||0}매 · <b>₩${won(t.price)}</b>${(xf||pt)&&ticketRecv(t)?` · <span class="lxf">→ ₩${won(ticketRecv(t))}</span>`:''}${t.vendor?' · '+esc(t.vendor):''}</div>
     </div>
-    ${t.hasImg?'<span class="tk-cam">📷</span>':''}
     ${selectMode?'':`<button class="tk-share" onclick="event.stopPropagation();openShare('${t.id}')" title="공유">📤</button>`}
     <span class="ldot" style="background:${c}"></span>
   </div>`;
