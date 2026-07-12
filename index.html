@@ -98,7 +98,6 @@
   /* tile grid — 위:언제 / 가운데:공연명 / 아래:등급·가격 */
   .tiles{display:grid;grid-template-columns:repeat(var(--tile-cols,2),1fr);gap:10px;align-items:stretch;transition:--tile-cols .1s}
   .tk{position:relative;display:flex;flex-direction:column;height:126px;overflow:hidden;background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:10px 12px;box-shadow:var(--card-sh);cursor:pointer;transition:transform .15s;-webkit-touch-callout:none;user-select:none}
-  .tk:has(.tk-ribbon) .tk-vendor{display:none} /* 상태 칩과 예매처가 우상단서 겹치지 않도록 */
   .tk:active{transform:scale(.98)}
   .tk-top{display:flex;align-items:baseline;justify-content:space-between;gap:6px;height:18px;margin-bottom:3px}
   .tk-when{font-size:14.5px;font-weight:800;color:var(--ink);letter-spacing:-.3px;white-space:nowrap}
@@ -135,8 +134,8 @@
   .tk.is-transfer{background:var(--warn-soft)}
   .tk.is-transfer .tk-when{color:#b45309}
   .tk.is-transfer .tk-name{color:var(--warn-ink)}
-  /* 상태 표시: 대각선 리본 대신 우상단 납작한 칩 */
-  .tk-ribbon{position:absolute;top:9px;right:10px;background:var(--warn-strong);color:#fff;font-size:9px;font-weight:800;text-align:center;padding:2px 8px;border-radius:999px;letter-spacing:.2px;line-height:1.5;pointer-events:none;z-index:1}
+  /* 상태 표시: 우상단 대각선 리본 */
+  .tk-ribbon{position:absolute;top:12px;right:-30px;width:110px;transform:rotate(40deg);background:var(--warn-strong);color:#fff;font-size:9px;font-weight:800;text-align:center;padding:3px 0;letter-spacing:.4px;pointer-events:none;z-index:1}
   .tk-ribbon.cancel{background:var(--cancel-mark)}
   .tk.is-cancel{background:var(--chip)}
   .tk.is-cancel .tk-name{color:var(--ink-soft)}
