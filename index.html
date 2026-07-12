@@ -494,6 +494,9 @@
   .lrow.is-transfer::before,.lrow.is-cancel::before{display:none}
   .lrow.is-transfer,.lrow.is-cancel{padding-left:13px}
   .tk.is-cancel{background:var(--chip)}
+  /* 일부 양도 카드는 취소 좌석이 있어도 정상 흰색으로(일반 티켓처럼) */
+  .tk.is-cancel:has(.tk-ribbon.partial){background:var(--card)}
+  .lrow.is-cancel:has(.xtag.partial){background:var(--card)}
   /* 다가오는 공연: 시그니처 카드(코랄·피치·민트 순환). 첫 카드=코랄(흰 글자) */
   /* 다가오는 공연: 첫 카드만 하이라이트, 나머지는 색 통일 */
   #upnext .up-card{background:var(--chip)!important}
