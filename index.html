@@ -512,8 +512,18 @@
   .search input:focus,.field input:focus,.field textarea:focus,.vadd input:focus{border-color:var(--ink);box-shadow:0 0 0 3px var(--chip)}
   /* 캘린더: 담백하게. 일정=연회색, 오늘/임박=잉크 링 */
   .cal-cell.has{background:var(--chip);border-color:var(--line)}
-  .cal-cell.up{background:var(--cream);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
-  .cal-cell.up .cal-day{color:var(--ink)}
+  /* 다가오는 날(2주 이내): 펄스 + 밖으로 퍼지는 링(리플) 애니메이션 */
+  .cal-cell.up{overflow:visible;background:var(--accent-soft);border-color:var(--accent);animation:calPulse 1.8s ease-in-out infinite}
+  .cal-cell.up .cal-day{color:var(--accent-ink)}
+  .cal-cell.up::after{content:"";position:absolute;inset:-1px;border-radius:11px;border:2px solid var(--accent);opacity:0;pointer-events:none;animation:calRipple 1.8s ease-out infinite}
+  .cal-cell.up .cal-dots i{animation:calDot 1.6s ease-in-out infinite}
+  @keyframes calPulse{0%,100%{box-shadow:0 0 0 1px var(--accent) inset}50%{box-shadow:0 0 0 2.5px var(--accent) inset}}
+  @keyframes calRipple{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.14);opacity:0}}
+  @keyframes calDot{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
+  @media (prefers-reduced-motion:reduce){.cal-cell.up,.cal-cell.up::after,.cal-cell.up .cal-dots i{animation:none}}
+  /* 완전 양도 티켓은 dim(넘겨서 안 가는 표). 부분양도·일반은 정상 */
+  .tk.is-transfer,.lrow.is-transfer{opacity:.55}
+  .tk.is-transfer .tk-ribbon{opacity:.5}
   /* 검색창 라운드 */
   .search input{border-radius:10px}
   /* 모달: '양도' 관련 UI를 블루 테마로 통일(앰버 잔재 제거. 인식 대기열 앰버는 유지) */
