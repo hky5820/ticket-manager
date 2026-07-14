@@ -245,6 +245,23 @@
   .pdeck::-webkit-scrollbar{display:none}
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always} /* 플릭해도 한 장씩만 */
   .pdeck .pass:only-child{flex-basis:100%}
+  /* ===== 애플월렛식 티켓 스택 ===== */
+  #walletOverlay{background:#0e0f13;align-items:stretch}
+  .wsheet{width:100%;max-width:420px;margin:0 auto;display:flex;flex-direction:column;min-height:0;padding:calc(12px + env(safe-area-inset-top)) 16px 0}
+  .whead{flex:none;display:flex;align-items:center;justify-content:space-between;color:#f2f2f4;padding:4px 2px 16px}
+  .whead .wt{font-size:16px;font-weight:800}
+  .whead .wt em{font-style:normal;font-size:11px;color:#8e9096;font-weight:700;margin-left:4px}
+  .whead .wr{display:flex;gap:8px;align-items:center}
+  #walletOverlay .hxf{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.18);color:#b9bac2}
+  #walletOverlay .hxf.on{background:rgba(78,140,255,.18);border-color:#4e8cff;color:#9dbcff}
+  .wclose{border:none;background:rgba(255,255,255,.12);color:#fff;width:32px;height:32px;border-radius:50%;font-size:13px;cursor:pointer;font-family:inherit}
+  .wclose:active{background:rgba(255,255,255,.25)}
+  .wstack{flex:1;min-height:0;overflow-y:auto;padding:4px 2px calc(40px + env(safe-area-inset-bottom));position:relative}
+  .wstack::-webkit-scrollbar{display:none}
+  /* 계단형 겹침: 절대배치로 카드 높이와 무관하게 머리 96px씩 균일 노출 */
+  .wstack .pass{position:absolute;left:2px;right:2px;box-shadow:0 -14px 26px -14px rgba(0,0,0,.85)}
+  .wstack .pass.is-x{filter:grayscale(.8) brightness(.93)} /* 불투명 유지(투명도 주면 아래 카드가 비침) */
+  .wempty{color:#8e9096;text-align:center;padding:70px 0;font-size:13px}
   /* ===== 티켓 상세: 세로 종이 티켓(보딩패스)이 그대로 팝업 ===== */
   /* 스크림 = 완전 불투명 단색 — 노치 구멍색과 정확히 일치해 진짜 뚫린 것처럼 */
   #detailOverlay{background:#0e0f13}
@@ -294,8 +311,8 @@
     --danger:#c13515;--danger-ink:#b32505;--danger-soft:#fbeceb;--danger-bd:#f3ccc4;
     --warn:#a0761f;--warn-strong:#2E63F0;--warn-soft:#fbf3e0;--warn-bd:#ecdcb4;--warn-ink:#7a5a12;
     --card-bd:#ebebee;--card-sh:none;--shadow:none;--shadow-sm:none}
-  /* 티켓 팝업 형태: 각진 종이 + 예매처 스트립, 바텀시트보다 살짝 좁게 */
-  .overlay.centered#overlay{align-items:center}
+  /* 티켓 팝업 형태: 각진 종이 + 예매처 스트립, 바텀시트보다 살짝 좁게. 주변은 상세와 동일한 검은 배경 */
+  .overlay.centered#overlay{align-items:center;background:#0e0f13}
   #overlay .sheet{max-width:352px;border-radius:0;max-height:88vh;padding:0 18px 0;box-shadow:0 30px 70px -18px rgba(0,0,0,.7)}
   #overlay .tkt-band{margin:0 -18px 12px;height:6px}
   #overlay .sheet h2{font-size:19px;margin-top:2px}
@@ -710,8 +727,7 @@
     <div class="modal-head">
       <h2 id="modalTitle">티켓 추가</h2>
       <span class="modal-head-actions" id="modalHeadActions" style="display:none">
-        <button type="button" class="tkt-ic" id="modalImgBtn" onclick="viewCurrentImage()" title="예매내역 사진 보기" style="display:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>
-        <button type="button" class="tkt-ic" id="modalImgUpBtn" onclick="document.getElementById('editImgFile').click()" title="예매내역 사진 교체"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+        <button type="button" class="tkt-ic" onclick="openPhotoMenu()" title="예매내역 사진"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>
       </span>
     </div>
 
@@ -779,6 +795,14 @@
       <button class="cancel" type="button" onclick="closeModal()">취소</button>
       <button class="save" id="saveBtn" type="button" onclick="save()">저장하기</button>
     </div>
+  </div>
+</div>
+
+<!-- 예매내역 사진 메뉴(보기·교체·삭제) -->
+<div class="overlay centered" id="photoOverlay" onclick="if(event.target===this)closeOv('photoOverlay')">
+  <div class="sheet">
+    <div class="act-title">예매내역 사진</div>
+    <div id="photoBody"></div>
   </div>
 </div>
 
@@ -880,6 +904,20 @@
     <button class="act-btn" onclick="actDuplicate()">📋 복제</button>
     <button class="act-btn danger" onclick="actDelete()">🗑 삭제</button>
     <button class="act-btn cancel" onclick="closeActions()">취소</button>
+  </div>
+</div>
+
+<!-- 애플월렛식 티켓 스택(홈 캐러셀 아래로 쓸어내리면) -->
+<div class="overlay" id="walletOverlay" onclick="if(event.target===this)closeWallet()">
+  <div class="wsheet">
+    <div class="whead">
+      <span class="wt">다가오는 티켓 <em id="wcount"></em></span>
+      <span class="wr">
+        <button class="hxf" id="wXf" type="button" onclick="toggleHideXfer();renderWallet()">양도표</button>
+        <button class="wclose" type="button" onclick="closeWallet()">✕</button>
+      </span>
+    </div>
+    <div class="wstack" id="wstack"></div>
   </div>
 </div>
 
@@ -1293,7 +1331,7 @@ function homeHTML(){
     </div>`;
   }).join('');
   return `<div class="home">
-    <div class="hsec">다음 공연 ${deckTs.length>1?`<em>옆으로 넘겨 ${deckTs.length}장</em>`:''}</div>
+    <div class="hsec">다음 공연 <em onclick="openWallet()" style="cursor:pointer">${deckTs.length>1?`옆으로 ${deckTs.length}장 · `:''}모아보기 ⌄</em></div>
     ${hero}
     <div class="hsec"><span>다가오는 티켓 <em>${rest.length}건</em></span>${hasX?`<button class="hxf${hideXfer?'':' on'}" type="button" onclick="toggleHideXfer()">양도표 ${hideXfer?'숨김':'표시'}</button>`:''}</div>
     ${rest.length?`<div class="hlist">${rows}</div>`:`<div class="hnone">예정된 다른 티켓이 없어요</div>`}
@@ -1395,6 +1433,31 @@ function calSel(ds){ selDay=(selDay===ds?null:ds); render(); } // 같은 날 다
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}render();}
 // 전역 calY/calM을 안 바꾸고 특정 달 캘린더 HTML 얻기(스와이프 월 이동 pane용)
 function calHTMLFor(y,m){ const oy=calY,om=calM; calY=y;calM=m; const h=renderCalendar(); calY=oy;calM=om; return h; }
+/* ===== 애플월렛식 티켓 스택 ===== */
+function openWallet(){ renderWallet(); openOv('walletOverlay'); }
+function closeWallet(){ closeOv('walletOverlay'); }
+function renderWallet(){
+  const today=ymd(new Date());
+  let list=byDate(tickets.filter(t=>t.date&&t.date>=today));
+  const btn=document.getElementById('wXf');
+  if(btn){ btn.textContent='양도표 '+(hideXfer?'숨김':'표시'); btn.classList.toggle('on',!hideXfer); }
+  if(hideXfer)list=list.filter(t=>!(t.transfer&&t.transfer.done));
+  document.getElementById('wcount').textContent=list.length?list.length+'장':'';
+  const STEP=96; // 카드 머리 노출 높이
+  document.getElementById('wstack').innerHTML=list.length
+    ? list.map((t,i)=>{ const x=(t.transfer&&t.transfer.done)?' is-x':'';
+        return passHTML(t,today).replace('<div class="pass"',`<div style="top:${i*STEP}px" class="pass${x}"`); }).join('')
+      +`<div style="height:${(list.length-1)*STEP+280}px"></div>` /* 절대배치 카드만큼 스크롤 높이 확보 */
+    : '<div class="wempty">다가오는 티켓이 없어요</div>';
+}
+// 홈 캐러셀을 아래로 쓸어내리면 스택 열기
+function initWalletPull(){
+  const root=document.getElementById('viewRoot');
+  let sy=0,sx=0,on=false,fired=false;
+  root.addEventListener('touchstart',e=>{ const t=e.touches[0]; on=!!e.target.closest('.pdeck'); fired=false; sy=t.clientY; sx=t.clientX; },{passive:true});
+  root.addEventListener('touchmove',e=>{ if(!on||fired)return; const t=e.touches[0]; const dy=t.clientY-sy, dx=Math.abs(t.clientX-sx); if(dy>64&&dx<46){ fired=true; openWallet(); } },{passive:true});
+}
+
 /* ===== 티켓 상세(티켓표 모양) 시트 ===== */
 let detailId=null;
 function openDetail(id){
@@ -1800,13 +1863,22 @@ function edit(id){
   (active.length?active:[null]).forEach(s=>addSeatRow(s));
   renderCanceledNote(); syncTransferUI();
   document.getElementById('delBtn').style.display='block';
-  document.getElementById('modalHeadActions').style.display='flex';
-  document.getElementById('modalImgBtn').style.display=t.hasImg?'grid':'none';
-  document.getElementById('modalImgUpBtn').style.display=(mode==='cloud')?'grid':'none'; // 사진 교체는 클라우드에서만
+  document.getElementById('modalHeadActions').style.display=(mode==='cloud')?'flex':'none'; // 사진 관리는 클라우드에서만
   syncVendorBtn(); syncPlatformBtn();
   openOv('overlay');
 }
-// 예매내역 사진 교체/등록(수정 모달에서)
+/* ===== 예매내역 사진: 보기/교체/삭제 메뉴 ===== */
+function openPhotoMenu(){
+  if(!editingId)return;
+  const t=tickets.find(x=>String(x.id)===String(editingId)); if(!t)return;
+  const has=!!t.hasImg;
+  document.getElementById('photoBody').innerHTML=
+    (has?`<button class="act-btn" onclick="viewCurrentImage()">🔍 사진 보기</button>`:'')+
+    `<button class="act-btn" onclick="document.getElementById('editImgFile').click()">${has?'📷 사진 교체':'📷 사진 등록'}</button>`+
+    (has?`<button class="act-btn danger" onclick="deleteTicketImg()">사진 삭제</button>`:'')+
+    `<button class="act-btn cancel" onclick="closeOv('photoOverlay')">닫기</button>`;
+  openOv('photoOverlay');
+}
 async function editImgUpload(e){
   const f=(e.target.files||[])[0]; e.target.value='';
   if(!f||!editingId)return;
@@ -1819,9 +1891,22 @@ async function editImgUpload(e){
     const {error}=await sb.from('tickets').update({img:b64,seats:blob}).eq('id',editingId);
     if(error)throw error;
     t.hasImg=true; dataVer++;
-    document.getElementById('modalImgBtn').style.display='grid';
+    closeOv('photoOverlay');
     toast('예매내역 사진이 등록되었어요');
   }catch(err){ toast('사진 업로드 실패: '+(err.message||err)); }
+}
+async function deleteTicketImg(){
+  if(!(mode==='cloud'&&sb)||!editingId)return;
+  if(!confirm('예매내역 사진을 삭제할까요?'))return;
+  try{
+    const t=tickets.find(x=>String(x.id)===String(editingId)); if(!t)return;
+    const blob={seats:t.seats||[],time:t.time||'',transfer:t.transfer||{done:false},hasImg:false};
+    const {error}=await sb.from('tickets').update({img:null,seats:blob}).eq('id',editingId);
+    if(error)throw error;
+    t.hasImg=false; dataVer++;
+    closeOv('photoOverlay');
+    toast('사진이 삭제되었어요');
+  }catch(e){ toast('삭제 실패: '+(e.message||e)); }
 }
 function viewCurrentImage(){
   if(!editingId||!(mode==='cloud'&&sb))return;
@@ -2164,8 +2249,11 @@ async function aiUpload(e){
 let toastT;
 function toast(m){const el=document.getElementById('toast');el.textContent=m;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2000);}
 
-/* ===== overlay manager: 팝업마다 history 항목 1개 → 뒤로가기가 항상 최상단 팝업만 닫음 ===== */
-let _ovStack=[], _ignorePop=false;
+/* ===== overlay manager: 팝업마다 history 항목 1개 → 뒤로가기가 항상 최상단 팝업만 닫음 =====
+   프로그램적 닫기에서 history.back()을 쓰지 않는다(닫자마자 다른 팝업을 열면 back/pushState가
+   경합해 히스토리가 꼬여 뒤로가기 한 번에 앱이 꺼지던 버그). 대신 남은 항목은 '고아'로 세어뒀다가
+   뒤로가기 때 조용히 소비한다 → 뒤로가기는 항상 [팝업 닫기 → 고아 소비 → 앱 종료] 순서로만 동작. */
+let _ovStack=[], _orphan=0;
 function openOv(id){
   const el=document.getElementById(id), sh=el.querySelector('.sheet');
   if(sh){sh.style.transition='';sh.style.transform='';}
@@ -2179,14 +2267,14 @@ function closeOv(id){
   if(idx===-1){ if(!_ovStack.length)document.body.style.overflow=''; return; }
   _ovStack.splice(idx,1);
   if(!_ovStack.length)document.body.style.overflow='';
-  // 이 팝업을 위해 push했던 history 항목 1개 소비(뒤로가기 유발하되 popstate는 무시)
-  _ignorePop=true; history.back();
+  _orphan++; // 이 팝업용 history 항목은 다음 뒤로가기 때 조용히 소비
 }
 window.addEventListener('popstate',()=>{
-  if(_ignorePop){_ignorePop=false;return;}
-  // 사용자가 뒤로가기 → 최상단 팝업만 닫기(앱은 유지)
-  const id=_ovStack.pop();
-  if(id){ document.getElementById(id).classList.remove('on'); if(!_ovStack.length)document.body.style.overflow=''; }
+  if(_ovStack.length){ // 팝업이 열려 있으면 최상단만 닫기
+    const id=_ovStack.pop();
+    document.getElementById(id).classList.remove('on');
+    if(!_ovStack.length)document.body.style.overflow='';
+  }else if(_orphan>0){ _orphan--; } // 이미 닫힌 팝업의 잔여 항목 소비(앱 유지)
 });
 function initSheetDrag(){
   document.querySelectorAll('.overlay:not(.img-view-overlay):not(.centered) .sheet').forEach(sheet=>{
@@ -2316,6 +2404,7 @@ function initCalSwipe(){
 boot();
 initLongPress();
 initCalSwipe();
+initWalletPull();
 initSheetDrag();
 initImgZoom();
 /* 처리 현황·새 티켓 자동 갱신(팝업 열려있을 땐 건너뜀) */
