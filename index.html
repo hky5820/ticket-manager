@@ -114,7 +114,11 @@
   .tk-vendor span{overflow:hidden;text-overflow:ellipsis}
   .tk-name{font-size:13px;font-weight:800;letter-spacing:-.3px;line-height:1.25;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:33px;margin-bottom:4px}
   .tk-seatline{font-size:11px;font-weight:700;color:var(--ink-soft);background:var(--chip);border-radius:6px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:flex-start;max-width:100%;height:19px;line-height:15px}
-  .tk-bottom{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:6px}
+  /* 타일 하단 = 티켓 스텁: 절취선 + 양옆 펀치 노치 */
+  .tk-bottom{position:relative;margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:8px;border-top:2px dashed var(--line-soft)}
+  .tk-bottom::before,.tk-bottom::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:var(--page);pointer-events:none}
+  .tk-bottom::before{left:-20px}
+  .tk-bottom::after{right:-20px}
   .tk-qty{font-size:11.5px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
   .tk-price{font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap}
   .tk-price.xf{color:var(--warn)}
@@ -290,7 +294,7 @@
   .cal-wd{text-align:center;font-size:10.5px;font-weight:700;color:var(--ink-faint);padding:0 0 7px}
   .cal-wd.sun{color:#ef6a6a}.cal-wd.sat{color:#5b93f5}
   .cal-cell{position:relative;border:none;background:var(--chip);border-radius:13px;aspect-ratio:1/.92;min-height:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
-  .cal-cell.empty{background:transparent;cursor:default}
+  .cal-cell.empty{background:transparent;cursor:default;padding:0} /* 전역 .empty(빈 상태, padding 52px)가 스며들어 첫 주가 터지는 것 차단 */
   .cal-cell:active{filter:brightness(.96)}
   .cal-day{font-size:13px;font-weight:700;color:var(--ink);line-height:1}
   .cal-cell.sun .cal-day{color:#ef6a6a}.cal-cell.sat .cal-day{color:#5b93f5}
@@ -576,9 +580,11 @@
   /* 완전 양도 티켓은 dim+흑백(넘겨서 안 가는 표). 정상 티켓의 컬러와 확실히 대비 */
   .tk.is-transfer,.lrow.is-transfer{opacity:.48;filter:grayscale(.75)}
   .tk.is-transfer .tk-ribbon{opacity:.6}
-  /* 전체 뷰 폴리시: 리스트 날짜 = 칩 블록, 월 헤더 카운트 = 포인트 */
-  .ldate{width:48px;background:var(--chip);border-radius:12px;padding:8px 0}
-  .lrow.is-transfer .ldate,.lrow.is-cancel .ldate{background:transparent}
+  /* 전체 뷰 = 티켓 문법: 리스트 행 좌측 날짜 스텁 + 세로 절취선 */
+  .lrow{position:relative}
+  .ldate{width:48px;padding:8px 0}
+  .lrow::after{content:"";position:absolute;left:66px;top:8px;bottom:8px;border-left:2px dashed var(--line-soft);pointer-events:none}
+  .lbody{padding-left:9px}
   .month-head{font-size:14px}
   .month-head .mh-count{background:var(--accent-soft);border:none;color:var(--accent-ink)}
   /* 검색창 라운드 */
