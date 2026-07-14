@@ -1,0 +1,446 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>티켓 보관함 · 새 UI 시안</title>
+<style>
+/* ==========================================================
+   완전 새 UI 시안 — "진짜 티켓처럼"
+   잉크 #191b23 · 종이 #f6f5f1 · 스포트라이트 앰버 #ffb524
+   ========================================================== */
+:root{ --bg:#f0f0ee; --ink:#1d1f26; --sub:#70727a; --hair:#dddcd8; }
+@media (prefers-color-scheme:dark){ :root{ --bg:#141519; --ink:#e9eaec; --sub:#989aa2; --hair:#2b2d33; } }
+:root[data-theme="light"]{ --bg:#f0f0ee; --ink:#1d1f26; --sub:#70727a; --hair:#dddcd8; }
+:root[data-theme="dark"]{ --bg:#141519; --ink:#e9eaec; --sub:#989aa2; --hair:#2b2d33; }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.6}
+.wrap{max-width:1060px;margin:0 auto;padding:44px 20px 80px}
+.intro{font-size:16.5px;margin:0 0 4px;font-weight:700}
+.intro2{font-size:14px;color:var(--sub);margin:0 0 36px;max-width:620px}
+.sect{font-size:13px;font-weight:700;color:var(--sub);margin:46px 0 16px;display:flex;align-items:center;gap:10px}
+.sect::after{content:"";flex:1;height:1px;background:var(--hair)}
+
+/* ---------- app icon options ---------- */
+.icons{display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start}
+.icon-one{display:flex;flex-direction:column;align-items:center;gap:9px}
+.icon-one .nm{font-size:12px;color:var(--sub)}
+.appicon{width:84px;height:84px;border-radius:20px;position:relative;overflow:hidden;box-shadow:0 10px 24px -12px rgba(0,0,0,.45)}
+/* 티켓 글리프: 회전된 라운드 사각 + 절취선 + 노치 */
+.tglyph{position:absolute;left:50%;top:50%;width:56px;height:34px;border-radius:7px;transform:translate(-50%,-50%) rotate(-16deg)}
+.tglyph .cut{position:absolute;top:3px;bottom:3px;right:16px;width:0;border-right:2px dashed rgba(0,0,0,.28)}
+.tglyph .n1,.tglyph .n2{position:absolute;right:11px;width:10px;height:10px;border-radius:50%}
+.tglyph .n1{top:-6px}.tglyph .n2{bottom:-6px}
+/* A: 앰버 바탕 + 잉크 티켓 */
+.ic-a{background:#ffb524}
+.ic-a .tglyph{background:#191b23}
+.ic-a .cut{border-color:rgba(255,181,36,.9)}
+.ic-a .n1,.ic-a .n2{background:#ffb524}
+/* B: 잉크 바탕 + 종이 티켓 + 앰버 스텁 */
+.ic-b{background:#191b23}
+.ic-b .tglyph{background:#f6f5f1}
+.ic-b .tglyph::after{content:"";position:absolute;top:0;bottom:0;right:0;width:16px;border-radius:0 7px 7px 0;background:#ffb524}
+.ic-b .cut{border-color:#191b23;right:16px}
+.ic-b .n1,.ic-b .n2{background:#191b23}
+/* C: 종이 바탕 + 잉크 티켓 + 앰버 노치 */
+.ic-c{background:#f6f5f1;border:1px solid #e3e1da}
+.ic-c .tglyph{background:#191b23}
+.ic-c .cut{border-color:#f6f5f1}
+.ic-c .n1,.ic-c .n2{background:#f6f5f1}
+.ic-c::after{content:"";position:absolute;right:14px;bottom:14px;width:12px;height:12px;border-radius:50%;background:#ffb524}
+
+/* ---------- phones ---------- */
+.row{display:flex;gap:30px;flex-wrap:wrap;justify-content:flex-start;align-items:flex-start}
+.one{display:flex;flex-direction:column;gap:10px}
+.one .cap{font-size:12.5px;color:var(--sub);max-width:292px}
+.one .cap b{color:var(--ink);font-weight:700}
+.phone{width:292px;border-radius:36px;padding:7px;background:#101115;box-shadow:0 24px 55px -26px rgba(0,0,0,.5)}
+.scr{border-radius:29px;overflow:hidden;background:#f6f5f1;color:#191b23;font-size:13px;
+  display:flex;flex-direction:column;min-height:596px;
+  --ink:#191b23;--paper:#f6f5f1;--card:#ffffff;--amber:#ffb524;--hair:#e7e4dc;
+  --mut:#8b8880;--mut2:#b3b0a7;--red:#d9453a;--grn:#1d8a4e;
+  --mono:ui-monospace,"SF Mono",Consolas,Menlo,monospace}
+.bar{height:30px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 4px;font-size:11px;font-weight:700}
+.bar.onink{color:#f6f5f1}
+.bat{display:inline-block;width:18px;height:9px;border:1.3px solid currentColor;border-radius:3px;position:relative;vertical-align:-1px;opacity:.85}
+.bat::after{content:"";position:absolute;inset:1.3px;width:66%;background:currentColor;border-radius:1px}
+.body{flex:1;display:flex;flex-direction:column}
+
+/* ── 홈: 잉크 헤더 ── */
+.hd{background:var(--ink);color:var(--paper);padding:8px 16px 30px}
+.hd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.wordmark{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;letter-spacing:-.3px}
+.wm-ic{width:22px;height:22px;border-radius:6px;background:var(--amber);position:relative;flex:none}
+.wm-ic::after{content:"";position:absolute;left:5px;top:7px;width:12px;height:8px;border-radius:2px;background:var(--ink);transform:rotate(-14deg)}
+.hd-acts{display:flex;gap:12px;align-items:center;color:#c9c7bf}
+.hd-acts .on{width:7px;height:7px;border-radius:99px;background:#3fbf72}
+.hd-stats{display:flex;align-items:flex-end;gap:18px}
+.hst .l{font-size:10.5px;color:#a6a49b;font-weight:600}
+.hst .v{font-size:20px;font-weight:800;letter-spacing:-.5px;line-height:1.15}
+.hst .v small{font-size:11px;font-weight:700;color:#a6a49b;margin-left:1px}
+.hst.money .v{font-size:15px;padding-bottom:2px}
+.hst.gain .v{font-size:13px;color:var(--amber);padding-bottom:3px}
+
+/* ── 패스(티켓) 카드 ── */
+.deck{padding:0 12px;margin-top:-18px}
+.pass{background:var(--card);border-radius:16px;box-shadow:0 10px 26px -14px rgba(25,27,35,.35);overflow:visible;position:relative}
+.p-top{padding:13px 14px 12px}
+.p-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+.vch{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--mut)}
+.vch i{width:8px;height:8px;border-radius:3px;flex:none}
+.ddy{font-size:11px;font-weight:800;background:var(--amber);color:var(--ink);border-radius:7px;padding:2px 9px}
+.p-name{font-size:18px;font-weight:800;letter-spacing:-.5px;line-height:1.25;word-break:keep-all}
+.p-meta{font-family:var(--mono);font-size:11px;color:var(--mut);margin-top:5px;letter-spacing:.02em}
+.p-perf{height:0;border-top:2px dashed var(--hair);margin:0 10px;position:relative}
+.p-perf i{position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;background:var(--paper)}
+.p-perf i.l{left:-18px}.p-perf i.r{right:-18px}
+.p-bot{padding:11px 14px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.p-seat{font-size:11.5px;font-weight:600;color:#4c4a44}
+.p-seat small{display:block;font-size:10px;color:var(--mut);font-weight:500;margin-top:1px}
+.p-price{font-size:15px;font-weight:800;letter-spacing:-.3px;text-align:right}
+.p-price small{display:block;font-family:var(--mono);font-size:8.5px;color:var(--mut2);font-weight:500;letter-spacing:.06em;margin-top:2px}
+.bcode{height:22px;margin:0 14px 12px;border-radius:3px;opacity:.85;
+  background:repeating-linear-gradient(90deg,#191b23 0 2px,transparent 2px 5px,#191b23 5px 6px,transparent 6px 8px,#191b23 8px 11px,transparent 11px 14px)}
+
+/* ── 작은 티켓 행 ── */
+.trow-h{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 8px;font-size:12px;font-weight:700;color:#4c4a44}
+.trow-h em{font-style:normal;color:var(--mut);font-weight:600}
+.trow{display:flex;align-items:stretch;background:var(--card);border-radius:13px;margin:0 12px 8px;overflow:hidden;box-shadow:0 3px 10px -6px rgba(25,27,35,.18)}
+.t-stub{flex:0 0 56px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;
+  border-right:2px dashed var(--hair);background:#fbfaf7}
+.t-stub b{font-size:12.5px;font-weight:800}
+.t-stub span{font-size:9px;color:var(--mut);font-family:var(--mono)}
+.t-stub.hot{background:var(--amber)}
+.t-stub.hot span{color:#5c4a12}
+.t-stub.mut b{color:var(--mut)}
+.t-main{flex:1;min-width:0;padding:10px 11px}
+.t-nm{font-size:13px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-st{font-size:10.5px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;gap:5px;align-items:center}
+.t-st .xfer{color:var(--red);font-weight:700}
+.t-st .gain{color:var(--grn);font-weight:700}
+.t-right{flex:none;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:0 12px;gap:2px}
+.t-pr{font-size:12.5px;font-weight:800}
+.t-qt{font-size:9.5px;color:var(--mut)}
+.trow.past{opacity:.62}
+.trow.past .t-nm{font-weight:600}
+/* 양도 스탬프 */
+.stamp{font-size:9px;font-weight:800;color:var(--red);border:1.5px solid var(--red);border-radius:5px;padding:0 5px;transform:rotate(-6deg);opacity:.8}
+.fold{display:flex;align-items:center;justify-content:space-between;margin:8px 16px 0;padding:12px 2px;font-size:12.5px;font-weight:700;color:var(--mut);border-top:1px solid var(--hair)}
+
+/* ── 하단 탭바 ── */
+.tabbar{margin-top:auto;background:var(--card);border-top:1px solid var(--hair);display:flex;align-items:center;justify-content:space-around;padding:9px 8px 15px;position:relative}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:700;color:var(--mut2);width:52px}
+.tab svg{stroke:currentColor}
+.tab.on{color:var(--ink)}
+.addbtn{width:48px;height:48px;border-radius:50%;background:var(--amber);display:grid;place-items:center;margin-top:-26px;box-shadow:0 8px 18px -8px rgba(180,120,0,.6)}
+.addbtn svg{stroke:#191b23}
+
+/* ── 상세 화면 ── */
+.dt{background:var(--ink);flex:1;display:flex;flex-direction:column;padding:6px 14px 22px}
+.dt-nav{display:flex;align-items:center;justify-content:space-between;color:#c9c7bf;font-size:13px;font-weight:700;padding:6px 2px 16px}
+.dt .pass{margin-top:2px}
+.dt .p-name{font-size:21px}
+.dt-date{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:11px;border-top:1px solid var(--hair)}
+.dt-date .d{font-family:var(--mono);font-size:13px;font-weight:700}
+.dt-date .d small{display:block;font-size:9.5px;color:var(--mut);font-weight:500;margin-top:1px;letter-spacing:.05em}
+.seatchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:11px}
+.schip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--hair);border-radius:9px;padding:6px 10px;font-size:11.5px;font-weight:700;background:#fbfaf7}
+.schip .xf{font-size:9px;font-weight:800;color:var(--red);border:1.2px solid var(--red);border-radius:4px;padding:0 4px;transform:rotate(-5deg)}
+.paysum{margin-top:12px;padding-top:11px;border-top:1px solid var(--hair);display:grid;gap:5px}
+.paysum .pr{display:flex;justify-content:space-between;font-size:11.5px;color:#4c4a44}
+.paysum .pr b{font-weight:800;color:var(--ink)}
+.paysum .pr .g{color:var(--grn);font-weight:800}
+.memo{margin:0 14px 12px;background:#fbfaf7;border:1px dashed var(--hair);border-radius:10px;padding:8px 11px;font-size:11px;color:#4c4a44}
+.dt-acts{display:flex;gap:8px;margin-top:14px}
+.dt-acts .a{flex:1;text-align:center;border:1px solid #3a3d47;border-radius:12px;padding:11px 0;font-size:13px;font-weight:700;color:#e8e6df}
+.dt-acts .a.main{background:var(--amber);border-color:var(--amber);color:#191b23}
+
+/* ── 캘린더 화면 ── */
+.cal-hd{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px}
+.cal-hd .mon{font-size:18px;font-weight:800;letter-spacing:-.4px}
+.cal-hd .mon small{font-size:11px;color:var(--mut);font-weight:600;margin-left:6px}
+.cal-hd .nav{display:flex;gap:6px}
+.cal-hd .nav span{width:28px;height:28px;border:1px solid var(--hair);border-radius:9px;background:var(--card);display:grid;place-items:center;font-weight:800;color:#4c4a44;font-size:14px}
+.calbox{margin:10px 12px 0;background:var(--card);border-radius:16px;padding:12px 10px;box-shadow:0 3px 10px -6px rgba(25,27,35,.18)}
+.cg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;text-align:center}
+.cw{font-size:9.5px;font-weight:800;color:var(--mut2);padding-bottom:6px}
+.cw.su{color:#d9453a}
+.cd{position:relative;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:11.5px;font-weight:600;border-radius:9px}
+.cd.mut{color:var(--mut2)}
+.cd .dot{display:flex;gap:2px}
+.cd .dot i{width:4px;height:4px;border-radius:50%}
+.cd.today{box-shadow:inset 0 0 0 1.6px var(--amber);font-weight:800}
+.cd.sel{background:var(--ink);color:var(--paper);font-weight:800}
+.cd.past-ev{opacity:.45}
+.day-t{padding:14px 16px 6px;font-size:12px;font-weight:700;color:#4c4a44}
+.day-t em{font-style:normal;color:var(--mut);font-weight:600}
+
+/* ── 시안 2: 모노 원장 ── */
+.scr.mono2{background:#fff;--paper:#fff}
+.m-hd{display:flex;align-items:baseline;justify-content:space-between;padding:14px 18px 10px;border-bottom:2px solid #191b23}
+.m-hd .t{font-size:13px;font-weight:800;letter-spacing:.24em}
+.m-hd .s{font-size:11px;color:#8b8880;font-weight:600}
+.m-hd .s b{color:#191b23;font-weight:800}
+.m-sec{padding:14px 18px 2px;font-size:10px;font-weight:800;letter-spacing:.18em;color:#b3b0a7}
+.mrow{display:flex;align-items:center;gap:14px;padding:13px 18px;border-bottom:1px solid #ececea}
+.m-date{flex:0 0 40px;text-align:center;line-height:1}
+.m-date b{font-family:Georgia,"Times New Roman",serif;font-size:23px;font-weight:600;display:block}
+.m-date span{font-size:8.5px;font-weight:700;letter-spacing:.14em;color:#8b8880}
+.m-bd{flex:1;min-width:0}
+.m-nm{font-size:14px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.m-st{font-size:10.5px;color:#8b8880;margin-top:2px}
+.m-rt{flex:none;text-align:right}
+.m-dd{font-size:10px;font-weight:800;letter-spacing:.04em}
+.m-pr{font-size:12px;font-weight:700;margin-top:2px}
+.mrow.off{opacity:.5}
+.mrow.off .m-pr{text-decoration:line-through;text-decoration-thickness:1.2px}
+.m-xf{font-size:10px;color:#191b23;font-weight:800}
+.foot{font-size:13.5px;color:var(--sub);margin-top:40px;line-height:1.7;max-width:680px}
+.foot b{color:var(--ink);font-weight:700}
+</style>
+
+<div class="wrap">
+  <p class="intro">기능은 그대로, 껍데기는 백지에서 — "진짜 티켓처럼"</p>
+  <p class="intro2">이 앱의 본질은 표(table)가 아니라 지갑 속 실물 티켓이야. 그래서 카드마다 절취선·스텁·일련번호·바코드를 가진 패스 형태로, 상단 세그먼트는 하단 탭바로, 색은 잉크 블랙 + 스포트라이트 앰버(무대 조명)로 다시 잡았어.</p>
+
+  <div class="sect">앱 아이콘 시안</div>
+  <div class="icons">
+    <div class="icon-one"><div class="appicon ic-a"><div class="tglyph"><span class="cut"></span><span class="n1"></span><span class="n2"></span></div></div><span class="nm">A · 앰버 바탕</span></div>
+    <div class="icon-one"><div class="appicon ic-b"><div class="tglyph"><span class="cut"></span><span class="n1"></span><span class="n2"></span></div></div><span class="nm">B · 잉크 + 앰버 스텁</span></div>
+    <div class="icon-one"><div class="appicon ic-c"><div class="tglyph"><span class="cut"></span><span class="n1"></span><span class="n2"></span></div></div><span class="nm">C · 종이 + 도장 점</span></div>
+  </div>
+
+  <div class="sect">시안 1 · 티켓 지갑</div>
+  <div class="row">
+
+    <!-- ============ 홈 ============ -->
+    <div class="one">
+      <div class="phone"><div class="scr">
+        <div class="hd">
+          <div class="bar onink" style="padding:0 6px 10px"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+          <div class="hd-top">
+            <div class="wordmark"><span class="wm-ic"></span>티켓 보관함</div>
+            <div class="hd-acts">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <span class="on"></span>
+            </div>
+          </div>
+          <div class="hd-stats">
+            <div class="hst"><div class="l">보유</div><div class="v">12<small>매</small></div></div>
+            <div class="hst money"><div class="l">실지출</div><div class="v">₩1,240,000</div></div>
+            <div class="hst gain"><div class="l">양도차익</div><div class="v">+₩85,000</div></div>
+          </div>
+        </div>
+
+        <div class="body" style="background:var(--paper)">
+          <div class="deck">
+            <div class="pass">
+              <div class="p-top">
+                <div class="p-row">
+                  <span class="vch"><i style="background:#2E63F0"></i>NOL 인터파크</span>
+                  <span class="ddy">내일</span>
+                </div>
+                <div class="p-name">콜드플레이 내한 공연</div>
+                <div class="p-meta">2026.07.14 TUE 20:00</div>
+              </div>
+              <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+              <div class="p-bot">
+                <div class="p-seat">스탠딩 A구역<small>1매</small></div>
+                <div class="p-price">₩154,000<small>NO. 2026-0714-01</small></div>
+              </div>
+              <div class="bcode"></div>
+            </div>
+          </div>
+
+          <div class="trow-h">다가오는 공연 <em>3</em></div>
+          <div class="trow">
+            <div class="t-stub"><b>D-2</b><span>7/15</span></div>
+            <div class="t-main"><div class="t-nm">뮤지컬 〈오페라의 유령〉</div><div class="t-st">VIP 1층 A구역 12,13번</div></div>
+            <div class="t-right"><span class="t-pr">₩560,000</span><span class="t-qt">2매</span></div>
+          </div>
+          <div class="trow">
+            <div class="t-stub"><b>D-5</b><span>7/19</span></div>
+            <div class="t-main"><div class="t-nm">아이유 콘서트</div><div class="t-st">R석 2층 · <span class="xfer">양도 1석</span> <span class="gain">+₩30,000</span></div></div>
+            <div class="t-right"><span class="t-pr">₩330,000</span><span class="t-qt">1매 보유</span></div>
+          </div>
+          <div class="trow">
+            <div class="t-stub"><b>D-8</b><span>7/22</span></div>
+            <div class="t-main"><div class="t-nm">해리포터와 저주받은 아이</div><div class="t-st">R석 2층 3열</div></div>
+            <div class="t-right"><span class="t-pr">₩280,000</span><span class="t-qt">2매</span></div>
+          </div>
+
+          <div class="trow-h" style="padding-top:10px">지난 공연 <em>24</em></div>
+          <div class="trow past">
+            <div class="t-stub mut"><b>3/22</b><span>2025</span></div>
+            <div class="t-main"><div class="t-nm">지킬 앤 하이드</div><div class="t-st"><span class="stamp">양도</span> <span class="gain">+₩85,000</span></div></div>
+            <div class="t-right"><span class="t-pr">₩600,000</span><span class="t-qt">수령</span></div>
+          </div>
+          <div class="fold">더 보기 <span>▾</span></div>
+
+          <div class="tabbar">
+            <div class="tab on">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+              홈
+            </div>
+            <div class="tab">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+              캘린더
+            </div>
+            <div class="addbtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+            <div class="tab">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              전체
+            </div>
+            <div class="tab">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
+              설정
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>홈.</b> 잉크 헤더에 보유·실지출·차익, 바로 아래 다음 공연이 진짜 티켓 모양 패스로. 나머진 스텁(D-day) 달린 행. 지난 공연은 흐리게 + 양도 도장.</div>
+    </div>
+
+    <!-- ============ 상세 ============ -->
+    <div class="one">
+      <div class="phone"><div class="scr">
+        <div class="dt">
+          <div class="bar onink" style="padding:0 4px 8px"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+          <div class="dt-nav"><span>‹ 보관함</span><span>📤</span></div>
+          <div class="pass">
+            <div class="p-top">
+              <div class="p-row">
+                <span class="vch"><i style="background:#2E63F0"></i>NOL 인터파크</span>
+                <span class="ddy">내일</span>
+              </div>
+              <div class="p-name">콜드플레이 내한 공연</div>
+              <div class="dt-date">
+                <div class="d">2026.07.14<small>TUESDAY</small></div>
+                <div class="d" style="text-align:right">20:00<small>공연 시작</small></div>
+              </div>
+              <div class="seatchips">
+                <span class="schip">스탠딩 A · 24번</span>
+                <span class="schip">스탠딩 A · 25번 <span class="xf">양도</span></span>
+              </div>
+              <div class="paysum">
+                <div class="pr"><span>2매 결제</span><b>₩308,000</b></div>
+                <div class="pr"><span>양도 수령 (1석)</span><b>₩184,000</b></div>
+                <div class="pr"><span>실지출 · 양도차익</span><b>₩154,000 · <span class="g">+₩30,000</span></b></div>
+              </div>
+            </div>
+            <div class="p-perf"><i class="l" style="background:var(--ink)"></i><i class="r" style="background:var(--ink)"></i></div>
+            <div class="memo" style="margin-top:10px">📌 MD 부스 5시 오픈 · 지영이랑 동행</div>
+            <div class="bcode"></div>
+          </div>
+          <div class="dt-acts">
+            <span class="a">수정</span>
+            <span class="a main">공유하기</span>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>티켓 상세.</b> 어두운 무대 위에 티켓 한 장. 좌석은 칩으로(양도된 좌석엔 도장), 절취선 아래 메모·바코드. 결제·양도 셈은 티켓 안에서 바로.</div>
+    </div>
+
+    <!-- ============ 캘린더 ============ -->
+    <div class="one">
+      <div class="phone"><div class="scr">
+        <div class="bar" style="color:#191b23"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+        <div class="body">
+          <div class="cal-hd">
+            <div class="mon">7월<small>공연 4건</small></div>
+            <div class="nav"><span>‹</span><span>›</span></div>
+          </div>
+          <div class="calbox">
+            <div class="cg">
+              <span class="cw su">일</span><span class="cw">월</span><span class="cw">화</span><span class="cw">수</span><span class="cw">목</span><span class="cw">금</span><span class="cw">토</span>
+              <span class="cd mut"></span><span class="cd mut"></span><span class="cd mut"></span>
+              <span class="cd">1</span><span class="cd">2</span><span class="cd">3</span>
+              <span class="cd past-ev">4<span class="dot"><i style="background:#F9A825"></i></span></span>
+              <span class="cd">5</span><span class="cd">6</span><span class="cd">7</span><span class="cd">8</span><span class="cd">9</span><span class="cd">10</span><span class="cd">11</span>
+              <span class="cd">12</span><span class="cd today">13</span>
+              <span class="cd sel">14<span class="dot"><i style="background:#ffb524"></i></span></span>
+              <span class="cd">15<span class="dot"><i style="background:#3B82F6"></i></span></span>
+              <span class="cd">16</span><span class="cd">17</span><span class="cd">18</span>
+              <span class="cd">19<span class="dot"><i style="background:#00A33F"></i></span></span>
+              <span class="cd">20</span><span class="cd">21</span>
+              <span class="cd">22<span class="dot"><i style="background:#E03E3E"></i></span></span>
+              <span class="cd">23</span><span class="cd">24</span><span class="cd">25</span>
+              <span class="cd">26</span><span class="cd">27</span><span class="cd">28</span><span class="cd">29</span><span class="cd">30</span><span class="cd">31</span>
+            </div>
+          </div>
+          <div class="day-t">7월 14일 (화) <em>1건</em></div>
+          <div class="trow">
+            <div class="t-stub hot"><b>내일</b><span>20:00</span></div>
+            <div class="t-main"><div class="t-nm">콜드플레이 내한 공연</div><div class="t-st">스탠딩 A · NOL 인터파크</div></div>
+            <div class="t-right"><span class="t-pr">₩154,000</span><span class="t-qt">1매</span></div>
+          </div>
+
+          <div class="tabbar">
+            <div class="tab">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
+              홈
+            </div>
+            <div class="tab on">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+              캘린더
+            </div>
+            <div class="addbtn"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+            <div class="tab">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              전체
+            </div>
+            <div class="tab">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
+              설정
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>캘린더.</b> 날짜 탭하면 아래에 그날 티켓이 스텁 행으로. 오늘=앰버 링, 선택=잉크, 지난 공연 날은 흐리게. 예매처 색점은 유지.</div>
+    </div>
+  </div>
+
+  <div class="sect">시안 2 · 흑백 원장 (참고용 대안)</div>
+  <div class="row">
+    <div class="one">
+      <div class="phone"><div class="scr mono2">
+        <div class="bar" style="color:#191b23"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+        <div class="m-hd">
+          <span class="t">보관함</span>
+          <span class="s">보유 <b>12매</b> · <b>₩1,240,000</b></span>
+        </div>
+        <div class="m-sec">UPCOMING — 3</div>
+        <div class="mrow">
+          <div class="m-date"><b>14</b><span>JUL</span></div>
+          <div class="m-bd"><div class="m-nm">콜드플레이 내한 공연</div><div class="m-st">스탠딩 A · 1매</div></div>
+          <div class="m-rt"><div class="m-dd">D-1</div><div class="m-pr">₩154,000</div></div>
+        </div>
+        <div class="mrow">
+          <div class="m-date"><b>15</b><span>JUL</span></div>
+          <div class="m-bd"><div class="m-nm">뮤지컬 〈오페라의 유령〉</div><div class="m-st">VIP 1층 A 12,13번 · 2매</div></div>
+          <div class="m-rt"><div class="m-dd">D-2</div><div class="m-pr">₩560,000</div></div>
+        </div>
+        <div class="mrow">
+          <div class="m-date"><b>19</b><span>JUL</span></div>
+          <div class="m-bd"><div class="m-nm">아이유 콘서트</div><div class="m-st">R석 2층 · 1석 양도</div></div>
+          <div class="m-rt"><div class="m-dd">D-6</div><div class="m-pr">₩330,000</div></div>
+        </div>
+        <div class="m-sec">ARCHIVE — 24</div>
+        <div class="mrow off">
+          <div class="m-date"><b>22</b><span>MAR</span></div>
+          <div class="m-bd"><div class="m-nm">지킬 앤 하이드</div><div class="m-st">VIP 1층 · 2매</div></div>
+          <div class="m-rt"><div class="m-xf">양도 +85,000</div><div class="m-pr">₩600,000</div></div>
+        </div>
+        <div class="mrow off">
+          <div class="m-date"><b>9</b><span>MAR</span></div>
+          <div class="m-bd"><div class="m-nm">뮤지컬 〈데스노트〉</div><div class="m-st">S석 1층 15열 · 1매</div></div>
+          <div class="m-rt"><div class="m-dd" style="color:#8b8880">관람</div><div class="m-pr" style="text-decoration:none;color:#8b8880">₩99,000</div></div>
+        </div>
+      </div></div>
+      <div class="cap"><b>대안: 장식 전부 제거한 원장 스타일.</b> 카드도 색도 없이 큰 날짜 숫자 + 헤어라인만. 티켓 지갑이 과하다 싶으면 이쪽.</div>
+    </div>
+  </div>
+
+  <p class="foot">전부 지금 기능 그대로 얹을 수 있어 — 뷰 전환 스와이프, AI 인식 대기열, 검색, 다크모드 포함(잉크/종이만 반전). 방향 골라주면(시안 1/2, 아이콘 A/B/C) 그걸로 실제 index.html이랑 아이콘 파일을 다시 만들게. <b>색만 바꿔서</b> 시안 1을 앰버 대신 다른 색으로 보는 것도 금방이야.</p>
+</div>

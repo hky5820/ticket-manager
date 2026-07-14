@@ -1,0 +1,970 @@
+<title>티켓 보관함 · 전체 비교 ①–⑩</title>
+<style>
+/* ==========================================================
+   새 6개 틀 (⑤~⑩) — 이전 은유 시리즈 폐기, 전부 새 설계
+   ⑤ 라인업 포스터  ⑥ 라이브 패스(Flighty)  ⑦ 시즌 프로그램
+   ⑧ 스트리밍 홈    ⑨ 데일리 브리핑        ⑩ 다이어리 꾸미기
+   ========================================================== */
+:root{ --bg:#f0f0ee; --ink:#1d1f26; --sub:#70727a; --hair:#dddcd8; }
+@media (prefers-color-scheme:dark){ :root{ --bg:#141519; --ink:#e9eaec; --sub:#989aa2; --hair:#2b2d33; } }
+:root[data-theme="light"]{ --bg:#f0f0ee; --ink:#1d1f26; --sub:#70727a; --hair:#dddcd8; }
+:root[data-theme="dark"]{ --bg:#141519; --ink:#e9eaec; --sub:#989aa2; --hair:#2b2d33; }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.6}
+.wrap{max-width:1380px;margin:0 auto;padding:44px 20px 80px}
+.intro{font-size:16.5px;margin:0 0 4px;font-weight:700}
+.intro2{font-size:14px;color:var(--sub);margin:0 0 34px;max-width:680px}
+.intro2 b{color:var(--ink)}
+.row{display:flex;gap:30px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.one{display:flex;flex-direction:column;gap:10px;width:292px}
+.one .num{font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.06em}
+.one .num b{color:var(--ink);font-size:13.5px;margin-left:5px}
+.one .cap{font-size:12.5px;color:var(--sub)}
+.one .cap b{color:var(--ink);font-weight:700}
+.foot{font-size:13.5px;color:var(--sub);margin-top:44px;line-height:1.75;max-width:760px}
+.foot b{color:var(--ink);font-weight:700}
+.phone{width:292px;border-radius:36px;padding:7px;background:#101115;box-shadow:0 24px 55px -26px rgba(0,0,0,.5)}
+.scr{border-radius:29px;overflow:hidden;display:flex;flex-direction:column;height:596px;font-size:13px;position:relative}
+.bar{flex:none;height:28px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 3px;font-size:10.5px;font-weight:700;position:relative;z-index:5}
+.bat{display:inline-block;width:17px;height:8.5px;border:1.2px solid currentColor;border-radius:2.5px;position:relative;vertical-align:-1px;opacity:.85}
+.bat::after{content:"";position:absolute;inset:1.2px;width:66%;background:currentColor;border-radius:1px}
+.sig{display:inline-flex;align-items:flex-end;gap:1.4px;margin-right:4px;vertical-align:-1px}
+.sig i{width:2.6px;background:currentColor;border-radius:.8px;opacity:.85}
+.sig i:nth-child(1){height:4px}.sig i:nth-child(2){height:6px}.sig i:nth-child(3){height:8px}.sig i:nth-child(4){height:10px}
+.tabs{margin-top:auto;display:flex;align-items:center;justify-content:space-around;padding:9px 8px 13px;border-top:1px solid transparent;position:relative;z-index:5}
+.tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9px;font-weight:700;width:52px}
+.tab svg{stroke:currentColor}
+.addbtn{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;margin-top:-25px;box-shadow:0 6px 16px -6px rgba(0,0,0,.45)}
+.mono{font-family:ui-monospace,"SF Mono",Consolas,monospace}
+@media (prefers-reduced-motion:reduce){ .scr *{animation:none!important} }
+/* ================= ① 티켓 지갑 v2 ================= */
+.scr.w2{background:#f6f5f1;color:#191b23;
+  --ink:#191b23;--amber:#ffb524;--hair:#e7e4dc;--mut:#8b8880;--mut2:#b3b0a7;--red:#d9453a;--grn:#1d8a4e;
+  --mono:ui-monospace,"SF Mono",Consolas,monospace}
+.w2 .hd{flex:none;background:var(--ink);color:#f6f5f1;padding:0 16px 24px}
+.w2 .hd .bar{color:#f6f5f1;padding:0 2px 8px}
+.w2 .hd-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px}
+.w2 .wm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800}
+.w2 .wm i{width:20px;height:20px;border-radius:6px;background:var(--amber);position:relative}
+.w2 .wm i::after{content:"";position:absolute;left:4px;top:6px;width:12px;height:8px;border-radius:2px;background:#191b23;transform:rotate(-14deg)}
+.w2 .hd-ic{display:flex;gap:11px;align-items:center;color:#c9c7bf}
+.w2 .hd-ic .on{width:7px;height:7px;border-radius:99px;background:#3fbf72}
+.w2 .hst-row{display:flex;gap:16px;align-items:flex-end}
+.w2 .hst .l{font-size:10px;color:#a6a49b;font-weight:600}
+.w2 .hst .v{font-size:18px;font-weight:800;letter-spacing:-.4px}
+.w2 .hst .v small{font-size:10.5px;color:#a6a49b;font-weight:700}
+.w2 .hst.m .v{font-size:13.5px;padding-bottom:2px}
+.w2 .hst.g .v{font-size:12px;color:var(--amber);padding-bottom:3px}
+.w2 .deck{flex:none;padding:0 12px;margin-top:-16px}
+.w2 .pass{background:#fff;border-radius:15px;box-shadow:0 8px 22px -12px rgba(25,27,35,.35)}
+.w2 .p-top{padding:11px 13px 10px}
+.w2 .p-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.w2 .vch{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;color:var(--mut)}
+.w2 .vch i{width:8px;height:8px;border-radius:3px}
+.w2 .ddy{font-size:10.5px;font-weight:800;background:var(--amber);border-radius:6px;padding:1.5px 8px}
+.w2 .p-name{font-size:16px;font-weight:800;letter-spacing:-.4px}
+.w2 .p-meta{font-family:var(--mono);font-size:10px;color:var(--mut);margin-top:3px}
+.w2 .p-perf{height:0;border-top:2px dashed var(--hair);margin:0 9px;position:relative}
+.w2 .p-perf i{position:absolute;top:-7px;width:14px;height:14px;border-radius:50%;background:#f6f5f1}
+.w2 .p-perf i.l{left:-16px}.w2 .p-perf i.r{right:-16px}
+.w2 .p-bot{padding:9px 13px 11px;display:flex;align-items:center;justify-content:space-between}
+.w2 .p-seat{font-size:11px;font-weight:600;color:#4c4a44}
+.w2 .p-seat small{display:block;font-size:9.5px;color:var(--mut);font-weight:500}
+.w2 .p-price{font-size:14px;font-weight:800;text-align:right}
+.w2 .p-price small{display:block;font-family:var(--mono);font-size:8px;color:var(--mut2);letter-spacing:.06em;margin-top:1px}
+.w2 .sec{flex:none;display:flex;align-items:baseline;justify-content:space-between;padding:13px 16px 7px;font-size:12px;font-weight:700;color:#4c4a44}
+.w2 .sec em{font-style:normal;color:var(--mut);font-weight:600;font-size:11px}
+.w2 .trow{flex:none;display:flex;align-items:stretch;background:#fff;border-radius:12px;margin:0 12px 7px;overflow:hidden;box-shadow:0 2px 8px -5px rgba(25,27,35,.2)}
+.w2 .t-stub{flex:0 0 52px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-right:2px dashed var(--hair);background:#fbfaf7}
+.w2 .t-stub b{font-size:12px;font-weight:800}
+.w2 .t-stub span{font-size:8.5px;color:var(--mut);font-family:var(--mono)}
+.w2 .t-stub.hot{background:var(--amber)}
+.w2 .t-main{flex:1;min-width:0;padding:9px 10px}
+.w2 .t-nm{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w2 .t-st{font-size:10px;color:var(--mut);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.w2 .t-st .xf{color:var(--red);font-weight:700}
+.w2 .t-st .gn{color:var(--grn);font-weight:700}
+.w2 .t-right{flex:none;display:flex;flex-direction:column;align-items:flex-end;justify-content:center;padding:0 11px;gap:1px}
+.w2 .t-pr{font-size:12px;font-weight:800}
+.w2 .t-qt{font-size:9px;color:var(--mut)}
+.w2 .tabs{background:#fff;border-top-color:var(--hair)}
+.w2 .tab{color:var(--mut2)}
+.w2 .tab.on{color:var(--ink)}
+.w2 .addbtn{background:var(--amber);box-shadow:0 8px 16px -8px rgba(180,120,0,.6)}
+.w2 .addbtn svg{stroke:#191b23}
+
+/* ================= ② 박스오피스 v2 ================= */
+.scr.bx{background:#0d0e12;color:#f2f2f0;--mut:#8e9096;--mut2:#5a5c63;--card:#17181d;--hair:#26272d}
+.bx .bar{color:#f2f2f0}
+.bx .hd{flex:none;padding:4px 16px 0}
+.bx .hd-top{display:flex;align-items:center;justify-content:space-between}
+.bx .wm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800}
+.bx .wm i{width:19px;height:19px;border-radius:6px;background:#f2f2f0;position:relative}
+.bx .wm i::after{content:"";position:absolute;left:4px;top:5.5px;width:11px;height:8px;border-radius:2px;background:#0d0e12;transform:rotate(-14deg)}
+.bx .hd-ic{display:flex;gap:11px;align-items:center;color:var(--mut)}
+.bx .hd-ic .on{width:7px;height:7px;border-radius:99px;background:#3fbf72}
+.bx .stat{font-size:11px;color:var(--mut);margin-top:7px}
+.bx .stat b{color:#f2f2f0;font-weight:700}
+.bx .stat .g{color:#4ade80;font-weight:700}
+.bx .sec{flex:none;display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 8px;font-size:13px;font-weight:800}
+.bx .sec em{font-style:normal;font-size:10.5px;color:var(--mut);font-weight:600}
+/* 와이드 마퀴 포스터 */
+.bx .marquee{flex:none;margin:0 12px;border-radius:16px;height:148px;padding:12px 14px;display:flex;flex-direction:column;position:relative;overflow:hidden;background:linear-gradient(160deg,#2E63F0,#0a1540)}
+.bx .marquee::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 100% at 12% 0%,rgba(255,255,255,.17),transparent 55%)}
+.bx .mq-top{display:flex;justify-content:space-between;z-index:1}
+.bx .mq-dd{font-size:10.5px;font-weight:800;background:#fff;color:#111;border-radius:7px;padding:2px 8px}
+.bx .mq-vd{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.75)}
+.bx .mq-t{margin-top:auto;z-index:1;font-size:21px;font-weight:800;line-height:1.15;letter-spacing:-.5px;color:#fff}
+.bx .mq-m{z-index:1;font-size:10.5px;color:rgba(255,255,255,.85);font-weight:600;margin-top:5px}
+.bx .pdots{flex:none;display:flex;gap:5px;justify-content:center;padding:9px 0 0}
+.bx .pdots i{width:5px;height:5px;border-radius:50%;background:var(--mut2)}
+.bx .pdots i.on{width:13px;border-radius:99px;background:#f2f2f0}
+/* 상영 시간표(보유 리스트) */
+.bx .tt{flex:none;margin:0 12px;background:var(--card);border-radius:14px;overflow:hidden}
+.bx .ttrow{display:flex;align-items:center;gap:10px;padding:9.5px 12px}
+.bx .ttrow+.ttrow{border-top:1px solid var(--hair)}
+.bx .tt-d{flex:none;width:40px;line-height:1.15}
+.bx .tt-d b{display:block;font-size:12px;font-weight:800}
+.bx .tt-d span{font-size:8.5px;color:var(--mut);font-weight:700}
+.bx .tt-b{flex:1;min-width:0}
+.bx .tt-n{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
+.bx .tt-n i{width:7px;height:7px;border-radius:2.5px;flex:none}
+.bx .tt-s{font-size:9.5px;color:var(--mut);margin-top:1.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bx .tt-s .xf{color:#ff8a7a;font-weight:700}
+.bx .tt-r{flex:none;text-align:right}
+.bx .tt-p{font-size:11.5px;font-weight:800}
+.bx .tt-q{font-size:9px;color:var(--mut)}
+.bx .tabs{background:#121318;border-top-color:var(--hair)}
+.bx .tab{color:var(--mut2)}
+.bx .tab.on{color:#f2f2f0}
+.bx .addbtn{background:#f2f2f0}
+.bx .addbtn svg{stroke:#0d0e12}
+
+/* ================= ③ 출발 전광판 ================= */
+.scr.dep{background:#0a0c10;color:#e8e6df;
+  --amb:#ffb000;--mut:#6d7078;--mut2:#43464d;--strip:#12151c;--hair:#1c2028;
+  --mono:ui-monospace,"SF Mono",Consolas,monospace}
+.dep .bar{color:#e8e6df}
+.dep .hd{flex:none;padding:4px 16px 10px;border-bottom:2px solid var(--amb)}
+.dep .hd-top{display:flex;align-items:baseline;justify-content:space-between}
+.dep .t{font-size:16px;font-weight:800;letter-spacing:-.2px}
+.dep .t small{font-family:var(--mono);font-size:8.5px;color:var(--amb);letter-spacing:.22em;display:block;margin-bottom:2px}
+.dep .hd-ic{display:flex;gap:11px;align-items:center;color:var(--mut)}
+.dep .hd-ic .on{width:7px;height:7px;border-radius:99px;background:#3fbf72}
+.dep .sum{font-family:var(--mono);font-size:10px;color:var(--mut);margin-top:7px;letter-spacing:.03em}
+.dep .sum b{color:#e8e6df;font-weight:700}
+.dep .sum .a{color:var(--amb);font-weight:700}
+.dep .cols{flex:none;display:flex;padding:9px 16px 5px;font-family:var(--mono);font-size:8px;color:var(--mut);letter-spacing:.14em}
+.dep .cols span:nth-child(1){width:52px}
+.dep .cols span:nth-child(2){flex:1}
+.dep .cols span:nth-child(3){width:56px;text-align:right}
+.dep .strip{flex:none;display:flex;align-items:center;margin:0 10px 5px;padding:8px 6px;border-radius:8px;
+  background:linear-gradient(180deg,#141821 49%,#10131a 51%);border:1px solid var(--hair)}
+.dep .sd{width:52px;flex:none;font-family:var(--mono);line-height:1.3;padding-left:2px}
+.dep .sd b{display:block;font-size:11px;font-weight:700;color:#e8e6df}
+.dep .sd span{font-size:8.5px;color:var(--mut)}
+.dep .sb{flex:1;min-width:0;padding-right:6px}
+.dep .sn{font-size:12.5px;font-weight:700;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dep .ss{font-family:var(--mono);font-size:8.5px;color:var(--mut);margin-top:2px;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dep .st{width:56px;flex:none;text-align:right;font-family:var(--mono)}
+.dep .st b{display:block;font-size:10.5px;font-weight:700;color:var(--amb)}
+.dep .st span{font-size:8px;color:var(--mut)}
+.dep .strip.hot{border-color:rgba(255,176,0,.4)}
+.dep .strip.hot .st b{color:#0a0c10;background:var(--amb);border-radius:4px;padding:1px 5px;display:inline-block}
+.dep .strip.off{opacity:.45}
+.dep .strip.off .st b{color:var(--mut)}
+.dep .strip .st b.xf{color:#ff7a5c;background:none}
+.dep .divider{flex:none;font-family:var(--mono);font-size:8px;color:var(--mut2);letter-spacing:.2em;padding:7px 18px 4px}
+.dep .tabs{background:#0d1016;border-top-color:var(--hair)}
+.dep .tab{color:var(--mut2)}
+.dep .tab.on{color:var(--amb)}
+.dep .addbtn{background:var(--amb)}
+.dep .addbtn svg{stroke:#0a0c10}
+
+/* ================= ④ 조종석(위젯 보드) ================= */
+.scr.ck{background:#edeef0;color:#1a1c22;--mut:#84868e;--mut2:#b9bbc2;--card:#fff;--acc:#1a1c22;--amber:#f59e0b;--grn:#16a34a;--blue:#2563eb}
+.ck .bar{color:#1a1c22}
+.ck .hd{flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 4px}
+.ck .t{font-size:16px;font-weight:800;letter-spacing:-.3px}
+.ck .t small{display:block;font-size:10px;color:var(--mut);font-weight:600;letter-spacing:0}
+.ck .hd-ic{display:flex;gap:11px;align-items:center;color:var(--mut)}
+.ck .hd-ic .on{width:7px;height:7px;border-radius:99px;background:#3fbf72}
+.ck .grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:8px 12px 14px;align-content:start}
+.ck .wg{background:var(--card);border-radius:17px;padding:12px 13px;box-shadow:0 1px 3px rgba(20,22,28,.06)}
+.ck .wg.full{grid-column:1/-1}
+.ck .wl{font-size:9.5px;font-weight:700;color:var(--mut);letter-spacing:.04em;display:flex;align-items:center;gap:4px}
+/* 다음 공연 위젯 */
+.ck .next{display:flex;align-items:center;gap:12px}
+.ck .next .l{flex:1;min-width:0}
+.ck .next .nm{font-size:15px;font-weight:800;letter-spacing:-.3px;margin-top:4px;line-height:1.25}
+.ck .next .dt{font-size:10.5px;color:var(--mut);margin-top:3px;font-weight:600}
+.ck .next .dd{flex:none;text-align:center;background:#1a1c22;color:#fff;border-radius:14px;padding:10px 13px}
+.ck .next .dd b{font-size:19px;font-weight:800;display:block;line-height:1}
+.ck .next .dd span{font-size:8.5px;opacity:.7;font-weight:700}
+/* 스몰 스탯 */
+.ck .wg .bignum{font-size:21px;font-weight:800;letter-spacing:-.5px;margin-top:5px}
+.ck .wg .bignum small{font-size:11px;color:var(--mut);font-weight:700}
+.ck .wg .subnum{font-size:10px;color:var(--mut);margin-top:2px;font-weight:600}
+.ck .wg .subnum .g{color:var(--grn);font-weight:700}
+/* 주간 스트립 */
+.ck .week{display:flex;gap:4px;margin-top:8px}
+.ck .wd{flex:1;text-align:center;border-radius:9px;padding:5px 0 4px}
+.ck .wd .d{font-size:8.5px;color:var(--mut);font-weight:700}
+.ck .wd .n{font-size:11.5px;font-weight:800;margin-top:1px}
+.ck .wd .o{width:4px;height:4px;border-radius:50%;margin:2px auto 0;background:transparent}
+.ck .wd.today{background:#1a1c22}
+.ck .wd.today .d,.ck .wd.today .n{color:#fff}
+.ck .wd .o.on{background:var(--amber)}
+.ck .wd .o.bl{background:var(--blue)}
+/* 보유 리스트 위젯 */
+.ck .hrow{display:flex;align-items:center;gap:8px;padding:6.5px 0}
+.ck .hrow+.hrow{border-top:1px solid #f0f1f3}
+.ck .hrow i{width:8px;height:8px;border-radius:3px;flex:none}
+.ck .hrow .n{flex:1;min-width:0;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ck .hrow .q{flex:none;font-size:10px;color:var(--mut);font-weight:600}
+.ck .hrow .dd2{flex:none;font-size:9px;font-weight:800;color:var(--blue);background:#eef3fe;border-radius:5px;padding:1px 6px}
+.ck .hrow .dd2.hot{color:#b45309;background:#fef3e2}
+/* 미니 위젯 */
+.ck .mini{display:flex;align-items:center;gap:8px}
+.ck .mini .spin{width:12px;height:12px;border:2px solid #f0d9b0;border-top-color:var(--amber);border-radius:50%;flex:none}
+.ck .mini .tx{font-size:10.5px;font-weight:700;line-height:1.35}
+.ck .mini .tx small{display:block;font-size:9px;color:var(--mut);font-weight:600}
+.ck .mini.add{justify-content:center;color:var(--mut);font-weight:800;font-size:12px;gap:5px}
+.ck .mini.add .pl{width:20px;height:20px;border-radius:50%;background:#1a1c22;color:#fff;display:grid;place-items:center;font-size:13px}
+/* ================= ⑤ 라인업 포스터 ================= */
+/* 페스티벌 라인업 문법: 글자 크기 = 시간의 가까움. 화면 자체가 포스터 */
+.scr.lu{background:#f1ece1;color:#17171a;--mut:#8f8a7d;--lhair:#dfd9ca;--red:#e8442e}
+.lu .bar{color:#17171a}
+.lu .mast{flex:none;padding:8px 18px 0;display:flex;justify-content:space-between;align-items:baseline}
+.lu .mast .ey{font-size:9px;font-weight:800;letter-spacing:.3em;color:var(--red)}
+.lu .mast .yr{font-family:ui-monospace,monospace;font-size:9px;color:var(--mut);letter-spacing:.14em;font-weight:700}
+.lu .hero{flex:none;padding:10px 18px 14px;border-bottom:2.5px solid #17171a}
+.lu .hero .dchip{display:inline-flex;align-items:center;gap:5px;background:var(--red);color:#fff;font-size:9.5px;font-weight:800;border-radius:3px;padding:2px 8px;letter-spacing:.08em}
+.lu .hero .dchip i{width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse 1.4s ease infinite}
+@keyframes pulse{50%{opacity:.3}}
+.lu .hero .nm{font-size:27px;font-weight:900;letter-spacing:-1.2px;line-height:1.08;margin-top:8px;word-break:keep-all}
+.lu .hero .sub{margin-top:7px;font-size:10.5px;font-weight:700;line-height:1.6}
+.lu .hero .sub b{background:#17171a;color:#f1ece1;border-radius:3px;padding:1px 6px;font-weight:800}
+.lu .hero .sub em{font-style:normal;color:var(--mut);font-weight:600}
+.lu .ln{flex:none;display:flex;align-items:baseline;gap:10px;padding:10px 18px;border-bottom:1px solid var(--lhair)}
+.lu .ln .d{flex:none;width:32px;font-family:ui-monospace,monospace;font-size:9.5px;font-weight:700;color:var(--red);letter-spacing:.02em}
+.lu .ln .nm2{flex:1;min-width:0;font-weight:900;letter-spacing:-.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lu .ln .nm2 small{display:block;font-size:9px;font-weight:600;color:var(--mut);letter-spacing:0;margin-top:1px}
+.lu .ln .p{flex:none;font-family:ui-monospace,monospace;font-size:10px;font-weight:700;font-variant-numeric:tabular-nums}
+.lu .ln.s1 .nm2{font-size:19px}
+.lu .ln.s2 .nm2{font-size:16.5px}
+.lu .ln.s3 .nm2{font-size:14.5px}
+.lu .ln.past{opacity:.45}
+.lu .ln.past .nm2{font-size:12px;text-decoration:line-through;font-weight:700}
+.lu .ln.past .d{color:var(--mut)}
+.lu .stat{flex:none;margin:12px 14px 0;background:#17171a;color:#f1ece1;border-radius:8px;display:flex;justify-content:space-between;padding:8px 14px;font-size:9px;font-weight:700;letter-spacing:.02em}
+.lu .stat b{display:block;font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.lu .stat .grn{color:#7fd39a}
+.lu .tabs{border-top-color:var(--lhair)}
+.lu .tab{color:#b9b3a3}
+.lu .tab.on{color:#17171a}
+.lu .addbtn{background:#17171a}
+.lu .addbtn svg{stroke:#f1ece1}
+
+/* ================= ⑥ 라이브 패스 ================= */
+/* Flighty 문법: 다음 공연 = 라이브 추적 카드. 진행바·상태칩·데이터 그리드 */
+.scr.fy{background:#edeff3;color:#1a1c22;--mut:#878b96;--fhair:#e3e5ea;--blu:#2E63F0;--live:#0aa060}
+.fy .bar{color:#1a1c22}
+.fy .hd{flex:none;display:flex;justify-content:space-between;align-items:center;padding:6px 16px 8px}
+.fy .hd .t{font-size:17px;font-weight:800;letter-spacing:-.3px}
+.fy .hd .sum{font-size:9px;color:var(--mut);font-weight:700;text-align:right;line-height:1.5}
+.fy .hd .sum b{color:#1a1c22}
+.fy .card{flex:none;margin:0 12px 9px;background:#fff;border-radius:16px;box-shadow:0 8px 24px -14px rgba(20,30,60,.35);overflow:hidden}
+.fy .card .top{display:flex;justify-content:space-between;align-items:center;padding:10px 13px 0}
+.fy .brand{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:800}
+.fy .brand i{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;font-size:8px;color:#fff;font-weight:800}
+.fy .stt{font-size:8.5px;font-weight:800;letter-spacing:.1em;border-radius:99px;padding:2.5px 8px}
+.fy .stt.live{background:#e2f6ec;color:var(--live)}
+.fy .stt.ok{background:#eef1f6;color:var(--mut)}
+.fy .nm{padding:7px 13px 0;font-size:15.5px;font-weight:800;letter-spacing:-.3px}
+.fy .route{display:flex;align-items:center;gap:8px;padding:9px 13px 2px}
+.fy .route .pt{flex:none;text-align:center}
+.fy .route .pt b{display:block;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.fy .route .pt small{font-size:7.5px;color:var(--mut);font-weight:700;letter-spacing:.06em}
+.fy .route .trk{flex:1;height:3px;border-radius:99px;background:#e8eaef;position:relative}
+.fy .route .trk i{position:absolute;left:0;top:0;bottom:0;width:94%;background:var(--blu);border-radius:99px}
+.fy .route .trk i::after{content:"";position:absolute;right:-4px;top:50%;transform:translateY(-50%);width:9px;height:9px;border-radius:50%;background:var(--blu);border:2px solid #fff;box-shadow:0 0 0 1.5px var(--blu),0 0 10px rgba(46,99,240,.55)}
+.fy .eta{padding:2px 13px 0;font-size:9px;color:var(--live);font-weight:800}
+.fy .grid{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;border-top:1px dashed var(--fhair);margin-top:9px;padding:8px 13px 11px;gap:2px}
+.fy .grid .g small{display:block;font-size:7px;color:var(--mut);font-weight:800;letter-spacing:.1em}
+.fy .grid .g b{font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.fy .mini{flex:none;margin:0 12px 8px;background:#fff;border-radius:13px;box-shadow:0 4px 14px -10px rgba(20,30,60,.3);display:flex;align-items:center;gap:10px;padding:9px 13px}
+.fy .mini .ic{flex:none;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800}
+.fy .mini .n{flex:1;min-width:0}
+.fy .mini .n b{display:block;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.2px}
+.fy .mini .n small{font-size:9px;color:var(--mut);font-weight:600}
+.fy .mini .n small .xf{color:#d9453a;font-weight:700}
+.fy .mini .r{flex:none;text-align:right}
+.fy .mini .r b{display:block;font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums}
+.fy .mini .r small{font-size:8.5px;color:var(--mut);font-weight:700}
+.fy .sect{flex:none;font-size:9.5px;color:var(--mut);font-weight:800;letter-spacing:.08em;padding:2px 18px 6px}
+.fy .tabs{background:#fff;border-top-color:var(--fhair)}
+.fy .tab{color:#b6bac4}
+.fy .tab.on{color:var(--blu)}
+.fy .addbtn{background:var(--blu)}
+.fy .addbtn svg{stroke:#fff}
+
+/* ================= ⑦ 시즌 프로그램 ================= */
+/* 극장 프로그램북 문법: 세리프·금박·막(幕) 구성. 어른의 물건 */
+.scr.pg{background:#211e1b;color:#efe9dd;--gold:#c9a961;--pmut:#8c8577;--phair:#38332c;
+  font-family:Georgia,"Noto Serif KR","Apple SD Gothic Neo",serif}
+.pg .bar{color:#efe9dd;font-family:"Pretendard",sans-serif}
+.pg .cover{flex:none;margin:8px 14px 0;border:1px solid var(--gold);border-radius:4px;padding:12px 14px 11px;position:relative;
+  background:linear-gradient(160deg,#2a2620,#1d1a16)}
+.pg .cover::before{content:"";position:absolute;inset:3px;border:1px solid rgba(201,169,97,.3);border-radius:2px;pointer-events:none}
+.pg .cover .h{text-align:center;font-size:8px;letter-spacing:.42em;color:var(--gold);font-weight:700}
+.pg .cover .t{text-align:center;font-size:17px;letter-spacing:.1em;margin-top:4px;font-weight:700}
+.pg .cover .t small{display:block;font-size:8.5px;letter-spacing:.3em;color:var(--pmut);margin-top:2px;font-weight:400}
+.pg .cover .mrow{display:flex;justify-content:space-between;margin-top:10px;padding-top:8px;border-top:1px solid rgba(201,169,97,.25);font-family:"Pretendard",sans-serif}
+.pg .cover .m{text-align:center;flex:1}
+.pg .cover .m small{display:block;font-size:7px;color:var(--pmut);letter-spacing:.16em;font-weight:800}
+.pg .cover .m b{font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+.pg .cover .m b.grn{color:#a4cfa8}
+.pg .sech{flex:none;display:flex;align-items:center;gap:10px;padding:14px 18px 4px}
+.pg .sech .l{flex:1;height:1px;background:var(--phair)}
+.pg .sech span{font-size:8.5px;letter-spacing:.34em;color:var(--gold);font-weight:700}
+.pg .act{flex:none;display:flex;gap:11px;padding:8px 18px;align-items:baseline}
+.pg .act .no{flex:none;width:20px;font-size:13px;color:var(--gold);font-style:italic}
+.pg .act .n{flex:1;min-width:0}
+.pg .act .nm{font-size:13.5px;font-weight:700;letter-spacing:-.1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg .act .nm em{font-style:italic;font-size:9px;color:#d9453a;border:1px solid rgba(217,69,58,.5);border-radius:3px;padding:0 4px;margin-left:6px;vertical-align:2px;font-family:"Pretendard",sans-serif;font-weight:700}
+.pg .act .dt{font-size:9px;color:var(--pmut);margin-top:2px;font-family:"Pretendard",sans-serif;font-weight:600}
+.pg .act .dt b{color:#efe9dd;font-weight:700}
+.pg .act .rt{flex:none;text-align:right;font-family:"Pretendard",sans-serif}
+.pg .act .rt .dd{display:block;font-size:9px;color:var(--gold);font-weight:800;letter-spacing:.06em}
+.pg .act .rt .pr{font-size:10.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.pg .act.next{margin:2px 12px;padding:10px 6px 10px 12px;background:rgba(201,169,97,.08);border:1px solid rgba(201,169,97,.35);border-radius:6px}
+.pg .act.past{opacity:.5}
+.pg .act.past .nm{text-decoration:line-through;font-weight:400}
+.pg .fine{flex:none;text-align:center;font-size:7.5px;color:var(--pmut);letter-spacing:.2em;padding-top:10px;font-family:"Pretendard",sans-serif;font-weight:700}
+.pg .tabs{border-top-color:var(--phair);font-family:"Pretendard",sans-serif}
+.pg .tab{color:#5f594d}
+.pg .tab.on{color:var(--gold)}
+.pg .addbtn{background:var(--gold)}
+.pg .addbtn svg{stroke:#211e1b}
+
+/* ================= ⑧ 스트리밍 홈 ================= */
+/* OTT 문법: 다음 공연 = 히어로 포스터, 나머지 = 포스터 레일 */
+.scr.ot{background:#0c0c11;color:#f2f2f4;--mut:#8d8f99;--ohair:#22222a}
+.ot .bar{color:#f2f2f4}
+.ot .nav{flex:none;display:flex;justify-content:space-between;align-items:center;padding:5px 16px 0}
+.ot .nav .lg{font-size:14px;font-weight:900;letter-spacing:.04em}
+.ot .nav .lg i{color:#2E63F0;font-style:normal}
+.ot .nav .pr{width:22px;height:22px;border-radius:6px;background:linear-gradient(140deg,#ffb524,#e8442e);display:grid;place-items:center;font-size:9px;font-weight:800;color:#111}
+.ot .hero{flex:none;margin:10px 12px 0;height:196px;border-radius:14px;position:relative;overflow:hidden;
+  background:linear-gradient(165deg,#3f74ff 0%,#1c3d9e 45%,#0a1540 100%)}
+.ot .hero::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 60% at 75% 18%,rgba(255,255,255,.3),transparent 55%)}
+.ot .hero::after{content:"";position:absolute;inset:40% 0 0;background:linear-gradient(180deg,transparent,rgba(5,8,20,.88))}
+.ot .hero .tag{position:absolute;top:10px;left:10px;z-index:1;font-size:8.5px;font-weight:800;letter-spacing:.12em;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.25);border-radius:99px;padding:2.5px 8px;backdrop-filter:blur(3px)}
+.ot .hero .dbig{position:absolute;top:8px;right:10px;z-index:1;font-size:22px;font-weight:900;letter-spacing:-1px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.ot .hero .bt{position:absolute;left:12px;right:12px;bottom:10px;z-index:1}
+.ot .hero .bt .nm{font-size:18px;font-weight:900;letter-spacing:-.5px;line-height:1.15;word-break:keep-all}
+.ot .hero .bt .meta{font-size:9.5px;font-weight:700;color:rgba(255,255,255,.85);margin-top:4px}
+.ot .hero .bt .btns{display:flex;gap:6px;margin-top:8px}
+.ot .hero .bt .b1{flex:1;background:#fff;color:#0c0c11;border-radius:7px;text-align:center;font-size:10.5px;font-weight:800;padding:6px 0}
+.ot .hero .bt .b2{flex:none;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);border-radius:7px;font-size:10.5px;font-weight:700;padding:6px 12px;backdrop-filter:blur(3px)}
+.ot .strip{flex:none;display:flex;justify-content:space-between;padding:9px 16px 0;font-size:8.5px;color:var(--mut);font-weight:700}
+.ot .strip b{color:#f2f2f4;font-variant-numeric:tabular-nums}
+.ot .strip .grn{color:#6fd394}
+.ot .rl{flex:none;padding:10px 16px 5px;font-size:12px;font-weight:800;display:flex;justify-content:space-between;align-items:baseline}
+.ot .rl em{font-style:normal;font-size:9px;color:var(--mut);font-weight:700}
+.ot .rail{flex:none;display:flex;gap:8px;padding:0 16px;overflow:hidden}
+.ot .po{flex:0 0 84px}
+.ot .po .im{height:106px;border-radius:8px;position:relative;overflow:hidden;padding:6px}
+.ot .po .im::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.14),transparent 40%,rgba(0,0,0,.4))}
+.ot .po .im .dd{position:relative;z-index:1;display:inline-block;font-size:7.5px;font-weight:800;background:rgba(255,255,255,.92);color:#111;border-radius:3px;padding:1px 5px}
+.ot .po .im .t2{position:absolute;left:6px;right:6px;bottom:6px;z-index:1;font-size:9.5px;font-weight:800;line-height:1.25;word-break:keep-all;text-shadow:0 1px 5px rgba(0,0,0,.5)}
+.ot .po .u{font-size:8px;color:var(--mut);font-weight:700;margin-top:4px;line-height:1.4}
+.ot .po .u b{color:#f2f2f4;font-variant-numeric:tabular-nums}
+.ot .po.done .im{filter:grayscale(.75) brightness(.75)}
+.ot .po .im .stmp{position:absolute;z-index:1;top:42%;left:50%;transform:translate(-50%,-50%) rotate(-12deg);font-size:8px;font-weight:800;border:1.4px solid rgba(255,255,255,.9);border-radius:4px;padding:0 5px;letter-spacing:.08em}
+.ot .tabs{background:#08080c;border-top-color:var(--ohair)}
+.ot .tab{color:#4a4b55}
+.ot .tab.on{color:#f2f2f4}
+
+/* ================= ⑨ 데일리 브리핑 ================= */
+/* Things/비서 문법: 오늘·내일·이번 주로 시간 묶음. 조용한 생산성 앱 */
+.scr.bf{background:#fbfbfa;color:#212227;--mut:#8e9097;--mut2:#c6c7cc;--bhair:#ececea;--iris:#5856d6}
+.bf .bar{color:#212227}
+.bf .hd{flex:none;padding:8px 18px 0}
+.bf .hd .dt{font-size:9.5px;color:var(--mut);font-weight:700;letter-spacing:.02em}
+.bf .hd .t{font-size:20px;font-weight:800;letter-spacing:-.5px;margin-top:2px}
+.bf .hd .t em{font-style:normal;color:var(--iris)}
+.bf .hd .s{font-size:10px;color:var(--mut);font-weight:600;margin-top:3px}
+.bf .hd .s b{color:#212227;font-weight:800}
+.bf .hd .s .grn{color:#1d8a4e;font-weight:800}
+.bf .gh{flex:none;display:flex;align-items:center;gap:7px;padding:14px 18px 5px}
+.bf .gh .dot{width:7px;height:7px;border-radius:50%;flex:none}
+.bf .gh .l{font-size:11.5px;font-weight:800}
+.bf .gh em{font-style:normal;font-size:9px;color:var(--mut);font-weight:700;margin-left:auto}
+.bf .none{flex:none;margin:0 18px;font-size:10.5px;color:var(--mut2);font-weight:600;padding:2px 0 2px 14px}
+.bf .big{flex:none;margin:2px 14px 2px;background:#fff;border:1px solid var(--bhair);border-radius:14px;padding:11px 13px;box-shadow:0 6px 18px -14px rgba(30,30,60,.4);position:relative;overflow:hidden}
+.bf .big::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3.5px;background:#2E63F0}
+.bf .big .r1{display:flex;justify-content:space-between;align-items:baseline}
+.bf .big .nm{font-size:13.5px;font-weight:800;letter-spacing:-.2px}
+.bf .big .dd{font-size:10px;font-weight:800;color:#2E63F0;font-variant-numeric:tabular-nums}
+.bf .big .meta{font-size:10px;color:var(--mut);font-weight:600;margin-top:3px}
+.bf .big .meta b{color:#212227;font-weight:700}
+.bf .big .chk{display:flex;gap:6px;margin-top:9px}
+.bf .big .chk span{font-size:8.5px;font-weight:700;border:1px solid var(--bhair);border-radius:99px;padding:3px 8px;color:var(--mut)}
+.bf .big .chk span.on{background:#eef3ff;border-color:#c9d8ff;color:#2E63F0}
+.bf .it{flex:none;display:flex;align-items:center;gap:9px;margin:0 14px 5px;background:#fff;border:1px solid var(--bhair);border-radius:11px;padding:8px 12px}
+.bf .it .cb{flex:none;width:14px;height:14px;border-radius:50%;border:1.6px solid var(--mut2)}
+.bf .it .n{flex:1;min-width:0}
+.bf .it .n b{display:block;font-size:11.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.1px}
+.bf .it .n small{font-size:8.5px;color:var(--mut);font-weight:600}
+.bf .it .n small .xf{color:#d9453a;font-weight:700}
+.bf .it .dd{flex:none;font-size:9.5px;font-weight:800;color:var(--mut);font-variant-numeric:tabular-nums}
+.bf .it .pr{flex:none;font-size:10.5px;font-weight:800;font-variant-numeric:tabular-nums;width:60px;text-align:right}
+.bf .tabs{background:#fff;border-top-color:var(--bhair)}
+.bf .tab{color:var(--mut2)}
+.bf .tab.on{color:var(--iris)}
+.bf .addbtn{background:var(--iris)}
+.bf .addbtn svg{stroke:#fff}
+
+/* ================= ⑩ 다이어리 꾸미기 ================= */
+/* 다꾸 문법: 모눈 속지 + 마스킹테이프 + 스티커. 기록이 아니라 애장 */
+.scr.dk{color:#4a4238;--dmut:#a29684;
+  background:repeating-linear-gradient(0deg,transparent 0 15px,rgba(160,148,120,.16) 15px 16px),
+             repeating-linear-gradient(90deg,transparent 0 15px,rgba(160,148,120,.16) 15px 16px),
+             #f7f3e9}
+.dk .bar{color:#4a4238}
+.dk .hd{flex:none;padding:6px 18px 0;display:flex;justify-content:space-between;align-items:flex-start}
+.dk .hd .t{font-size:16px;font-weight:800;letter-spacing:-.2px}
+.dk .hd .t small{display:block;font-size:9px;color:var(--dmut);font-weight:700;margin-top:1px}
+.dk .postit{flex:none;transform:rotate(2deg);background:#fff3a6;box-shadow:0 5px 12px -6px rgba(120,100,40,.45);padding:7px 10px 8px;font-size:8.5px;font-weight:700;line-height:1.6;color:#6b5d2e;border-radius:2px;margin:-2px 4px 0 0;width:108px}
+.dk .postit b{font-size:10px;font-variant-numeric:tabular-nums}
+.dk .postit .grn{color:#3d7a4c}
+.dk .tape{position:absolute;top:-7px;left:50%;transform:translateX(-50%) rotate(-3deg);width:56px;height:15px;background:rgba(255,143,171,.5);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.dk .tape.t2{background:rgba(120,190,255,.45);transform:translateX(-50%) rotate(2.5deg)}
+.dk .tape.t3{background:rgba(150,220,160,.5);transform:translateX(-50%) rotate(-2deg)}
+.dk .tape.t4{background:rgba(255,205,110,.55);transform:translateX(-50%) rotate(3deg)}
+.dk .tk{flex:none;position:relative;margin:14px 14px 2px;background:#fffdf6;border-radius:6px;padding:10px 12px 9px;box-shadow:0 7px 16px -10px rgba(120,100,40,.5);display:flex;align-items:center;gap:10px}
+.dk .tk.r1{transform:rotate(-1.3deg)}
+.dk .tk.r2{transform:rotate(.9deg)}
+.dk .tk.r3{transform:rotate(-.7deg)}
+.dk .tk.r4{transform:rotate(1.1deg)}
+.dk .tk .cl{flex:none;width:4px;align-self:stretch;border-radius:99px}
+.dk .tk .n{flex:1;min-width:0}
+.dk .tk .nm{font-size:12.5px;font-weight:800;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dk .tk .ss{font-size:9px;color:var(--dmut);font-weight:600;margin-top:2px}
+.dk .tk .ss b{color:#4a4238;font-weight:700}
+.dk .tk .r{flex:none;text-align:right}
+.dk .tk .r .dd{display:inline-block;font-size:9px;font-weight:800;background:#ffdce5;color:#c2476b;border-radius:99px;padding:1.5px 8px}
+.dk .tk .r .dd.hot{background:#c2476b;color:#fff}
+.dk .tk .r .pr{display:block;font-size:10px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums}
+.dk .tk.past{filter:saturate(.55);opacity:.85}
+.dk .tk.past .nm{text-decoration:line-through;text-decoration-color:rgba(194,71,107,.6);text-decoration-thickness:2px}
+.dk .stkr{position:absolute;right:-5px;top:-9px;transform:rotate(10deg);font-size:8px;font-weight:800;background:#fff;border:1.6px dashed #c2476b;color:#c2476b;border-radius:50%;width:34px;height:34px;display:grid;place-items:center;text-align:center;line-height:1.15;box-shadow:0 3px 8px -3px rgba(120,60,80,.4)}
+.dk .doodle{flex:none;text-align:center;font-size:9px;color:var(--dmut);font-weight:700;letter-spacing:.06em;padding-top:8px}
+.dk .tabs{background:#fffdf6;border-top-color:#e9e2d0}
+.dk .tab{color:#cec3ab}
+.dk .tab.on{color:#4a4238}
+.dk .addbtn{background:#c2476b}
+.dk .addbtn svg{stroke:#fff}
+</style>
+
+<div class="wrap">
+  <p class="intro">전체 비교 — ①부터 ⑩까지 한 페이지</p>
+  <p class="intro2">같은 데이터·같은 크기(홈 1장씩). <b>①~④</b>는 앞서 본 발전형+신규, <b>⑤~⑩</b>은 교체된 새 틀. 스크롤하며 나란히 비교해줘.</p>
+  <div class="row">
+    <!-- ============ ① 티켓 지갑 v2 ============ -->
+    <div class="one">
+      <div class="num">①<b>티켓 지갑 v2</b></div>
+      <div class="phone"><div class="scr w2">
+        <div class="hd">
+          <div class="bar"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+          <div class="hd-top">
+            <div class="wm"><i></i>티켓 보관함</div>
+            <div class="hd-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <span class="on"></span>
+            </div>
+          </div>
+          <div class="hst-row">
+            <div class="hst"><div class="l">보유</div><div class="v">12<small>매</small></div></div>
+            <div class="hst m"><div class="l">실지출</div><div class="v">₩1,240,000</div></div>
+            <div class="hst g"><div class="l">양도차익</div><div class="v">+₩85,000</div></div>
+          </div>
+        </div>
+        <div class="deck">
+          <div class="pass">
+            <div class="p-top">
+              <div class="p-row"><span class="vch"><i style="background:#2E63F0"></i>NOL 인터파크</span><span class="ddy">내일</span></div>
+              <div class="p-name">콜드플레이 내한 공연</div>
+              <div class="p-meta">2026.07.14 TUE 20:00</div>
+            </div>
+            <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+            <div class="p-bot">
+              <div class="p-seat">스탠딩 A구역<small>1매</small></div>
+              <div class="p-price">₩154,000<small>NO. 2026-0714-01</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="sec">들고 있는 티켓 <em>4건 · 12매</em></div>
+        <div class="trow">
+          <div class="t-stub"><b>D-2</b><span>7/15</span></div>
+          <div class="t-main"><div class="t-nm">뮤지컬 〈오페라의 유령〉</div><div class="t-st">VIP 1층 A구역 12,13번</div></div>
+          <div class="t-right"><span class="t-pr">₩560,000</span><span class="t-qt">2매</span></div>
+        </div>
+        <div class="trow">
+          <div class="t-stub"><b>D-5</b><span>7/19</span></div>
+          <div class="t-main"><div class="t-nm">아이유 콘서트</div><div class="t-st">R석 2층 · <span class="xf">1석 양도</span> <span class="gn">+₩30,000</span></div></div>
+          <div class="t-right"><span class="t-pr">₩330,000</span><span class="t-qt">1매 보유</span></div>
+        </div>
+        <div class="trow">
+          <div class="t-stub"><b>D-8</b><span>7/22</span></div>
+          <div class="t-main"><div class="t-nm">해리포터와 저주받은 아이</div><div class="t-st">R석 2층 3열</div></div>
+          <div class="t-right"><span class="t-pr">₩280,000</span><span class="t-qt">2매</span></div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>발전 포인트:</b> 홈 = "지금 지갑에 든 것"만. 다음 공연 1장은 패스로 크게, 나머지 보유분은 스텁 행으로 전부. 지난 공연은 홈에서 빼고 '전체' 탭으로 — 화면이 짧아지고 보유 현황이 명확해짐.</div>
+    </div>
+
+    <!-- ============ ② 박스오피스 v2 ============ -->
+    <div class="one">
+      <div class="num">②<b>박스오피스 v2</b></div>
+      <div class="phone"><div class="scr bx">
+        <div class="bar"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="hd-top">
+            <div class="wm"><i></i>티켓 보관함</div>
+            <div class="hd-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <span class="on"></span>
+            </div>
+          </div>
+          <div class="stat">보유 <b>12매</b> · 실지출 <b>₩1,240,000</b> · 차익 <span class="g">+₩85,000</span></div>
+        </div>
+        <div class="sec">NOW SHOWING <em>다음 공연</em></div>
+        <div class="marquee">
+          <div class="mq-top"><span class="mq-dd">내일</span><span class="mq-vd">NOL 인터파크</span></div>
+          <div class="mq-t">콜드플레이 내한 공연</div>
+          <div class="mq-m">7.14 화 20:00 · 스탠딩 A · 1매 · ₩154,000</div>
+        </div>
+        <div class="pdots"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="sec">상영 시간표 <em>들고 있는 티켓 4건</em></div>
+        <div class="tt">
+          <div class="ttrow">
+            <div class="tt-d"><b>7.15</b><span>수 D-2</span></div>
+            <div class="tt-b"><div class="tt-n"><i style="background:#3B82F6"></i>뮤지컬 〈오페라의 유령〉</div><div class="tt-s">VIP 1층 A구역 12,13번</div></div>
+            <div class="tt-r"><div class="tt-p">₩560,000</div><div class="tt-q">2매</div></div>
+          </div>
+          <div class="ttrow">
+            <div class="tt-d"><b>7.19</b><span>일 D-5</span></div>
+            <div class="tt-b"><div class="tt-n"><i style="background:#00A33F"></i>아이유 콘서트</div><div class="tt-s">R석 2층 · <span class="xf">1석 양도 +₩30,000</span></div></div>
+            <div class="tt-r"><div class="tt-p">₩330,000</div><div class="tt-q">1매 보유</div></div>
+          </div>
+          <div class="ttrow">
+            <div class="tt-d"><b>7.22</b><span>수 D-8</span></div>
+            <div class="tt-b"><div class="tt-n"><i style="background:#E03E3E"></i>해리포터와 저주받은 아이</div><div class="tt-s">R석 2층 3열</div></div>
+            <div class="tt-r"><div class="tt-p">₩280,000</div><div class="tt-q">2매</div></div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>발전 포인트:</b> 세로 포스터 캐러셀 → 와이드 마퀴 1장(넘기면 다음 공연). 그 아래 "상영 시간표"가 보유 티켓 전체를 좌석·매수·가격까지 표처럼 — 포스터 감성은 유지하면서 정보 가독을 확보. 지난 공연 선반은 '전체' 탭으로.</div>
+    </div>
+
+    <!-- ============ ③ 출발 전광판 ============ -->
+    <div class="one">
+      <div class="num">③<b>출발 전광판 (신규)</b></div>
+      <div class="phone"><div class="scr dep">
+        <div class="bar"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="hd-top">
+            <div class="t"><small>DEPARTURES</small>내 티켓</div>
+            <div class="hd-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <span class="on"></span>
+            </div>
+          </div>
+          <div class="sum">보유 <b>12매</b> · 예정 <b>4건</b> · 실지출 <b>₩1,240,000</b> · 차익 <span class="a">+85,000</span></div>
+        </div>
+        <div class="cols"><span>일시</span><span>공연 / 좌석</span><span>상태</span></div>
+        <div class="strip hot">
+          <div class="sd"><b>07.14</b><span>20:00</span></div>
+          <div class="sb"><div class="sn">콜드플레이 내한 공연</div><div class="ss">STANDING A ×1 · ₩154,000</div></div>
+          <div class="st"><b>내일</b></div>
+        </div>
+        <div class="strip">
+          <div class="sd"><b>07.15</b><span>19:30</span></div>
+          <div class="sb"><div class="sn">뮤지컬 〈오페라의 유령〉</div><div class="ss">VIP 1F A 12,13 ×2 · ₩560,000</div></div>
+          <div class="st"><b>D-2</b></div>
+        </div>
+        <div class="strip">
+          <div class="sd"><b>07.19</b><span>18:00</span></div>
+          <div class="sb"><div class="sn">아이유 콘서트</div><div class="ss">R 2F ×1 · 양도 1석 +30,000</div></div>
+          <div class="st"><b>D-5</b></div>
+        </div>
+        <div class="strip">
+          <div class="sd"><b>07.22</b><span>19:00</span></div>
+          <div class="sb"><div class="sn">해리포터와 저주받은 아이</div><div class="ss">R 2F 3열 ×2 · ₩280,000</div></div>
+          <div class="st"><b>D-8</b></div>
+        </div>
+        <div class="divider">— ARRIVED · 지난 공연 —</div>
+        <div class="strip off">
+          <div class="sd"><b>03.22</b><span>2025</span></div>
+          <div class="sb"><div class="sn">지킬 앤 하이드</div><div class="ss">×2 · 양도 완료 +85,000</div></div>
+          <div class="st"><b class="xf">양도</b></div>
+        </div>
+        <div class="strip off">
+          <div class="sd"><b>03.09</b><span>2025</span></div>
+          <div class="sb"><div class="sn">뮤지컬 〈데스노트〉</div><div class="ss">S 1F 15열 ×1 · ₩99,000</div></div>
+          <div class="st"><b>관람</b></div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>전광판</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 19V5M10 19v-8M16 19v-5M22 19H2"/></svg>기록</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>새 틀:</b> 공항 출발 전광판. 내 티켓 전부가 일시·좌석·매수·상태 열로 정렬된 보드 — "뭘 들고 있는지"는 이 틀이 제일 빠르게 읽혀. 임박한 행은 앰버로 점등, 지난 건 소등. 감성과 표(table)의 결합.</div>
+    </div>
+
+    <!-- ============ ④ 조종석 ============ -->
+    <div class="one">
+      <div class="num">④<b>조종석 · 위젯 보드 (신규)</b></div>
+      <div class="phone"><div class="scr ck">
+        <div class="bar"><span>9:41</span><span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="t">티켓 보관함<small>7월 14일 화요일</small></div>
+          <div class="hd-ic">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <span class="on"></span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="wg full next">
+            <div class="l">
+              <div class="wl">🎤 다음 공연</div>
+              <div class="nm">콜드플레이 내한 공연</div>
+              <div class="dt">내일 20:00 · 스탠딩 A · 1매</div>
+            </div>
+            <div class="dd"><b>D-1</b><span>TOMORROW</span></div>
+          </div>
+          <div class="wg">
+            <div class="wl">🎫 보유</div>
+            <div class="bignum">12<small>매</small></div>
+            <div class="subnum">4건 예정</div>
+          </div>
+          <div class="wg">
+            <div class="wl">💸 실지출</div>
+            <div class="bignum" style="font-size:16px">₩1,240,000</div>
+            <div class="subnum">차익 <span class="g">+₩85,000</span></div>
+          </div>
+          <div class="wg full">
+            <div class="wl">📅 이번 주</div>
+            <div class="week">
+              <div class="wd"><span class="d">일</span><span class="n">13</span><span class="o"></span></div>
+              <div class="wd today"><span class="d">월</span><span class="n">14</span><span class="o on"></span></div>
+              <div class="wd"><span class="d">화</span><span class="n">15</span><span class="o bl"></span></div>
+              <div class="wd"><span class="d">수</span><span class="n">16</span><span class="o"></span></div>
+              <div class="wd"><span class="d">목</span><span class="n">17</span><span class="o"></span></div>
+              <div class="wd"><span class="d">금</span><span class="n">18</span><span class="o"></span></div>
+              <div class="wd"><span class="d">토</span><span class="n">19</span><span class="o bl"></span></div>
+            </div>
+          </div>
+          <div class="wg full">
+            <div class="wl">🗂 들고 있는 티켓</div>
+            <div class="hrow"><i style="background:#3B82F6"></i><span class="n">오페라의 유령 · VIP 1층 12,13</span><span class="q">2매</span><span class="dd2">D-2</span></div>
+            <div class="hrow"><i style="background:#00A33F"></i><span class="n">아이유 콘서트 · R석 2층</span><span class="q">1매</span><span class="dd2">D-5</span></div>
+            <div class="hrow"><i style="background:#E03E3E"></i><span class="n">해리포터와 저주받은 아이</span><span class="q">2매</span><span class="dd2">D-8</span></div>
+          </div>
+          <div class="wg mini">
+            <span class="spin"></span>
+            <div class="tx">AI 인식 중 2건<small>탭해서 관리</small></div>
+          </div>
+          <div class="wg mini add">
+            <span class="pl">＋</span> 티켓 추가
+          </div>
+        </div>
+      </div></div>
+      <div class="cap"><b>새 틀:</b> 홈 = 조종석. 다음 공연·보유·지출·이번 주·티켓 목록·AI 대기열이 전부 위젯 한 화면에. 탭바 없이 위젯을 탭하면 해당 화면으로, 꾹 누르면 배치 편집. "정보가 눈에 안 들어온다"는 원래 불만에 가장 정면 대응.</div>
+    </div>
+    <!-- ⑤ 라인업 포스터 -->
+    <div class="one">
+      <div class="num">⑤<b>라인업 포스터</b></div>
+      <div class="phone"><div class="scr lu">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="mast"><span class="ey">MY LINEUP</span><span class="yr">2026 · SUMMER</span></div>
+        <div class="hero">
+          <span class="dchip"><i></i>D-1 · 내일</span>
+          <div class="nm">콜드플레이<br>내한 공연</div>
+          <div class="sub"><b>7.14 화 20:00</b> 고양종합운동장<br><em>스탠딩 A ×1 · ₩154,000 · NOL 인터파크</em></div>
+        </div>
+        <div class="ln s1"><span class="d">D-2</span><div class="nm2">오페라의 유령<small>7.15 수 19:30 · VIP 1층 A 12,13 ×2</small></div><span class="p">560,000</span></div>
+        <div class="ln s2"><span class="d">D-5</span><div class="nm2">아이유 콘서트<small>7.19 일 18:00 · R석 ×1 · 1석 양도 +30,000</small></div><span class="p">330,000</span></div>
+        <div class="ln s3"><span class="d">D-8</span><div class="nm2">해리포터와 저주받은 아이<small>7.22 수 14:00 · R석 2층 3열 ×2</small></div><span class="p">280,000</span></div>
+        <div class="ln past"><span class="d">끝</span><div class="nm2">지킬 앤 하이드 · 데스노트 외 22</div><span class="p">전체 →</span></div>
+        <div class="stat">
+          <span>보유<b>12매</b></span><span>공연<b>4건</b></span><span>실지출<b>₩1,240,000</b></span><span>차익<b class="grn">+85,000</b></span>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 5h16M4 10h12M4 15h14M4 20h8"/></svg>라인업</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>페스티벌 라인업 문법.</b> 글자 크기가 곧 시간의 가까움 — 헤드라이너(다음 공연)는 크게, 멀수록 작게. 장식 없이 타이포그래피만으로 우선순위가 서고, 내 보유 내역이 "나의 라인업 포스터"가 됨.</div>
+    </div>
+
+    <!-- ⑥ 라이브 패스 -->
+    <div class="one">
+      <div class="num">⑥<b>라이브 패스 · 추적</b></div>
+      <div class="phone"><div class="scr fy">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="t">내 공연</div>
+          <div class="sum">보유 <b>12매</b> · ₩1,240,000<br>양도차익 <b style="color:#0aa060">+₩85,000</b></div>
+        </div>
+        <div class="card">
+          <div class="top">
+            <span class="brand"><i style="background:#2E63F0">N</i>NOL 인터파크 · M2026-8841</span>
+            <span class="stt live">● 진행 중</span>
+          </div>
+          <div class="nm">콜드플레이 내한 공연</div>
+          <div class="route">
+            <div class="pt"><b>오늘</b><small>7.13 일</small></div>
+            <div class="trk"><i></i></div>
+            <div class="pt"><b>20:00</b><small>7.14 화 개막</small></div>
+          </div>
+          <div class="eta">개막까지 22시간 19분 · 고양종합운동장</div>
+          <div class="grid">
+            <div class="g"><small>좌석</small><b>스탠딩 A</b></div>
+            <div class="g"><small>수량</small><b>1매</b></div>
+            <div class="g"><small>금액</small><b>154,000</b></div>
+            <div class="g"><small>상태</small><b style="color:#0aa060">전량 보유</b></div>
+          </div>
+        </div>
+        <div class="sect">예정된 공연 3</div>
+        <div class="mini">
+          <span class="ic" style="background:linear-gradient(140deg,#3B82F6,#1a3a80)">오</span>
+          <div class="n"><b>오페라의 유령</b><small>7.15 수 19:30 · VIP 1층 A 12,13 ×2</small></div>
+          <div class="r"><b>D-2</b><small>₩560,000</small></div>
+        </div>
+        <div class="mini">
+          <span class="ic" style="background:linear-gradient(140deg,#00A33F,#004d20)">아</span>
+          <div class="n"><b>아이유 콘서트</b><small>7.19 일 18:00 · R석 ×1 · <span class="xf">1석 양도 +30,000</span></small></div>
+          <div class="r"><b>D-5</b><small>₩330,000</small></div>
+        </div>
+        <div class="mini">
+          <span class="ic" style="background:linear-gradient(140deg,#E03E3E,#6e1414)">해</span>
+          <div class="n"><b>해리포터와 저주받은 아이</b><small>7.22 수 14:00 · R석 2층 3열 ×2</small></div>
+          <div class="r"><b>D-8</b><small>₩280,000</small></div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>항공편 추적(Flighty) 문법.</b> 다음 공연이 "진행 중" 라이브 카드 — 오늘→개막 진행바, 남은 시간, 좌석·수량·상태 데이터 그리드. 예매번호·예매처가 일급 정보라 실제 관리 도구답게 정밀함.</div>
+    </div>
+
+    <!-- ⑦ 시즌 프로그램 -->
+    <div class="one">
+      <div class="num">⑦<b>시즌 프로그램 · 극장</b></div>
+      <div class="phone"><div class="scr pg">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="cover">
+          <div class="h">SEASON PROGRAMME</div>
+          <div class="t">나의 스물여섯 시즌<small>JULY MMXXVI</small></div>
+          <div class="mrow">
+            <div class="m"><small>보유</small><b>12매</b></div>
+            <div class="m"><small>예정</small><b>4건</b></div>
+            <div class="m"><small>실지출</small><b>1,240,000</b></div>
+            <div class="m"><small>양도차익</small><b class="grn">+85,000</b></div>
+          </div>
+        </div>
+        <div class="sech"><div class="l"></div><span>다가오는 막</span><div class="l"></div></div>
+        <div class="act next">
+          <span class="no">Ⅰ</span>
+          <div class="n"><div class="nm">콜드플레이 내한 공연</div><div class="dt"><b>내일 20:00</b> · 고양종합운동장 · 스탠딩 A ×1</div></div>
+          <div class="rt"><span class="dd">D-1</span><span class="pr">154,000</span></div>
+        </div>
+        <div class="act">
+          <span class="no">Ⅱ</span>
+          <div class="n"><div class="nm">오페라의 유령</div><div class="dt">7.15 수 19:30 · VIP 1층 A 12,13 ×2</div></div>
+          <div class="rt"><span class="dd">D-2</span><span class="pr">560,000</span></div>
+        </div>
+        <div class="act">
+          <span class="no">Ⅲ</span>
+          <div class="n"><div class="nm">아이유 콘서트<em>1석 양도</em></div><div class="dt">7.19 일 18:00 · R석 2층 ×1 · 차익 +30,000</div></div>
+          <div class="rt"><span class="dd">D-5</span><span class="pr">330,000</span></div>
+        </div>
+        <div class="act">
+          <span class="no">Ⅳ</span>
+          <div class="n"><div class="nm">해리포터와 저주받은 아이</div><div class="dt">7.22 수 14:00 · R석 2층 3열 ×2</div></div>
+          <div class="rt"><span class="dd">D-8</span><span class="pr">280,000</span></div>
+        </div>
+        <div class="sech"><div class="l"></div><span>지난 막 · 24</span><div class="l"></div></div>
+        <div class="act past">
+          <span class="no">—</span>
+          <div class="n"><div class="nm">지킬 앤 하이드</div><div class="dt">2025.3 · 양도 완료 +85,000</div></div>
+          <div class="rt"><span class="pr" style="color:#8c8577">전체 →</span></div>
+        </div>
+        <div class="fine">INTERMISSION · 15 MIN</div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M5 3h14v18H5z"/><path d="M9 7h6M9 11h6"/></svg>프로그램</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>극장 프로그램북 문법.</b> 내 일정이 "나의 시즌"이 되고 공연은 Ⅰ·Ⅱ·Ⅲ 막으로 붙음. 세리프+금박+공연장 조명의 어른스러운 톤 — 뮤지컬·클래식 위주 사용자에게 제일 잘 어울리는 옷.</div>
+    </div>
+
+    <!-- ⑧ 스트리밍 홈 -->
+    <div class="one">
+      <div class="num">⑧<b>스트리밍 홈 · OTT</b></div>
+      <div class="phone"><div class="scr ot">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="nav"><span class="lg">TICKET<i>BOX</i></span><span class="pr">홍</span></div>
+        <div class="hero">
+          <span class="tag">다음 공연</span>
+          <span class="dbig">D-1</span>
+          <div class="bt">
+            <div class="nm">콜드플레이 내한 공연</div>
+            <div class="meta">내일 20:00 · 고양종합운동장 · 스탠딩 A ×1</div>
+            <div class="btns"><span class="b1">티켓 보기</span><span class="b2">양도</span></div>
+          </div>
+        </div>
+        <div class="strip"><span>보유 <b>12매</b> · 공연 <b>4건</b></span><span>실지출 <b>₩1,240,000</b> · 차익 <b class="grn">+85,000</b></span></div>
+        <div class="rl">다가오는 공연 <em>공연일순</em></div>
+        <div class="rail">
+          <div class="po"><div class="im" style="background:linear-gradient(160deg,#4b8bf5,#12295e)"><span class="dd">D-2</span><div class="t2">오페라의 유령</div></div><div class="u"><b>₩560,000</b> · VIP ×2</div></div>
+          <div class="po"><div class="im" style="background:linear-gradient(160deg,#18c46b,#00461d)"><span class="dd">D-5</span><div class="t2">아이유 콘서트</div></div><div class="u"><b>₩330,000</b> · R석 ×1</div></div>
+          <div class="po"><div class="im" style="background:linear-gradient(160deg,#f0625c,#5e0f0f)"><span class="dd">D-8</span><div class="t2">해리포터</div></div><div class="u"><b>₩280,000</b> · R석 ×2</div></div>
+        </div>
+        <div class="rl">다시 보기 <em>관람 24 · 양도 포함</em></div>
+        <div class="rail">
+          <div class="po done"><div class="im" style="background:linear-gradient(160deg,#29b6d8,#0b5666)"><span class="stmp">양도 +85,000</span><div class="t2">지킬 앤 하이드</div></div></div>
+          <div class="po done"><div class="im" style="background:linear-gradient(160deg,#f2b52e,#6e4a00)"><span class="stmp">관람</span><div class="t2">데스노트</div></div></div>
+          <div class="po done"><div class="im" style="background:linear-gradient(160deg,#8a93a5,#2b2f36)"><div class="t2">+22</div></div></div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>추가</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>OTT 문법.</b> 다음 공연 = 히어로 포스터(핵심 액션 "티켓 보기·양도"가 바로 그 자리에), 나머지는 포스터 레일. 지난 공연은 "다시 보기"로 흑백 처리. 공연=콘텐츠라는 직관이라 학습이 필요 없음.</div>
+    </div>
+
+    <!-- ⑨ 데일리 브리핑 -->
+    <div class="one">
+      <div class="num">⑨<b>데일리 브리핑 · 비서</b></div>
+      <div class="phone"><div class="scr bf">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="dt">7월 13일 일요일</div>
+          <div class="t">내일 공연이 <em>1건</em> 있어요</div>
+          <div class="s">이번 주 <b>2건</b> · 보유 <b>12매</b> · 실지출 <b>₩1,240,000</b> · 차익 <span class="grn">+₩85,000</span></div>
+        </div>
+        <div class="gh"><span class="dot" style="background:#2E63F0"></span><span class="l">내일 · 7.14 화</span><em>1건</em></div>
+        <div class="big">
+          <div class="r1"><span class="nm">콜드플레이 내한 공연</span><span class="dd">D-1 · 20:00</span></div>
+          <div class="meta"><b>스탠딩 A ×1</b> · 고양종합운동장 · NOL 인터파크 · ₩154,000</div>
+          <div class="chk"><span class="on">✓ 티켓 확인</span><span>출발 알림 17:30</span><span>QR 저장</span></div>
+        </div>
+        <div class="gh"><span class="dot" style="background:#3B82F6"></span><span class="l">이번 주</span><em>1건</em></div>
+        <div class="it"><span class="cb"></span><div class="n"><b>오페라의 유령</b><small>수 19:30 · VIP 1층 A 12,13 ×2 · 예스24</small></div><span class="dd">D-2</span><span class="pr">₩560,000</span></div>
+        <div class="gh"><span class="dot" style="background:#c6c7cc"></span><span class="l">다음 주 이후</span><em>2건</em></div>
+        <div class="it"><span class="cb"></span><div class="n"><b>아이유 콘서트</b><small>7.19 일 18:00 · R석 ×1 · <span class="xf">1석 양도 +30,000</span></small></div><span class="dd">D-5</span><span class="pr">₩330,000</span></div>
+        <div class="it"><span class="cb"></span><div class="n"><b>해리포터와 저주받은 아이</b><small>7.22 수 14:00 · R석 2층 3열 ×2</small></div><span class="dd">D-8</span><span class="pr">₩280,000</span></div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>오늘</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>비서 브리핑 문법.</b> 첫 줄이 문장으로 말해줌("내일 공연이 1건 있어요"). 시간 묶음(내일→이번 주→이후)으로 자동 정리되고, 임박 공연엔 준비 체크(티켓 확인·출발 알림)가 붙는 실용 노선.</div>
+    </div>
+
+    <!-- ⑩ 다이어리 꾸미기 -->
+    <div class="one">
+      <div class="num">⑩<b>다이어리 꾸미기</b></div>
+      <div class="phone"><div class="scr dk">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="t">7월의 다이어리<small>스물여섯 번째 페이지</small></div>
+          <div class="postit">보유 <b>12매</b> · 4건<br>실지출 <b>1,240,000</b><br>차익 <b class="grn">+85,000</b> ✍</div>
+        </div>
+        <div class="tk r1">
+          <span class="tape"></span>
+          <span class="stkr">내일<br>이다!</span>
+          <span class="cl" style="background:#2E63F0"></span>
+          <div class="n"><div class="nm">콜드플레이 내한 공연</div><div class="ss"><b>7.14 화 20:00</b> · 스탠딩 A ×1 · 고양종합운동장</div></div>
+          <div class="r"><span class="dd hot">D-1</span><span class="pr">₩154,000</span></div>
+        </div>
+        <div class="tk r2">
+          <span class="tape t2"></span>
+          <span class="cl" style="background:#3B82F6"></span>
+          <div class="n"><div class="nm">오페라의 유령</div><div class="ss"><b>7.15 수 19:30</b> · VIP 1층 A 12,13 ×2</div></div>
+          <div class="r"><span class="dd">D-2</span><span class="pr">₩560,000</span></div>
+        </div>
+        <div class="tk r3">
+          <span class="tape t3"></span>
+          <span class="cl" style="background:#00A33F"></span>
+          <div class="n"><div class="nm">아이유 콘서트</div><div class="ss"><b>7.19 일 18:00</b> · R석 ×1 · 1석 양도 +30,000</div></div>
+          <div class="r"><span class="dd">D-5</span><span class="pr">₩330,000</span></div>
+        </div>
+        <div class="tk r4">
+          <span class="tape t4"></span>
+          <span class="cl" style="background:#E03E3E"></span>
+          <div class="n"><div class="nm">해리포터와 저주받은 아이</div><div class="ss"><b>7.22 수 14:00</b> · R석 2층 3열 ×2</div></div>
+          <div class="r"><span class="dd">D-8</span><span class="pr">₩280,000</span></div>
+        </div>
+        <div class="tk r2 past">
+          <span class="tape"></span>
+          <span class="cl" style="background:#22C3E6"></span>
+          <div class="n"><div class="nm">지킬 앤 하이드</div><div class="ss">양도 완료 <b style="color:#3d7a4c">+85,000</b> · 지난 페이지 24장 →</div></div>
+          <div class="r"><span class="dd" style="background:#e9e2d0;color:#a29684">끝!</span></div>
+        </div>
+        <div class="doodle">···· ♡ 다음 티켓을 붙여줘 ♡ ····</div>
+        <div class="tabs">
+          <div class="tab on"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 4h13l3 3v13H4z"/><path d="M8 4v5h6V4"/></svg>다이어리</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="addbtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>다꾸 문법.</b> 모눈 속지에 마스킹테이프로 붙인 티켓, 포스트잇 요약, 임박엔 손글씨 스티커("내일이다!"), 본 공연은 취소선+빛바램. 관리 도구가 아니라 애장 노트 — 감성 지분 최대.</div>
+    </div>
+  </div>
+  <p class="foot"><b>솔직한 자평</b> — 완성도·일상 사용성 기준 상위권: <b>① 지갑</b>(물건 감성+실용 균형), <b>⑥ 라이브 패스</b>(관리 도구로서 제일 정밀), <b>⑨ 브리핑</b>(제일 조용하고 오래 써도 안 질림). 한 방의 인상: <b>② 박스오피스</b>·<b>⑧ 스트리밍 홈</b>. 취향 특화: ⑤⑦⑩. 밀도 특화: ③④. — 다 별로면 어느 쪽이 어긋나는지(감성이 약한지, 너무 꾸몄는지, 정보가 안 읽히는지) 한마디만 주면 그 축으로 다시 팜.</p>
+</div>

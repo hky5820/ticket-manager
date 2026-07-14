@@ -1,0 +1,160 @@
+<title>티켓 보관함 · ② 다듬기 — 용어 정리 + 플로팅 버튼</title>
+<style>
+/* ② 박스오피스 → 컨셉 용어 제거, UI 골격만 유지. 하단 탭바 → 플로팅 독 + 플로팅 추가 버튼 */
+:root{ --bg:#f0f0ee; --ink:#1d1f26; --sub:#70727a; }
+@media (prefers-color-scheme:dark){ :root{ --bg:#141519; --ink:#e9eaec; --sub:#989aa2; } }
+:root[data-theme="light"]{ --bg:#f0f0ee; --ink:#1d1f26; --sub:#70727a; }
+:root[data-theme="dark"]{ --bg:#141519; --ink:#e9eaec; --sub:#989aa2; }
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased;line-height:1.6}
+.wrap{max-width:1380px;margin:0 auto;padding:44px 20px 80px}
+.intro{font-size:16.5px;margin:0 0 4px;font-weight:700}
+.intro2{font-size:14px;color:var(--sub);margin:0 0 34px;max-width:680px}
+.intro2 b{color:var(--ink)}
+.row{display:flex;gap:30px;flex-wrap:wrap;justify-content:center;align-items:flex-start}
+.one{display:flex;flex-direction:column;gap:10px;width:292px}
+.one .num{font-size:12px;font-weight:800;color:var(--sub);letter-spacing:.06em}
+.one .num b{color:var(--ink);font-size:13.5px;margin-left:5px}
+.one .cap{font-size:12.5px;color:var(--sub)}
+.one .cap b{color:var(--ink);font-weight:700}
+.phone{width:292px;border-radius:36px;padding:7px;background:#101115;box-shadow:0 24px 55px -26px rgba(0,0,0,.5)}
+.scr{border-radius:29px;overflow:hidden;display:flex;flex-direction:column;height:596px;font-size:13px;position:relative}
+.bar{flex:none;height:28px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 18px 3px;font-size:10.5px;font-weight:700;position:relative;z-index:5}
+.bat{display:inline-block;width:17px;height:8.5px;border:1.2px solid currentColor;border-radius:2.5px;position:relative;vertical-align:-1px;opacity:.85}
+.bat::after{content:"";position:absolute;inset:1.2px;width:66%;background:currentColor;border-radius:1px}
+.sig{display:inline-flex;align-items:flex-end;gap:1.4px;margin-right:4px;vertical-align:-1px}
+.sig i{width:2.6px;background:currentColor;border-radius:.8px;opacity:.85}
+.sig i:nth-child(1){height:4px}.sig i:nth-child(2){height:6px}.sig i:nth-child(3){height:8px}.sig i:nth-child(4){height:10px}
+
+/* ================= ②-R ================= */
+.scr.bx{background:#0d0e12;color:#f2f2f0;--mut:#8e9096;--mut2:#5a5c63;--card:#17181d;--hair:#26272d}
+.bx .bar{color:#f2f2f0}
+.bx .hd{flex:none;padding:4px 16px 0}
+.bx .hd-top{display:flex;align-items:center;justify-content:space-between}
+.bx .wm{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:800}
+.bx .wm i{width:19px;height:19px;border-radius:6px;background:#f2f2f0;position:relative}
+.bx .wm i::after{content:"";position:absolute;left:4px;top:5.5px;width:11px;height:8px;border-radius:2px;background:#0d0e12;transform:rotate(-14deg)}
+.bx .hd-ic{display:flex;gap:11px;align-items:center;color:var(--mut)}
+.bx .hd-ic .on{width:7px;height:7px;border-radius:99px;background:#3fbf72}
+.bx .stat{font-size:11px;color:var(--mut);margin-top:7px}
+.bx .stat b{color:#f2f2f0;font-weight:700}
+.bx .stat .g{color:#4ade80;font-weight:700}
+.bx .sec{flex:none;display:flex;align-items:baseline;justify-content:space-between;padding:14px 16px 8px;font-size:13px;font-weight:800}
+.bx .sec em{font-style:normal;font-size:10.5px;color:var(--mut);font-weight:600}
+/* 히어로 = 실물 티켓 패스 (시안 ① 지갑의 티켓 모양: 절취선·노치·바코드) */
+.bx .pass{flex:none;margin:0 12px;background:#fff;color:#191b23;border-radius:15px;box-shadow:0 10px 26px -12px rgba(0,0,0,.7)}
+.bx .p-top{padding:12px 14px 11px}
+.bx .p-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.bx .vch{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:700;color:#8b8d95}
+.bx .vch i{width:8px;height:8px;border-radius:3px}
+.bx .ddy{font-size:10.5px;font-weight:800;background:#191b23;color:#fff;border-radius:6px;padding:1.5px 8px}
+.bx .p-name{font-size:17px;font-weight:800;letter-spacing:-.4px}
+.bx .p-meta{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:10px;color:#8b8d95;margin-top:3px}
+.bx .p-perf{height:0;border-top:2px dashed #e4e4e8;margin:0 9px;position:relative}
+.bx .p-perf i{position:absolute;top:-7px;width:14px;height:14px;border-radius:50%;background:#0d0e12}
+.bx .p-perf i.l{left:-16px}.bx .p-perf i.r{right:-16px}
+.bx .p-bot{padding:10px 14px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bx .p-seat{font-size:11px;font-weight:600;color:#4c4e56}
+.bx .p-seat small{display:block;font-size:9.5px;color:#8b8d95;font-weight:500;margin-top:1px}
+.bx .p-code{flex:none;text-align:right}
+.bx .p-code .bc{display:inline-block;width:74px;height:20px;border-radius:2px;
+  background:repeating-linear-gradient(90deg,#191b23 0 1.5px,transparent 1.5px 3.5px,#191b23 3.5px 6.5px,transparent 6.5px 8px,#191b23 8px 9px,transparent 9px 12px)}
+.bx .p-code small{display:block;font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:8px;color:#b0b2b9;letter-spacing:.08em;margin-top:2px}
+.bx .pdots{flex:none;display:flex;gap:5px;justify-content:center;padding:9px 0 0}
+.bx .pdots i{width:5px;height:5px;border-radius:50%;background:var(--mut2)}
+.bx .pdots i.on{width:13px;border-radius:99px;background:#f2f2f0}
+/* 보유 티켓 리스트 */
+.bx .tt{flex:none;margin:0 12px;background:var(--card);border-radius:14px;overflow:hidden}
+.bx .ttrow{display:flex;align-items:center;gap:10px;padding:9.5px 12px}
+.bx .ttrow+.ttrow{border-top:1px solid var(--hair)}
+.bx .tt-d{flex:none;width:40px;line-height:1.15}
+.bx .tt-d b{display:block;font-size:12px;font-weight:800}
+.bx .tt-d span{font-size:8.5px;color:var(--mut);font-weight:700}
+.bx .tt-b{flex:1;min-width:0}
+.bx .tt-n{font-size:12.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:5px}
+.bx .tt-n i{width:7px;height:7px;border-radius:2.5px;flex:none}
+.bx .tt-s{font-size:9.5px;color:var(--mut);margin-top:1.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bx .tt-s .xf{color:#ff8a7a;font-weight:700}
+.bx .tt-r{flex:none;text-align:right}
+.bx .tt-p{font-size:11.5px;font-weight:800}
+.bx .tt-q{font-size:9px;color:var(--mut)}
+
+/* ===== 플로팅 독 (가운데 정렬, 홈·캘린더·전체·설정) ===== */
+.bx .dock{position:absolute;left:50%;transform:translateX(-50%);bottom:13px;z-index:6;
+  display:flex;align-items:center;gap:2px;padding:7px 10px;border-radius:99px;
+  background:rgba(28,29,36,.86);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  border:1px solid rgba(255,255,255,.09);box-shadow:0 12px 28px -10px rgba(0,0,0,.65)}
+.bx .dock .tab{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:8.5px;font-weight:700;width:50px;color:var(--mut2)}
+.bx .dock .tab svg{stroke:currentColor}
+.bx .dock .tab.on{color:#f2f2f0}
+/* 콘텐츠가 플로팅 밑으로 흐르도록 여백 확보 */
+.bx .spacer{flex:none;height:78px}
+</style>
+
+<div class="wrap">
+  <p class="intro">② 다듬기 — 컨셉 용어 제거 + 플로팅 버튼</p>
+  <p class="intro2">박스오피스라는 컨셉은 버리고 <b>UI 골격만</b> 유지. 극장 용어는 전부 일반 용어(<b>다음 공연 · 보유 티켓</b>)로, 히어로는 단색 덩어리 대신 <b>실물 티켓 패스</b>(절취선·노치·바코드), 하단은 탭바 대신 <b>가운데 플로팅 독</b>. + 버튼은 삭제.</p>
+
+  <div class="row">
+    <div class="one">
+      <div class="num">②-R<b>홈 (다듬은 버전)</b></div>
+      <div class="phone"><div class="scr bx">
+        <div class="bar"><span>9:41</span><span><span class="sig"><i></i><i></i><i></i><i></i></span>100% <span class="bat"></span></span></div>
+        <div class="hd">
+          <div class="hd-top">
+            <div class="wm"><i></i>티켓 보관함</div>
+            <div class="hd-ic">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+              <span class="on"></span>
+            </div>
+          </div>
+          <div class="stat">보유 <b>12매</b> · 실지출 <b>₩1,240,000</b> · 차익 <span class="g">+₩85,000</span></div>
+        </div>
+        <div class="sec">다음 공연 <em>가장 가까운 일정</em></div>
+        <div class="pass">
+          <div class="p-top">
+            <div class="p-row"><span class="vch"><i style="background:#2E63F0"></i>NOL 인터파크</span><span class="ddy">내일</span></div>
+            <div class="p-name">콜드플레이 내한 공연</div>
+            <div class="p-meta">2026.07.14 TUE 20:00 · 고양종합운동장</div>
+          </div>
+          <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+          <div class="p-bot">
+            <div class="p-seat">스탠딩 A구역 · 1매<small>₩154,000</small></div>
+            <div class="p-code"><span class="bc"></span><small>NO. 2026-0714-01</small></div>
+          </div>
+        </div>
+        <div class="pdots"><i class="on"></i><i></i><i></i><i></i></div>
+        <div class="sec">보유 티켓 <em>4건 · 12매</em></div>
+        <div class="tt">
+          <div class="ttrow">
+            <div class="tt-d"><b>7.15</b><span>수 D-2</span></div>
+            <div class="tt-b"><div class="tt-n"><i style="background:#3B82F6"></i>뮤지컬 〈오페라의 유령〉</div><div class="tt-s">VIP 1층 A구역 12,13번</div></div>
+            <div class="tt-r"><div class="tt-p">₩560,000</div><div class="tt-q">2매</div></div>
+          </div>
+          <div class="ttrow">
+            <div class="tt-d"><b>7.19</b><span>일 D-5</span></div>
+            <div class="tt-b"><div class="tt-n"><i style="background:#00A33F"></i>아이유 콘서트</div><div class="tt-s">R석 2층 · <span class="xf">1석 양도 +₩30,000</span></div></div>
+            <div class="tt-r"><div class="tt-p">₩330,000</div><div class="tt-q">1매 보유</div></div>
+          </div>
+          <div class="ttrow">
+            <div class="tt-d"><b>7.22</b><span>수 D-8</span></div>
+            <div class="tt-b"><div class="tt-n"><i style="background:#E03E3E"></i>해리포터와 저주받은 아이</div><div class="tt-s">R석 2층 3열</div></div>
+            <div class="tt-r"><div class="tt-p">₩280,000</div><div class="tt-q">2매</div></div>
+          </div>
+        </div>
+        <div class="spacer"></div>
+        <!-- 플로팅 독 (가운데) -->
+        <div class="dock">
+          <div class="tab on"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</div>
+          <div class="tab"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</div>
+          <div class="tab"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</div>
+          <div class="tab"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</div>
+        </div>
+      </div></div>
+      <div class="cap"><b>바뀐 것:</b> ① 히어로가 단색 덩어리 → <b>실물 티켓 패스</b>(시안 ①의 모양: 절취선·양쪽 노치·바코드·예매번호). ② 플로팅 독 <b>가운데 정렬</b>. ③ + 버튼 삭제 — 티켓 추가는 캡처 공유/자동 인식으로 들어오니 홈에 상주할 이유가 없음.</div>
+    </div>
+  </div>
+</div>

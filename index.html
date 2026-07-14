@@ -239,9 +239,11 @@
   .pdeck::-webkit-scrollbar{display:none}
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center}
   .pdeck .pass:only-child{flex-basis:100%}
-  /* ===== 티켓 상세 시트(티켓표 모양) ===== */
-  .detail-sheet{background:var(--page)}
-  .pass.big{position:relative;cursor:default;margin-top:6px}
+  /* ===== 티켓 상세: 티켓 자체가 팝업(투명 시트 위에 패스만 떠 있음) ===== */
+  .overlay.centered .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:420px;overflow-y:auto}
+  .pass.big{position:relative;cursor:default;margin-top:0;box-shadow:0 24px 60px -20px rgba(0,0,0,.55)}
+  .pass.big .p-perf i{display:none} /* 스크림 위라 가짜 노치 구멍은 숨기고 절취선만 */
+  .pass.big .p-perf{margin:0 16px}
   .pass.big .p-top{padding:16px 18px 14px}
   .pass.big .p-name{font-size:21px}
   .dt-stamp{position:absolute;top:14px;right:16px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
@@ -842,10 +844,9 @@
   </div>
 </div>
 
-<!-- Ticket detail (티켓표 모양) -->
-<div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+<!-- Ticket detail (티켓표 모양 중앙 팝업) -->
+<div class="overlay centered" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
   <div class="sheet detail-sheet">
-    <div class="grab"></div>
     <div id="detailBody"></div>
   </div>
 </div>
