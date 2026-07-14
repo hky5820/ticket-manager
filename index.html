@@ -257,28 +257,15 @@
   #walletOverlay .hxf.on{background:rgba(78,140,255,.18);border-color:#4e8cff;color:#9dbcff}
   .wclose{border:none;background:rgba(255,255,255,.12);color:#fff;width:32px;height:32px;border-radius:50%;font-size:13px;cursor:pointer;font-family:inherit}
   .wclose:active{background:rgba(255,255,255,.25)}
-  .wstack{flex:1;min-height:0;overflow-y:auto;padding:4px 2px calc(40px + env(safe-area-inset-bottom));position:relative}
-  .wstack::-webkit-scrollbar{display:none}
-  /* 세로로 긴 월렛 패스: 중앙 고정 폭, 계단형 겹침(머리만 균일 노출), 스택 안에서 스크롤 */
-  .wcard{position:absolute;left:50%;transform:translateX(-50%);width:min(88%,312px);min-height:400px;display:flex;flex-direction:column;
-    background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:16px;overflow:hidden;
-    box-shadow:0 -16px 30px -14px rgba(0,0,0,.9);cursor:pointer;-webkit-touch-callout:none;user-select:none}
-  .wcard:active{transform:translateX(-50%) scale(.985)}
-  .wcard.is-x{filter:grayscale(.8) brightness(.93)} /* 불투명 유지(투명도 주면 아래 카드가 비침) */
-  .wc-band{height:6px;flex:none}
-  .wc-hd{display:flex;justify-content:space-between;align-items:center;padding:12px 16px 0}
-  .wc-hd .vch{font-size:11px}
-  .wc-name{font-size:19px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:9px 16px 0}
-  .wc-when{display:flex;gap:24px;padding:12px 16px 14px}
-  .wc-when small{display:block;font-size:8.5px;color:#b0b2b9;font-weight:800;letter-spacing:.16em}
-  .wc-when b{display:block;font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:21px;font-weight:800;letter-spacing:-1px;margin-top:3px;font-variant-numeric:tabular-nums}
-  .wc-when span{display:block;font-size:10px;color:#8b8d95;font-weight:600;margin-top:2px}
-  .wc-mid{flex:1}
-  .wcard .tkt-perf{margin:0 14px}
-  .wc-bot{padding:11px 16px 14px;display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
-  .wc-seat{font-size:11.5px;font-weight:600;color:#4c4e56;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .wc-seat small{display:block;font-size:10px;color:#8b8d95;margin-top:2px;font-weight:600}
-  .wc-no{flex:none;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;color:#c3c5cc;letter-spacing:.08em}
+  /* 원통(드럼) 피커: 티켓이 원통 표면에 붙어 있고 굴려서 봄 */
+  .wdrum{flex:1;min-height:0;position:relative;perspective:900px;perspective-origin:50% 50%}
+  /* 스테이지를 -R로 되밀어 원통 표면(+R) 위 센터 카드가 확대 없이 z=0에 오게 */
+  .wstage{position:absolute;inset:0;pointer-events:none;transform-style:preserve-3d;transform:translateZ(-350px)}
+  .wstage .pass{position:absolute;top:50%;left:50%;width:min(88%,330px);transform:translate(-50%,-50%);transition:none;
+    backface-visibility:hidden;will-change:transform,filter;box-shadow:0 18px 40px -18px rgba(0,0,0,.8);cursor:default}
+  .wscroll{position:absolute;inset:0;overflow-y:auto;z-index:5;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain}
+  .wscroll::-webkit-scrollbar{display:none}
+  .wempty{position:absolute;top:42%;left:0;right:0}
   .wempty{color:#8e9096;text-align:center;padding:70px 0;font-size:13px}
   /* ===== 티켓 상세: 세로 종이 티켓(보딩패스)이 그대로 팝업 ===== */
   /* 스크림 = 완전 불투명 단색 — 노치 구멍색과 정확히 일치해 진짜 뚫린 것처럼 */
@@ -925,7 +912,7 @@
   </div>
 </div>
 
-<!-- 애플월렛식 티켓 스택(홈 캐러셀 아래로 쓸어내리면) -->
+<!-- 티켓 드럼(원통 피커): 굴려서 보고, 센터 티켓 탭 → 상세 -->
 <div class="overlay" id="walletOverlay" onclick="if(event.target===this)closeWallet()">
   <div class="wsheet">
     <div class="whead">
@@ -935,7 +922,10 @@
         <button class="wclose" type="button" onclick="closeWallet()">✕</button>
       </span>
     </div>
-    <div class="wstack" id="wstack"></div>
+    <div class="wdrum">
+      <div class="wstage" id="wstage"></div>
+      <div class="wscroll" id="wscroll"><div id="wspacer"></div></div>
+    </div>
   </div>
 </div>
 
@@ -1451,42 +1441,57 @@ function calSel(ds){ selDay=(selDay===ds?null:ds); render(); } // 같은 날 다
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}render();}
 // 전역 calY/calM을 안 바꾸고 특정 달 캘린더 HTML 얻기(스와이프 월 이동 pane용)
 function calHTMLFor(y,m){ const oy=calY,om=calM; calY=y;calM=m; const h=renderCalendar(); calY=oy;calM=om; return h; }
-/* ===== 애플월렛식 티켓 스택 ===== */
-function openWallet(){ renderWallet(); openOv('walletOverlay'); }
+/* ===== 티켓 드럼(원통 피커): 네이티브 스크롤을 회전각으로 변환 ===== */
+const W_ITEM=120, W_ANG=26, W_R=350; // 스크롤 1칸(px) · 칸당 회전각 · 원통 반지름(.wstage translateZ와 짝)
+let wlist=[];
+function openWallet(){ openOv('walletOverlay'); renderWallet(); } // 열고 나서 렌더(닫힌 상태에선 높이 측정이 0)
 function closeWallet(){ closeOv('walletOverlay'); }
 function renderWallet(){
   const today=ymd(new Date());
-  let list=byDate(tickets.filter(t=>t.date&&t.date>=today));
+  wlist=byDate(tickets.filter(t=>t.date&&t.date>=today));
   const btn=document.getElementById('wXf');
   if(btn){ btn.textContent='양도표 '+(hideXfer?'숨김':'표시'); btn.classList.toggle('on',!hideXfer); }
-  if(hideXfer)list=list.filter(t=>!(t.transfer&&t.transfer.done));
-  document.getElementById('wcount').textContent=list.length?list.length+'장':'';
-  const STEP=104; // 카드 머리 노출 높이
-  document.getElementById('wstack').innerHTML=list.length
-    ? list.map((t,i)=>wcardHTML(t,today,i*STEP)).join('')
-      +`<div style="height:${(list.length-1)*STEP+430}px"></div>` /* 절대배치 카드만큼 스크롤 높이 확보 */
+  if(hideXfer)wlist=wlist.filter(t=>!(t.transfer&&t.transfer.done));
+  document.getElementById('wcount').textContent=wlist.length?wlist.length+'장':'';
+  const stage=document.getElementById('wstage'), scroll=document.getElementById('wscroll');
+  stage.innerHTML=wlist.length
+    ? wlist.map(t=>{ const html=passHTML(t,today); return (t.transfer&&t.transfer.done)?html.replace('class="pass"','class="pass is-x"'):html; }).join('')
     : '<div class="wempty">다가오는 티켓이 없어요</div>';
+  document.getElementById('wspacer').style.height=(scroll.clientHeight+Math.max(0,wlist.length-1)*W_ITEM)+'px';
+  scroll.scrollTop=0;
+  wUpdate();
 }
-// 월렛용 세로 패스 카드
-function wcardHTML(t,today,top){
-  const dd=ddayInfo(t.date,today), c=colorFor(t.vendor), sl=seatLine(t);
-  const xf=t.transfer&&t.transfer.done;
-  const p=t.date.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
-  return `<div class="wcard${xf?' is-x':''}" style="top:${top}px" data-id="${t.id}" onclick="openDetail('${jsAttr(String(t.id))}')">
-    <div class="wc-band" style="background:${c}"></div>
-    <div class="wc-hd"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'')}</span><span class="ddy">${dd.diff===1?'내일':dd.label}</span></div>
-    <div class="wc-name">${esc(t.name||'(공연명 없음)')}</div>
-    <div class="wc-when">
-      <div><small>날짜</small><b>${p[1]}.${p[2]}</b><span>${WD[dt.getDay()]}요일</span></div>
-      <div><small>시간</small><b>${esc(t.time||'—')}</b><span>&nbsp;</span></div>
-    </div>
-    <div class="wc-mid"></div>
-    <div class="tkt-perf"></div>
-    <div class="wc-bot">
-      <div class="wc-seat">${esc(sl||'좌석 미입력')}<small>${Number(t.qty)||0}매 · ₩${won(t.price)}</small></div>
-      <div class="wc-no">${esc(ticketNo(t))}</div>
-    </div>
-  </div>`;
+// 스크롤 위치 → 각 카드를 원통 표면에 배치
+function wUpdate(){
+  const scroll=document.getElementById('wscroll');
+  const cards=document.querySelectorAll('#wstage .pass');
+  const st=scroll.scrollTop;
+  cards.forEach((el,i)=>{
+    const off=st/W_ITEM-i, a=off*W_ANG;
+    if(Math.abs(a)>80){ el.style.visibility='hidden'; return; }
+    el.style.visibility='';
+    el.style.transform=`translate(-50%,-50%) rotateX(${a}deg) translateZ(${W_R}px)`;
+    // 투명도 대신 밝기 감쇠(투명하면 겹친 카드가 비쳐 지저분함)
+    el.style.filter=`brightness(${(1-Math.min(.55,Math.abs(off)*.22)).toFixed(3)})${el.classList.contains('is-x')?' grayscale(.8)':''}`;
+    el.style.zIndex=String(200-Math.round(Math.abs(off)*20));
+  });
+}
+function initWalletDrum(){
+  const scroll=document.getElementById('wscroll'); if(!scroll)return;
+  let snapT=null;
+  scroll.addEventListener('scroll',()=>{
+    requestAnimationFrame(wUpdate);
+    clearTimeout(snapT); // 관성 멈추면 가장 가까운 칸에 스냅(피커처럼 착)
+    snapT=setTimeout(()=>{ const t=Math.max(0,Math.min(wlist.length-1,Math.round(scroll.scrollTop/W_ITEM)))*W_ITEM;
+      if(Math.abs(scroll.scrollTop-t)>1)scroll.scrollTo({top:t,behavior:'smooth'}); },130);
+  },{passive:true});
+  scroll.addEventListener('click',e=>{
+    if(!wlist.length)return;
+    const r=scroll.getBoundingClientRect(), dy=e.clientY-(r.top+r.height/2);
+    const cur=Math.max(0,Math.min(wlist.length-1,Math.round(scroll.scrollTop/W_ITEM)));
+    if(Math.abs(dy)<86){ openDetail(wlist[cur].id); } // 센터 티켓 탭 → 상세
+    else{ const n=Math.max(0,Math.min(wlist.length-1,cur+(dy>0?1:-1))); scroll.scrollTo({top:n*W_ITEM,behavior:'smooth'}); } // 위/아래 탭 → 한 칸 굴림
+  });
 }
 // 홈 캐러셀을 아래로 쓸어내리면 스택 열기 — 손가락 따라 고무줄처럼 늘어나다(쫀득) 임계 넘으면 오픈
 function initWalletPull(){
@@ -2304,12 +2309,20 @@ function toast(m){const el=document.getElementById('toast');el.textContent=m;el.
    경합해 히스토리가 꼬여 뒤로가기 한 번에 앱이 꺼지던 버그). 대신 남은 항목은 '고아'로 세어뒀다가
    뒤로가기 때 조용히 소비한다 → 뒤로가기는 항상 [팝업 닫기 → 고아 소비 → 앱 종료] 순서로만 동작. */
 let _ovStack=[], _orphan=0;
+// edge-to-edge: 어두운 전면 오버레이가 열리면 시스템 상태바 색도 함께 어둡게
+const DARK_OVS=['walletOverlay','detailOverlay','overlay','imgViewOverlay'];
+function syncBarColor(){
+  const m=document.getElementById('metaTheme'); if(!m)return;
+  if(_ovStack.some(id=>DARK_OVS.includes(id)))m.content='#0e0f13';
+  else applyTheme();
+}
 function openOv(id){
   const el=document.getElementById(id), sh=el.querySelector('.sheet');
   if(sh){sh.style.transition='';sh.style.transform='';}
   el.classList.add('on'); document.body.style.overflow='hidden';
   _ovStack.push(id);
   history.pushState({ov:_ovStack.length},'');
+  syncBarColor();
 }
 function closeOv(id){
   const idx=_ovStack.lastIndexOf(id);
@@ -2318,12 +2331,14 @@ function closeOv(id){
   _ovStack.splice(idx,1);
   if(!_ovStack.length)document.body.style.overflow='';
   _orphan++; // 이 팝업용 history 항목은 다음 뒤로가기 때 조용히 소비
+  syncBarColor();
 }
 window.addEventListener('popstate',()=>{
   if(_ovStack.length){ // 팝업이 열려 있으면 최상단만 닫기
     const id=_ovStack.pop();
     document.getElementById(id).classList.remove('on');
     if(!_ovStack.length)document.body.style.overflow='';
+    syncBarColor();
   }else if(_orphan>0){ _orphan--; } // 이미 닫힌 팝업의 잔여 항목 소비(앱 유지)
 });
 function initSheetDrag(){
@@ -2455,6 +2470,7 @@ boot();
 initLongPress();
 initCalSwipe();
 initWalletPull();
+initWalletDrum();
 initSheetDrag();
 initImgZoom();
 /* 처리 현황·새 티켓 자동 갱신(팝업 열려있을 땐 건너뜀) */
