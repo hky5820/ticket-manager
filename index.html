@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta id="metaTheme" name="theme-color" content="#f4f4f6">
+<meta id="metaScheme" name="color-scheme" content="only light">
 <title>티켓 보관함</title>
 <script>
   // 첫 페인트 전에 테마 지정(깜빡임 방지)
-  (function(){try{var s=localStorage.getItem('tm_theme')||'light';var d=s==='dark'||(s==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.getElementById('metaTheme');if(m)m.content=d?'#0d0e12':'#f4f4f6';}catch(e){}})();
+  (function(){try{var s=localStorage.getItem('tm_theme')||'light';var d=s==='dark'||(s==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.getElementById('metaTheme');if(m)m.content=d?'#0d0e12':'#f4f4f6';var cs=document.getElementById('metaScheme');if(cs)cs.content=d?'dark':'only light';}catch(e){}})();
 </script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -18,8 +19,10 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* ===== 디자인 토큰: 다크 우선 "티켓 패스" 언어 — 소프트 그레이 캔버스 + 흰 카드 + 블루 포인트 ===== */
+  /* ===== 디자인 토큰: "티켓 패스" 언어 — 소프트 그레이 캔버스 + 흰 카드 + 블루 포인트 ===== */
   :root{
+    /* 라이트 테마 선택 시 브라우저(안드로이드 크롬 등)의 '강제 다크 모드'가 페이지를 반전시키지 못하게 차단 */
+    color-scheme:only light;
     --canvas:#f4f4f6; --page:#f4f4f6; --card:#ffffff; --chip:#ececef;
     --ink:#1a1c22; --ink-soft:#4c4e56; --ink-faint:#8e9096;
     --line:#e2e3e8; --line-soft:#ebebee;
@@ -493,6 +496,7 @@
 
   /* ===== 다크모드 (data-theme='dark') — 시안 ②-R의 딥 다크 캔버스 ===== */
   :root[data-theme="dark"]{
+    color-scheme:dark;
     --canvas:#0d0e12; --page:#0d0e12; --card:#17181d; --chip:#1f2026;
     --ink:#f2f2f0; --ink-soft:#c6c7cd; --ink-faint:#8e9096;
     --line:#26272d; --line-soft:#222329;
@@ -1551,7 +1555,7 @@ function resetVendorColor(){
 
 /* ===== 테마 / 설정 ===== */
 function resolveTheme(){ const s=localStorage.getItem('tm_theme')||'light'; if(s==='dark')return 'dark'; if(s==='light')return 'light'; return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'; } // 기본=라이트(자동은 설정에서 선택)
-function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#0d0e12':'#f4f4f6'; }
+function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#0d0e12':'#f4f4f6'; const cs=document.getElementById('metaScheme'); if(cs)cs.content=eff==='dark'?'dark':'only light'; }
 function setTheme(s){ localStorage.setItem('tm_theme',s); applyTheme(); renderThemeSeg(); render(); }
 function renderThemeSeg(){ const s=localStorage.getItem('tm_theme')||'light'; document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.th===s)); }
 function openSettings(){ renderThemeSeg(); openOv('settingsOverlay'); }
