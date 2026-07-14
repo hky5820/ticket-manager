@@ -188,8 +188,10 @@
   .ldot{flex:none;width:9px;height:9px;border-radius:99px}
 
   /* ===== 홈 뷰: 히어로 티켓 패스 + 다가오는 티켓 리스트 ===== */
-  .hsec{display:flex;align-items:baseline;justify-content:space-between;font-size:13.5px;font-weight:700;color:var(--ink);margin:15px 2px 9px}
+  .hsec{display:flex;align-items:center;justify-content:space-between;font-size:13.5px;font-weight:700;color:var(--ink);margin:15px 2px 9px}
   .hsec em{font-style:normal;font-size:11px;color:var(--ink-faint);font-weight:600}
+  .hxf{border:1px solid var(--line);background:var(--card);color:var(--ink-faint);border-radius:99px;padding:3.5px 11px;font-size:10.5px;font-weight:700;font-family:inherit;cursor:pointer}
+  .hxf.on{color:var(--accent-ink);border-color:var(--accent-bd);background:var(--accent-soft)}
   .home>.hsec:first-child{margin-top:2px}
   /* 히어로 = 실물 티켓 패스(절취선·노치·바코드). 다크에서도 항상 흰 카드 */
   .pass{background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s}
@@ -271,32 +273,39 @@
   .dt-btn:active{background:var(--chip)}
   .dt-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 
-  /* calendar */
-  .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:12px 10px;box-shadow:var(--card-sh)}
-  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;padding:0 2px}
-  .cal-head .mon{font-size:17px;font-weight:800}
-  .cal-head button{border:1px solid var(--line);background:var(--card);border-radius:10px;width:36px;height:36px;font-size:18px;cursor:pointer;color:var(--ink-soft);font-weight:800}
-  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
-  .cal-wd{text-align:center;font-size:11px;font-weight:800;color:var(--ink-faint);padding:0 0 4px}
-  .cal-wd.sun{color:#ef4444}.cal-wd.sat{color:#3b82f6}
-  .cal-cell{position:relative;min-height:58px;border-radius:10px;padding:5px 3px 4px;background:var(--page);border:1px solid var(--line);cursor:pointer;overflow:hidden;display:flex;flex-direction:column;align-items:center;gap:4px}
-  .cal-cell.empty{background:transparent;border-color:transparent;cursor:default;padding:5px 3px 4px} /* .empty 플레이스홀더(padding:52px)가 새어들어와 첫 주가 세로로 길어지던 것 차단 */
-  .cal-cell.has{background:var(--accent-soft);border-color:var(--accent-bd)}
-  .cal-cell.has:active{filter:brightness(.96)}
-  .cal-cell.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
-  .cal-cell.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
-  .cal-cell.sel .cal-day{color:var(--ink)}
-  .cal-day{font-size:13.5px;font-weight:800;color:var(--ink);line-height:1}
-  .cal-cell.today .cal-day{color:var(--accent-ink)}
-  .cal-cell.sun .cal-day{color:#ef4444}.cal-cell.sat .cal-day{color:#3b82f6}
+  /* calendar — 모눈 없는 라운드 칩 스타일 */
+  .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:20px;padding:16px 12px 14px;box-shadow:var(--card-sh)}
+  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px;padding:0 6px}
+  .cal-head .mon{font-size:17px;font-weight:800;letter-spacing:-.3px}
+  .cal-head button{border:none;background:var(--chip);border-radius:11px;width:32px;height:32px;font-size:16px;line-height:1;cursor:pointer;color:var(--ink-soft);font-weight:800}
+  .cal-head button:active{background:var(--line-soft)}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;touch-action:pan-y}
+  .cal-wd{text-align:center;font-size:10.5px;font-weight:700;color:var(--ink-faint);padding:0 0 7px}
+  .cal-wd.sun{color:#ef6a6a}.cal-wd.sat{color:#5b93f5}
+  .cal-cell{position:relative;border:none;background:var(--chip);border-radius:13px;aspect-ratio:1/.92;min-height:0;padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+  .cal-cell.empty{background:transparent;cursor:default}
+  .cal-cell:active{filter:brightness(.96)}
+  .cal-day{font-size:13px;font-weight:700;color:var(--ink);line-height:1}
+  .cal-cell.sun .cal-day{color:#ef6a6a}.cal-cell.sat .cal-day{color:#5b93f5}
   .cal-dots{display:flex;gap:3px;align-items:center;justify-content:center;flex-wrap:wrap;line-height:1}
-  .cal-dots i{width:7px;height:7px;border-radius:50%;display:block}
-  /* 다가올 공연(2주 이내): 포인트색 테두리로 정적 강조 */
-  .cal-cell.up{background:var(--accent-soft);border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
-  .cal-cell.up .cal-day{color:var(--accent-ink)}
-  .cal-dots em{font-size:9px;font-style:normal;font-weight:800;color:var(--ink-soft)}
-  .cal-grid{touch-action:pan-y}
-  .cal-hint{text-align:center;font-size:10.5px;color:var(--ink-faint);margin-top:10px;user-select:none}
+  .cal-dots i{width:5.5px;height:5.5px;border-radius:50%;display:block}
+  .cal-dots em{font-size:8.5px;font-style:normal;font-weight:800;color:var(--ink-soft)}
+  /* 일정 있는 날: 은은한 포인트 틴트 */
+  .cal-cell.has{background:var(--accent-soft)}
+  .cal-cell.has .cal-day{color:var(--accent-ink);font-weight:800}
+  /* 다가오는 공연(2주 이내): 진한 포인트 채움 + 은은한 숨쉬기 */
+  .cal-cell.up{background:var(--accent);animation:calGlow 2.4s ease-in-out infinite}
+  .cal-cell.up .cal-day{color:#fff;font-weight:800}
+  .cal-cell.up .cal-dots i{background:#fff!important}
+  .cal-cell.up .cal-dots em{color:rgba(255,255,255,.85)}
+  @keyframes calGlow{50%{box-shadow:0 0 0 5px var(--accent-soft)}}
+  @media (prefers-reduced-motion:reduce){.cal-cell.up{animation:none}}
+  /* 오늘: 잉크 원 안의 숫자 */
+  .cal-cell.today .cal-day{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--canvas);display:grid;place-items:center}
+  .cal-cell.up.today .cal-day{background:#fff;color:var(--accent-ink)}
+  /* 선택한 날: 잉크 아웃라인 */
+  .cal-cell.sel{box-shadow:0 0 0 2px var(--ink) inset}
+  .cal-cell.up.sel{box-shadow:0 0 0 2px var(--ink) inset,0 0 0 5px var(--accent-soft)}
   .cal-daylist{margin-top:12px;border-top:1px solid var(--line-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px}
   .cal-daylist .dl-title{font-size:13px;font-weight:700;color:var(--ink);margin:0 2px 2px}
   .cal-daylist .dl-title em{font-style:normal;font-size:11px;color:var(--ink-faint);font-weight:700;margin-left:4px}
@@ -494,7 +503,6 @@
   :root[data-theme="dark"] .lrow.is-transfer .nm,:root[data-theme="dark"] .tk.is-transfer .tk-name{color:var(--ink)}
   :root[data-theme="dark"] .cal-wd.sat,:root[data-theme="dark"] .cal-cell.sat .cal-day{color:#60a5fa}
   :root[data-theme="dark"] .cal-wd.sun,:root[data-theme="dark"] .cal-cell.sun .cal-day{color:#f87171}
-  :root[data-theme="dark"] .cal-cell{background:#121318}
   :root[data-theme="dark"] .badge{color:#111}
   :root[data-theme="dark"] .switch .track:before{background:#e4e4e7}
   :root[data-theme="dark"] .statusbox.good{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.3);color:#6ee7b7}
@@ -534,7 +542,6 @@
   /* 카드 라운드(Airbnb: 부드러운 14~16px) */
   .tk{border-radius:16px}
   .lrow{border-radius:14px}
-  .cal{border-radius:16px}
   /* 양도 = 흰 카드 유지 + Rausch 리본·가격·스트라이프로만 표시(과한 색면 지양) */
   .tk.is-transfer{background:var(--card)}
   .tk.is-transfer .tk-when,.tk.is-transfer .tk-name{color:var(--ink)}
@@ -556,17 +563,7 @@
   .sb-btn,.vadd button{border-radius:10px}
   /* 포커스: 링크블루 링 */
   .search input:focus,.field input:focus,.field textarea:focus,.vadd input:focus{border-color:var(--ink);box-shadow:0 0 0 3px var(--chip)}
-  /* 캘린더: 담백하게. 일정=연회색, 오늘/임박=잉크 링 */
-  .cal-cell.has{background:var(--chip);border-color:var(--line)}
-  /* 다가오는 날(2주 이내): 펄스 + 밖으로 퍼지는 링(리플) 애니메이션 */
-  .cal-cell.up{overflow:visible;background:var(--accent-soft);border-color:var(--accent);animation:calPulse 1.8s ease-in-out infinite}
-  .cal-cell.up .cal-day{color:var(--accent-ink)}
-  .cal-cell.up::after{content:"";position:absolute;inset:-1px;border-radius:11px;border:2px solid var(--accent);opacity:0;pointer-events:none;animation:calRipple 1.8s ease-out infinite}
-  .cal-cell.up .cal-dots i{animation:calDot 1.6s ease-in-out infinite}
-  @keyframes calPulse{0%,100%{box-shadow:0 0 0 1px var(--accent) inset}50%{box-shadow:0 0 0 2.5px var(--accent) inset}}
-  @keyframes calRipple{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.14);opacity:0}}
-  @keyframes calDot{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
-  @media (prefers-reduced-motion:reduce){.cal-cell.up,.cal-cell.up::after,.cal-cell.up .cal-dots i{animation:none}}
+  /* (캘린더 룩은 상단 'calendar' 블록에서 일원 관리) */
   /* 지난 공연은 한 톤 가라앉힘 → 살아있는 티켓이 도드라짐 */
   .tk.is-past,.lrow.is-past{opacity:.62}
   /* 완전 양도 티켓은 dim+흑백(넘겨서 안 가는 표). 정상 티켓의 컬러와 확실히 대비 */
@@ -1237,12 +1234,17 @@ function passHTML(t,today){
     </div>
   </div>`;
 }
+// 홈에서 양도완료 표 표시 여부(리스트 헤더의 칩으로 간편 토글)
+let hideXfer=load('tm_hidexfer',false);
+function toggleHideXfer(){ hideXfer=!hideXfer; localStorage.setItem('tm_hidexfer',JSON.stringify(hideXfer)); render(); }
 // 홈 뷰: 히어로 = 다가오는 공연 패스 캐러셀(좌우 스와이프, 완전 양도 제외) + 나머지 리스트
 function homeHTML(){
   const today=ymd(new Date());
   const fut=byDate(filtered()).filter(t=>t.date&&t.date>=today);
   const deckTs=fut.filter(t=>!(t.transfer&&t.transfer.done)); // 캐러셀 = 완전 양도 아닌 다가오는 공연들
-  const rest=fut.filter(t=>t!==deckTs[0]);
+  const hasX=fut.some(t=>t.transfer&&t.transfer.done);
+  let rest=fut.filter(t=>t!==deckTs[0]);
+  if(hideXfer)rest=rest.filter(t=>!(t.transfer&&t.transfer.done)); // 토글 꺼짐 → 양도완료 표 숨김
   let hero;
   if(deckTs.length){
     hero=`<div class="pdeck">${deckTs.map(t=>passHTML(t,today)).join('')}</div>`;
@@ -1262,7 +1264,7 @@ function homeHTML(){
   return `<div class="home">
     <div class="hsec">다음 공연 ${deckTs.length>1?`<em>옆으로 넘겨 ${deckTs.length}장</em>`:''}</div>
     ${hero}
-    <div class="hsec">다가오는 티켓 <em>${rest.length}건</em></div>
+    <div class="hsec"><span>다가오는 티켓 <em>${rest.length}건</em></span>${hasX?`<button class="hxf${hideXfer?'':' on'}" type="button" onclick="toggleHideXfer()">양도표 ${hideXfer?'숨김':'표시'}</button>`:''}</div>
     ${rest.length?`<div class="hlist">${rows}</div>`:`<div class="hnone">예정된 다른 티켓이 없어요</div>`}
     <button class="hall" type="button" onclick="setView('tile')">지난 공연 포함 전체 ${tickets.length}건 보기 →</button>
   </div>`;
@@ -1379,7 +1381,6 @@ function renderCalendar(){
   return `<div class="cal">
     <div class="cal-head"><button onclick="calMove(-1)">‹</button><div class="mon">${calY}년 ${calM+1}월</div><button onclick="calMove(1)">›</button></div>
     <div class="cal-grid">${wdh}${cells}</div>
-    <div class="cal-hint">날짜를 누르면 그날 내역 · ← 좌우로 넘겨 월 이동 →</div>
     ${dayHTML}
     ${undHTML}
   </div>`;
