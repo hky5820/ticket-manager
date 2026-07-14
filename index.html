@@ -117,11 +117,8 @@
   .tk-vendor span{overflow:hidden;text-overflow:ellipsis}
   .tk-name{font-size:13px;font-weight:800;letter-spacing:-.3px;line-height:1.25;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;height:33px;margin-bottom:4px}
   .tk-seatline{font-size:11px;font-weight:700;color:var(--ink-soft);background:var(--chip);border-radius:6px;padding:2px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;align-self:flex-start;max-width:100%;height:19px;line-height:15px}
-  /* 타일 하단 = 티켓 스텁: 절취선 + 양옆 펀치 노치 */
-  .tk-bottom{position:relative;margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:8px;border-top:2px dashed var(--line-soft)}
-  .tk-bottom::before,.tk-bottom::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:var(--page);pointer-events:none}
-  .tk-bottom::before{left:-20px}
-  .tk-bottom::after{right:-20px}
+  /* 타일 하단 = 티켓 스텁: 절취선만 담백하게(노치는 카드 경계가 드러나 제거) */
+  .tk-bottom{margin-top:auto;display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding-top:8px;border-top:2px dashed var(--line-soft)}
   .tk-qty{font-size:11.5px;font-weight:800;color:var(--ink-soft);white-space:nowrap}
   .tk-price{font-size:13.5px;font-weight:800;color:var(--ink);white-space:nowrap}
   .tk-price.xf{color:var(--warn)}
@@ -249,24 +246,26 @@
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always} /* 플릭해도 한 장씩만 */
   .pdeck .pass:only-child{flex-basis:100%}
   /* ===== 티켓 상세: 세로 종이 티켓(보딩패스)이 그대로 팝업 ===== */
-  /* 스크림을 짙게 깔아 '어둠 속에 티켓 한 장' — 노치 구멍도 이 색과 붙어 진짜 뚫린 것처럼 */
-  #detailOverlay{background:rgba(13,14,18,.93)}
+  /* 스크림 = 완전 불투명 단색 — 노치 구멍색과 정확히 일치해 진짜 뚫린 것처럼 */
+  #detailOverlay{background:#0e0f13}
   .overlay.centered .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:420px;overflow-y:auto}
-  .tkt{position:relative;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:16px 16px 0 0;max-width:330px;margin:0 auto;overflow:hidden;box-shadow:0 30px 70px -18px rgba(0,0,0,.8),inset 0 0 0 1px rgba(0,0,0,.02)}
-  /* 헤더 = 예매처 색 밴드(항공권처럼 로고+액션이 밴드 위에) */
-  .tkt-band{display:flex;align-items:center;justify-content:space-between;height:44px;padding:0 9px 0 16px;color:#fff}
-  .tb-v{font-size:12.5px;font-weight:800;letter-spacing:.01em;text-shadow:0 1px 3px rgba(0,0,0,.25);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tkt-ics{display:flex;gap:5px;flex:none}
-  .tkt-ic{border:none;background:rgba(255,255,255,.2);color:#fff;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;cursor:pointer;font-family:inherit;padding:0;backdrop-filter:blur(2px)}
-  .tkt-ic:active{background:rgba(255,255,255,.38)}
-  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:15px 18px 0}
+  .tkt{position:relative;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:0;max-width:330px;margin:0 auto;overflow:hidden;box-shadow:0 30px 70px -18px rgba(0,0,0,.8)}
+  /* 상단 = 예매처 색 스트립(각진 티켓 머리) */
+  .tkt-band{height:6px}
+  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:16px 18px 0}
+  /* 하단 푸터: 좌측 예매처(스와치+이름) · 우측 잉크 블랙 액션 버튼 */
+  .tkt-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 14px 15px 18px}
+  .tkt-foot .vch{font-size:11.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tkt-ics{display:flex;gap:6px;flex:none}
+  .tkt-ic{border:none;background:#191b23;color:#fff;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;cursor:pointer;font-family:inherit;padding:0}
+  .tkt-ic:active{background:#33353c}
   .tkt-when{display:flex;gap:22px;padding:14px 18px 16px}
   .tkt-when small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em}
   .tkt-when b{display:block;font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:23px;font-weight:800;letter-spacing:-1px;font-variant-numeric:tabular-nums;margin-top:4px;line-height:1.1}
   .tkt-when span{display:block;font-size:10.5px;color:#8b8d95;font-weight:600;margin-top:3px}
   /* 절취선: 대시 + 양옆 진짜 '펀치 구멍'(스크림색 원이 티켓 밖으로 반쯤 걸침) */
   .tkt-perf{position:relative;border-top:2px dashed #e3e4e9;margin:0 18px}
-  .tkt-perf::before,.tkt-perf::after{content:"";position:absolute;top:-10px;width:20px;height:20px;border-radius:50%;background:#17181d}
+  .tkt-perf::before,.tkt-perf::after{content:"";position:absolute;top:-10px;width:20px;height:20px;border-radius:50%;background:#0e0f13} /* 스크림과 동일색 = 진짜 구멍 */
   .tkt-perf::before{left:-28px}
   .tkt-perf::after{right:-28px}
   .tkt-sec{padding:13px 18px 11px}
@@ -286,6 +285,19 @@
   /* 종이 절단면(톱니) */
   .tkt-zig{height:11px;max-width:330px;margin:0 auto;background:conic-gradient(from -45deg at 50% 0,#f4f5f8 90deg,transparent 0) 0 0/14px 100% repeat-x;filter:drop-shadow(0 12px 20px rgba(0,0,0,.45))}
   .dt-stamp{position:absolute;top:50px;right:14px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
+  /* ===== 수정 모달 = 티켓 종이(테마 무관 흰 종이 + 예매처색 스트립) ===== */
+  #overlay .sheet{background:#fff;color:#191b23;border-top:none;
+    --canvas:#ffffff;--page:#f6f6f8;--card:#ffffff;--chip:#f1f2f5;
+    --ink:#1a1c22;--ink-soft:#4c4e56;--ink-faint:#8e9096;
+    --line:#e2e3e8;--line-soft:#ebebee;
+    --accent:#2E63F0;--accent-ink:#1b4fd6;--accent-soft:#e8eefe;--accent-bd:#2E63F0;
+    --danger:#c13515;--danger-ink:#b32505;--danger-soft:#fbeceb;--danger-bd:#f3ccc4;
+    --warn:#a0761f;--warn-strong:#2E63F0;--warn-soft:#fbf3e0;--warn-bd:#ecdcb4;--warn-ink:#7a5a12;
+    --card-bd:#ebebee;--card-sh:none;--shadow:none;--shadow-sm:none}
+  #overlay .grab{background:#e2e3e8}
+  #overlay .tkt-band{margin:2px -18px 12px;height:6px}
+  #overlay .sheet h2{font-size:19px}
+  .m-perf{border-top:2px dashed #e3e4e9;margin:16px -18px 0} /* 저장 줄 위 절취선(전폭) */
 
   /* calendar — 모눈 없는 라운드 칩 스타일 */
   .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:20px;padding:16px 12px 14px;box-shadow:var(--card-sh)}
@@ -670,7 +682,7 @@
 <div class="dock" id="dock">
   <button class="dtab" data-v="home" onclick="setView('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</button>
   <button class="dtab" data-v="calendar" onclick="setView('calendar')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</button>
-  <button class="dtab" data-v="all" onclick="setView('tile')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</button>
+  <button class="dtab" data-v="all" onclick="setView('list')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</button>
   <button class="dtab" onclick="openSettings()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</button>
 </div>
 
@@ -691,6 +703,7 @@
 <div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
   <div class="sheet">
     <div class="grab"></div>
+    <div class="tkt-band" id="modalBand" style="background:#191b23"></div>
     <div class="modal-head">
       <h2 id="modalTitle">티켓 추가</h2>
       <span class="modal-head-actions" id="modalHeadActions" style="display:none">
@@ -759,6 +772,7 @@
 
     <button type="button" id="delBtn" class="btn-danger" style="display:none" onclick="delCurrent()">🗑 이 티켓 삭제</button>
 
+    <div class="m-perf"></div>
     <div class="save-row">
       <button class="cancel" type="button" onclick="closeModal()">취소</button>
       <button class="save" id="saveBtn" type="button" onclick="save()">저장하기</button>
@@ -953,9 +967,8 @@ let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
 let vcolors=load(LS_VCOLORS,{});
 let gradeTargetBtn=null;
 let view=load(LS_VIEW,'home');
-if(!['home','calendar','tile','list'].includes(view))view='home';
-let tileCols=load('tm_tilecols',2); // 타일 뷰 한 행 개수(핀치로 1~4 조절)
-function applyTileCols(){ tileCols=Math.max(1,Math.min(4,tileCols)); const n=Math.round(tileCols); document.body.dataset.cols=n; document.body.style.setProperty('--tile-cols',n); } // 값은 소수로 누적 유지(wheel), 표시만 반올림
+if(view==='tile')view='list'; // 타일 뷰 폐지 → 전체=리스트 단일
+if(!['home','calendar','list'].includes(view))view='home';
 let editingId=null, formVendor='', formPlatform='', editCanceled=[];
 let sb=null, mode='local', loading=false;
 const _now=new Date();
@@ -1193,7 +1206,7 @@ function byDate(a){return a.slice().sort((x,y)=>{const dx=x.date||'9999',dy=y.da
 
 function render(){
   // dock 활성 표시('전체'는 타일·리스트 공용)
-  document.querySelectorAll('#dock .dtab[data-v]').forEach(b=>{const v=b.dataset.v;b.classList.toggle('on',v===view||(v==='all'&&(view==='tile'||view==='list')));});
+  document.querySelectorAll('#dock .dtab[data-v]').forEach(b=>{const v=b.dataset.v;b.classList.toggle('on',v===view||(v==='all'&&view==='list'));});
   // stats
   const acc=tickets.reduce((a,t)=>{const r=ticketAcct(t);a.held+=r.held;a.spend+=r.spend;a.profit+=r.profit;return a;},{held:0,spend:0,profit:0});
   const prof=Math.round(acc.profit);
@@ -1223,8 +1236,7 @@ function viewHTML(v){
   if(a.length===0) return emptyHTML();
   const groups=groupByMonth(a);
   const head=g=>`<div class="month-head">${g.label}<span class="mh-count">${g.items.length}</span><span class="mh-line"></span></div>`;
-  if(v==='list') return `<div class="list">${groups.map(g=>head(g)+g.items.map(listRow).join('')).join('')}</div>`;
-  return `<div class="grouped">${groups.map(g=>head(g)+`<div class="tiles">${g.items.map(tileCard).join('')}</div>`).join('')}</div>`;
+  return `<div class="list">${groups.map(g=>head(g)+g.items.map(listRow).join('')).join('')}</div>`;
 }
 function emptyHTML(){const has=tickets.length>0;return `<div class="empty"><div class="ico">🎭</div><p><b>${has?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${has?'다른 키워드로 찾아보세요':'오른쪽 위 + 버튼으로 추가해 보세요'}</p></div>`;}
 
@@ -1283,7 +1295,7 @@ function homeHTML(){
     ${hero}
     <div class="hsec"><span>다가오는 티켓 <em>${rest.length}건</em></span>${hasX?`<button class="hxf${hideXfer?'':' on'}" type="button" onclick="toggleHideXfer()">양도표 ${hideXfer?'숨김':'표시'}</button>`:''}</div>
     ${rest.length?`<div class="hlist">${rows}</div>`:`<div class="hnone">예정된 다른 티켓이 없어요</div>`}
-    <button class="hall" type="button" onclick="setView('tile')">지난 공연 포함 전체 ${tickets.length}건 보기 →</button>
+    <button class="hall" type="button" onclick="setView('list')">지난 공연 포함 전체 ${tickets.length}건 보기 →</button>
   </div>`;
 }
 function groupByMonth(arr){
@@ -1319,31 +1331,6 @@ function seatLine(t){
   else if(nos.length) numStr=ss.length+'석';
   const main=[g, f&&f+'층', z&&z+'구역', r&&r+'열', numStr].filter(Boolean).join(' ');
   return main+(canceled.length?` · 취소 ${canceled.length}`:'')+(xferred.length?` · 양도 ${xferred.length}`:'');
-}
-function tileCard(t){
-  const c=colorFor(t.vendor);
-  const sel=selectedIds.has(String(t.id));
-  const click=selectMode?`toggleSelect('${t.id}')`:`openDetail('${t.id}')`;
-  const d=dayLabel(t); const sl=seatLine(t);
-  const xf=t.transfer&&t.transfer.done, xc=hasCancel(t), pt=!xf&&hasSeatTransfer(t);
-  const past=t.date&&t.date<ymd(new Date());
-  // Figma: 일반 카드는 흰 바탕 + 헤어라인(벤더색은 스와치로만). 양도/취소는 CSS 컬러블록.
-  const tint='';
-  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''} ${past?'is-past':''}" data-id="${t.id}" onclick="${click}"${tint}>
-    ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
-    ${xf?'<span class="tk-ribbon">양도완료</span>':(pt?'<span class="tk-ribbon partial">일부 양도</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':''))}
-    <div class="tk-top">
-      <span class="tk-when ${t.date?'':'nodate'}">${d.main}${d.sub?`<small>${d.sub}</small>`:''}</span>
-      <span class="tk-vendor"><i style="background:${c}"></i><span>${esc(t.vendor||'')}</span></span>
-    </div>
-    <div class="tk-name">${esc(t.name||'(공연명 없음)')}</div>
-    ${sl?`<div class="tk-seatline">${ICON_SEAT}${esc(sl)}</div>`:''}
-    ${t.memo?`<div class="tk-memo">${esc(t.memo)}</div>`:''}
-    <div class="tk-bottom">
-      <span class="tk-qty">${Number(t.qty)||0}매</span>
-      ${xf?`<span class="tk-price xf">→ ₩${won(ticketRecv(t))}</span>`:pt?`<span class="tk-price">₩${won(t.price)} <span class="xf">→ ₩${won(ticketRecv(t))}</span></span>`:`<span class="tk-price">₩${won(t.price)}</span>`}
-    </div>
-  </div>`;
 }
 function listRow(t){
   const c=colorFor(t.vendor);
@@ -1415,8 +1402,9 @@ function openDetail(id){
   openOv('detailOverlay');
 }
 function closeDetail(){ closeOv('detailOverlay'); }
-function detailEdit(){ const id=detailId; closeDetail(); edit(id); }
-function detailShare(){ const id=detailId; closeDetail(); openShare(id); }
+// 상세 위에 겹쳐 열기(닫기+열기를 동시에 하면 history back/push가 경합해 페이지가 뒤로 빠질 수 있음)
+function detailEdit(){ edit(detailId); }
+function detailShare(){ openShare(detailId); }
 function detailImg(){
   if(!detailId||!(mode==='cloud'&&sb))return;
   sb.from('tickets').select('img').eq('id',detailId).single().then(({data})=>{
@@ -1445,14 +1433,7 @@ function detailHTML(t){
   const xinfo=xf?[t.transfer.to,t.transfer.platform].filter(Boolean).join(' · '):'';
   return `<div class="tkt">
     ${xf?'<span class="dt-stamp">양도완료</span>':''}
-    <div class="tkt-band" style="background:linear-gradient(rgba(0,0,0,.16),rgba(0,0,0,.16)),${c}">
-      <span class="tb-v">${esc(t.vendor||'예매처 미정')}</span>
-      <span class="tkt-ics">
-        <button class="tkt-ic" onclick="detailEdit()" title="수정"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-        <button class="tkt-ic" onclick="detailShare()" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 13v6h14v-6"/></svg></button>
-        ${t.hasImg?'<button class="tkt-ic" onclick="detailImg()" title="예매내역 사진"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>':''}
-      </span>
-    </div>
+    <div class="tkt-band" style="background:${c}"></div>
     <div class="tkt-name">${esc(t.name||'(공연명 없음)')}</div>
     <div class="tkt-when">
       <div><small>날짜</small><b>${esc(dateB)}</b><span>${esc(wdB||'날짜 미정')}</span></div>
@@ -1462,12 +1443,20 @@ function detailHTML(t){
     <div class="tkt-perf"></div>
     <div class="tkt-sec"><small>좌석</small>${seatRows}</div>
     <div class="tkt-grid">${grid}</div>
-    ${xinfo?`<div class="tkt-xin">양도 · ${esc(xinfo)}</div>`:''}
+    ${(xf||pt)?`<div class="tkt-xin">차익 계산: 받은 ₩${won(recv)} − 티켓값 ₩${won(Math.round(recv-a.profit))}${xinfo?' · '+esc(xinfo):''}</div>`:''}
     <div class="tkt-perf"></div>
     <div class="tkt-memo">
       <small>메모</small>
       <div class="tm-tx${t.memo?'':' none'}">${t.memo?esc(t.memo):'메모가 없어요'}</div>
       <div class="tkt-no">${esc(ticketNo(t))}</div>
+    </div>
+    <div class="tkt-foot">
+      <span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'예매처 미정')}</span>
+      <span class="tkt-ics">
+        <button class="tkt-ic" onclick="detailEdit()" title="수정"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="tkt-ic" onclick="detailShare()" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 13v6h14v-6"/></svg></button>
+        ${t.hasImg?'<button class="tkt-ic" onclick="detailImg()" title="예매내역 사진"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>':''}
+      </span>
     </div>
   </div>
   <div class="tkt-zig"></div>`;
@@ -1591,6 +1580,7 @@ function syncVendorBtn(){
   const btn=document.getElementById('fVendorBtn'), dot=document.getElementById('fVendorDot'), txt=document.getElementById('fVendorText');
   if(formVendor){btn.classList.remove('placeholder');dot.style.display='inline-block';dot.style.background=colorFor(formVendor);txt.textContent=formVendor;}
   else{btn.classList.add('placeholder');dot.style.display='none';txt.textContent='예매처 선택';}
+  const band=document.getElementById('modalBand'); if(band)band.style.background=formVendor?colorFor(formVendor):'#191b23'; // 모달 상단 티켓 스트립 = 예매처 색
 }
 function addVendorInline(){
   const inp=document.getElementById('newVendor'); const n=(inp.value||'').trim();
@@ -1909,6 +1899,9 @@ async function save(){
     dataVer++; // 로컬 상태 변경됨 → 진행 중인 새로고침이 이 저장을 덮어쓰지 않게
     if(data.date){const p=data.date.split('-').map(Number);calY=p[0];calM=p[1]-1;selDay=data.date;}
     render(); closeModal();
+    // 상세 티켓 위에서 수정한 경우 → 아래 깔린 상세 내용도 갱신
+    const dOv=document.getElementById('detailOverlay');
+    if(dOv&&dOv.classList.contains('on')&&detailId){ const t2=tickets.find(x=>String(x.id)===String(detailId)); if(t2)document.getElementById('detailBody').innerHTML=detailHTML(t2); else closeDetail(); }
   }catch(e){ toast('저장 실패: '+(e.message||e)); }
   finally{ btn.disabled=false; }
 }
@@ -1919,7 +1912,9 @@ async function del(id){
     if(mode==='cloud'&&sb){const {error}=await sb.from('tickets').delete().eq('id',id);if(error)throw error;}
     tickets=tickets.filter(x=>String(x.id)!==String(id)); dataVer++;
     if(mode!=='cloud')saveLocal();
-    render(); closeModal(); toast('삭제되었어요');
+    render(); closeModal();
+    const dOv2=document.getElementById('detailOverlay'); if(dOv2&&dOv2.classList.contains('on'))closeDetail(); // 상세 위에서 삭제 → 상세도 닫기
+    toast('삭제되었어요');
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
 }
 
@@ -2188,7 +2183,7 @@ function initSheetDrag(){
 /* ===== long-press action menu ===== */
 let actionId=null, lpTimer=null, lpFired=false, lpX=0, lpY=0;
 let calSX=0, calSY=0, calSwiped=false, calTrack=false, swInGrid=false;
-const SWIPE_VIEWS=['home','calendar','tile','list']; // 좌우 스와이프로 순환할 뷰 순서(독 버튼 순서와 동일, 타일→리스트는 전체 탭 내 전환)
+const SWIPE_VIEWS=['home','calendar','list']; // 좌우 스와이프로 순환할 뷰 순서(독 버튼 순서와 동일)
 function swipeView(dir){ const i=SWIPE_VIEWS.indexOf(view), n=i+dir; if(i<0||n<0||n>=SWIPE_VIEWS.length)return; setView(SWIPE_VIEWS[n]); } // dir +1=다음(왼쪽 스와이프)·-1=이전. 양끝에선 무시(순환 안 함)
 function openActions(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
@@ -2299,40 +2294,9 @@ function initCalSwipe(){
   root.addEventListener('touchcancel',()=>{ if(active){ active=false; if(kind==='pane'){resetRoot(true);setTimeout(()=>{clearPane();endSwipe();},settleMs+10);}else{resetRoot(true);endSwipe();} } });
 }
 
-// 타일 뷰 두 손가락 핀치 → 한 행 타일 수(배율) 조절. 벌리면 크고 상세(1개), 오므리면 촘촘(4개).
-// (한 손가락 스와이프는 initCalSwipe가 touches>1이면 시작 안 하므로 서로 안 겹침)
-function initTilePinch(){
-  const root=document.getElementById('viewRoot');
-  let startDist=0, startCols=2, pinching=false;
-  const dist=t=>Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
-  root.addEventListener('touchstart',e=>{
-    if(view!=='tile'||e.touches.length!==2)return;
-    startDist=dist(e.touches); startCols=tileCols; pinching=true;
-  },{passive:true});
-  root.addEventListener('touchmove',e=>{
-    if(!pinching||e.touches.length!==2)return;
-    e.preventDefault();
-    const d=dist(e.touches); if(d<20||startDist<20)return;
-    tileCols=startCols*(startDist/d); // 벌리면 d↑ → cols↓(상세), 오므리면 d↓ → cols↑(촘촘)
-    applyTileCols();
-  },{passive:false});
-  const stop=()=>{ if(pinching){ pinching=false; localStorage.setItem('tm_tilecols',JSON.stringify(tileCols)); if(navigator.vibrate)navigator.vibrate(8); } };
-  root.addEventListener('touchend',e=>{ if(e.touches.length<2)stop(); });
-  root.addEventListener('touchcancel',stop);
-  // 데스크톱 트랙패드 핀치/ctrl+휠 = ctrl+wheel 이벤트(터치 아님). 위로(벌리기)=상세, 아래로=촘촘.
-  let wheelT=null;
-  root.addEventListener('wheel',e=>{
-    if(view!=='tile'||!e.ctrlKey)return;
-    e.preventDefault();
-    tileCols+=e.deltaY>0?0.4:-0.4; applyTileCols();
-    clearTimeout(wheelT); wheelT=setTimeout(()=>localStorage.setItem('tm_tilecols',JSON.stringify(tileCols)),200);
-  },{passive:false});
-}
 boot();
-applyTileCols();
 initLongPress();
 initCalSwipe();
-initTilePinch();
 initSheetDrag();
 initImgZoom();
 /* 처리 현황·새 티켓 자동 갱신(팝업 열려있을 땐 건너뜀) */
