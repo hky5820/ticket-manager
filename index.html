@@ -239,25 +239,34 @@
   .pdeck::-webkit-scrollbar{display:none}
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center}
   .pdeck .pass:only-child{flex-basis:100%}
-  /* ===== 티켓 상세: 티켓 자체가 팝업(투명 시트 위에 패스만 떠 있음) ===== */
+  /* ===== 티켓 상세: 세로 종이 티켓(보딩패스)이 그대로 팝업 ===== */
   .overlay.centered .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:420px;overflow-y:auto}
-  .pass.big{position:relative;cursor:default;margin-top:0;box-shadow:0 24px 60px -20px rgba(0,0,0,.55)}
-  .pass.big .p-perf i{display:none} /* 스크림 위라 가짜 노치 구멍은 숨기고 절취선만 */
-  .pass.big .p-perf{margin:0 16px}
-  .pass.big .p-top{padding:16px 18px 14px}
-  .pass.big .p-name{font-size:21px}
-  .dt-stamp{position:absolute;top:14px;right:16px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
-  .dt-seats{padding:11px 18px;display:flex;flex-direction:column;gap:7px}
-  .dt-seat{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:600;color:#4c4e56}
-  .dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px;padding:13px 18px 4px}
-  .dt-g small{display:block;font-size:9.5px;color:#b0b2b9;font-weight:800;letter-spacing:.08em;margin-bottom:2px}
-  .dt-g b{font-size:14px;color:#191b23;font-weight:700;font-variant-numeric:tabular-nums}
+  .tkt{position:relative;background:#fff;color:#191b23;border-radius:18px 18px 0 0;max-width:330px;margin:0 auto;overflow:hidden;box-shadow:0 24px 60px -18px rgba(0,0,0,.6)}
+  .tkt-band{height:5px}
+  .tkt-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0}
+  .tkt-hd .vch{font-size:11px}
+  .tkt-st{font-size:11px;font-weight:800;background:#191b23;color:#fff;border-radius:7px;padding:2.5px 10px;white-space:nowrap}
+  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:11px 18px 0}
+  .tkt-when{display:flex;gap:28px;padding:14px 18px 16px}
+  .tkt-when small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em}
+  .tkt-when b{display:block;font-size:24px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;margin-top:3px;line-height:1.1}
+  .tkt-when span{display:block;font-size:10.5px;color:#8b8d95;font-weight:600;margin-top:2px}
+  .tkt-perf{border-top:2px dashed #e6e6ea;margin:0 14px}
+  .tkt-sec{padding:13px 18px 11px}
+  .tkt-sec>small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em;margin-bottom:7px}
+  .tkt-seat{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#33353c;padding:3.5px 0}
+  .tkt-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px 14px;padding:13px 18px 16px}
+  .dt-g small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em;margin-bottom:3px}
+  .dt-g b{font-size:14.5px;color:#191b23;font-weight:700;font-variant-numeric:tabular-nums}
   .dt-g b.gn{color:#0aa060}.dt-g b.rd{color:#d9453a}
-  .dt-code{padding:12px 18px 16px;text-align:center}
-  .dt-code .bc{display:inline-block;width:150px;height:26px;border-radius:2px;background:repeating-linear-gradient(90deg,#191b23 0 1.5px,transparent 1.5px 3.5px,#191b23 3.5px 6.5px,transparent 6.5px 8px,#191b23 8px 9px,transparent 9px 12px)}
-  .dt-code small{display:block;font-family:ui-monospace,Consolas,monospace;font-size:9px;color:#b0b2b9;letter-spacing:.08em;margin-top:4px}
-  .dt-memo{margin-top:12px;background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--ink-soft);line-height:1.55;white-space:pre-wrap}
-  .dt-acts{display:flex;gap:9px;margin-top:14px}
+  .tkt-bc{padding:15px 18px 18px;text-align:center}
+  .tkt-bc .bc{display:block;height:46px;width:82%;margin:0 auto;border-radius:2px;background:repeating-linear-gradient(90deg,#191b23 0 2px,transparent 2px 5px,#191b23 5px 9px,transparent 9px 11px,#191b23 11px 12.5px,transparent 12.5px 16px)}
+  .tkt-bc small{display:block;font-family:ui-monospace,Consolas,monospace;font-size:9.5px;color:#b0b2b9;letter-spacing:.1em;margin-top:6px}
+  /* 종이 절단면(톱니) */
+  .tkt-zig{height:11px;max-width:330px;margin:0 auto;background:conic-gradient(from -45deg at 50% 0,#fff 90deg,transparent 0) 0 0/14px 100% repeat-x;filter:drop-shadow(0 10px 18px rgba(0,0,0,.28))}
+  .dt-stamp{position:absolute;top:44px;right:14px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
+  .dt-memo{margin:14px auto 0;max-width:330px;background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--ink-soft);line-height:1.55;white-space:pre-wrap}
+  .dt-acts{display:flex;gap:9px;margin:14px auto 0;max-width:330px}
   .dt-btn{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:13px;padding:13px 0;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
   .dt-btn:active{background:var(--chip)}
   .dt-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -1402,32 +1411,39 @@ function detailHTML(t){
   const c=colorFor(t.vendor), a=ticketAcct(t);
   const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t);
   const dd=t.date?ddayInfo(t.date,today):null;
-  const status=xf?'양도완료':(dd?(dd.diff<0?'관람 완료':(dd.diff===1?'내일':dd.label)):'날짜 미정');
+  const status=xf?'양도완료':(dd?(dd.diff<0?'관람 완료':(dd.diff===0?'오늘':dd.diff===1?'내일':dd.label)):'날짜 미정');
+  // 큰 날짜/시간 블록(보딩패스식)
+  let dateB='—', wdB='';
+  if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dateB=`${p[1]}.${p[2]}`;wdB=`${p[0]}년 · ${WD[dt.getDay()]}요일`;}
   // 좌석: 한 줄씩 + 상태 태그
   const seats=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);
   const seatRows=seats.length?seats.map(s=>{
     const tag=s.x?'<span class="xtag cancel">취소</span>':s.t?`<span class="xtag partial">양도${s.tp?' +₩'+won(s.tp):''}</span>`:'';
-    return `<div class="dt-seat"><span>${esc(seatLabel(s))}</span>${tag}</div>`;
-  }).join(''):`<div class="dt-seat"><span style="color:var(--ink-faint)">좌석 정보 없음</span></div>`;
+    return `<div class="tkt-seat"><span>${esc(seatLabel(s))}</span>${tag}</div>`;
+  }).join(''):`<div class="tkt-seat"><span style="color:#b0b2b9">좌석 정보 없음</span></div>`;
   // 금액 그리드
   const recv=ticketRecv(t);
   let grid=`<div class="dt-g"><small>매수</small><b>${Number(t.qty)||0}매</b></div><div class="dt-g"><small>가격</small><b>₩${won(t.price)}</b></div>`;
   if(xf||pt)grid+=`<div class="dt-g"><small>양도 수령</small><b>₩${won(recv)}</b></div><div class="dt-g"><small>양도차익</small><b class="${a.profit>=0?'gn':'rd'}">${signMoney(a.profit)}</b></div>`;
   else grid+=`<div class="dt-g"><small>예매처</small><b>${esc(t.vendor||'—')}</b></div><div class="dt-g"><small>상태</small><b class="gn">전량 보유</b></div>`;
   const xinfo=xf?[t.transfer.to,t.transfer.platform].filter(Boolean).join(' · '):'';
-  return `<div class="pass big${xf?' done':''}">
+  return `<div class="tkt">
     ${xf?'<span class="dt-stamp">양도완료</span>':''}
-    <div class="p-top">
-      <div class="p-row"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'')}</span><span class="ddy">${esc(status)}</span></div>
-      <div class="p-name">${esc(t.name||'(공연명 없음)')}</div>
-      <div class="p-meta">${esc(t.date?fmtDate(t.date,t.time):'날짜 미정')}</div>
+    <div class="tkt-band" style="background:${c}"></div>
+    <div class="tkt-hd"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'예매처 미정')}</span><span class="tkt-st">${esc(status)}</span></div>
+    <div class="tkt-name">${esc(t.name||'(공연명 없음)')}</div>
+    <div class="tkt-when">
+      <div><small>날짜</small><b>${esc(dateB)}</b><span>${esc(wdB||'날짜 미정')}</span></div>
+      <div><small>시간</small><b>${esc(t.time||'—')}</b><span>${dd&&dd.diff>=0?'공연까지 '+(dd.diff===0?'오늘':dd.diff+'일'):''}</span></div>
     </div>
-    <div class="p-perf"><i class="l"></i><i class="r"></i></div>
-    <div class="dt-seats">${seatRows}</div>
-    <div class="p-perf"><i class="l"></i><i class="r"></i></div>
-    <div class="dt-grid">${grid}</div>
-    <div class="dt-code"><span class="bc"></span><small>${esc(ticketNo(t))}${xinfo?' · '+esc(xinfo):''}</small></div>
+    <div class="tkt-perf"></div>
+    <div class="tkt-sec"><small>좌석</small>${seatRows}</div>
+    <div class="tkt-perf"></div>
+    <div class="tkt-grid">${grid}</div>
+    <div class="tkt-perf"></div>
+    <div class="tkt-bc"><span class="bc"></span><small>${esc(ticketNo(t))}${xinfo?' · '+esc(xinfo):''}</small></div>
   </div>
+  <div class="tkt-zig"></div>
   ${t.memo?`<div class="dt-memo">${esc(t.memo)}</div>`:''}
   <div class="dt-acts">
     <button class="dt-btn primary" onclick="detailEdit()">✏️ 수정</button>
