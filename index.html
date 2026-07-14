@@ -294,10 +294,13 @@
     --danger:#c13515;--danger-ink:#b32505;--danger-soft:#fbeceb;--danger-bd:#f3ccc4;
     --warn:#a0761f;--warn-strong:#2E63F0;--warn-soft:#fbf3e0;--warn-bd:#ecdcb4;--warn-ink:#7a5a12;
     --card-bd:#ebebee;--card-sh:none;--shadow:none;--shadow-sm:none}
-  #overlay .grab{background:#e2e3e8}
-  #overlay .tkt-band{margin:2px -18px 12px;height:6px}
-  #overlay .sheet h2{font-size:19px}
-  .m-perf{border-top:2px dashed #e3e4e9;margin:16px -18px 0} /* 저장 줄 위 절취선(전폭) */
+  /* 티켓 팝업 형태: 각진 종이 + 예매처 스트립, 바텀시트보다 살짝 좁게 */
+  .overlay.centered#overlay{align-items:center}
+  #overlay .sheet{max-width:352px;border-radius:0;max-height:88vh;padding:0 18px 0;box-shadow:0 30px 70px -18px rgba(0,0,0,.7)}
+  #overlay .tkt-band{margin:0 -18px 12px;height:6px}
+  #overlay .sheet h2{font-size:19px;margin-top:2px}
+  /* 취소·저장은 스크롤과 무관하게 항상 하단 고정(절취선 포함) */
+  #overlay .save-row{position:sticky;bottom:0;z-index:2;background:#fff;margin:16px -18px 0;padding:12px 18px 14px;border-top:2px dashed #e3e4e9}
 
   /* calendar — 모눈 없는 라운드 칩 스타일 */
   .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:20px;padding:16px 12px 14px;box-shadow:var(--card-sh)}
@@ -698,17 +701,17 @@
 </div>
 <input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
 <input type="file" id="pendReplaceFile" accept="image/*" style="display:none" onchange="pendReplaceFile(event)">
+<input type="file" id="editImgFile" accept="image/*" style="display:none" onchange="editImgUpload(event)">
 
-<!-- Ticket modal -->
-<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<!-- Ticket modal (티켓 팝업) -->
+<div class="overlay centered" id="overlay" onclick="if(event.target===this)closeModal()">
   <div class="sheet">
-    <div class="grab"></div>
     <div class="tkt-band" id="modalBand" style="background:#191b23"></div>
     <div class="modal-head">
       <h2 id="modalTitle">티켓 추가</h2>
       <span class="modal-head-actions" id="modalHeadActions" style="display:none">
-        <button type="button" class="icon-btn" id="modalImgBtn" onclick="viewCurrentImage()" title="첨부 사진 보기" style="display:none">🖼️</button>
-        <button type="button" class="icon-btn" onclick="shareCurrent()" title="공유">📤</button>
+        <button type="button" class="tkt-ic" id="modalImgBtn" onclick="viewCurrentImage()" title="예매내역 사진 보기" style="display:none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>
+        <button type="button" class="tkt-ic" id="modalImgUpBtn" onclick="document.getElementById('editImgFile').click()" title="예매내역 사진 교체"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h4l2-3h6l2 3h4v12H3z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
       </span>
     </div>
 
@@ -745,7 +748,7 @@
     <div class="field">
       <label>양도</label>
       <div class="switch-row">
-        <span class="sl">🔁 이 티켓을 양도했어요</span>
+        <span class="sl">이 티켓을 양도했어요</span>
         <label class="switch"><input type="checkbox" id="fTransfer" onchange="toggleTransfer()"><span class="track"></span></label>
       </div>
       <div class="transfer-box" id="transferBox">
@@ -770,9 +773,8 @@
       <textarea id="fMemo" placeholder="티켓 수령 방법, 동행인, 취소 마감일 등"></textarea>
     </div>
 
-    <button type="button" id="delBtn" class="btn-danger" style="display:none" onclick="delCurrent()">🗑 이 티켓 삭제</button>
+    <button type="button" id="delBtn" class="btn-danger" style="display:none" onclick="delCurrent()">이 티켓 삭제</button>
 
-    <div class="m-perf"></div>
     <div class="save-row">
       <button class="cancel" type="button" onclick="closeModal()">취소</button>
       <button class="save" id="saveBtn" type="button" onclick="save()">저장하기</button>
@@ -1799,11 +1801,28 @@ function edit(id){
   renderCanceledNote(); syncTransferUI();
   document.getElementById('delBtn').style.display='block';
   document.getElementById('modalHeadActions').style.display='flex';
-  document.getElementById('modalImgBtn').style.display=t.hasImg?'flex':'none';
+  document.getElementById('modalImgBtn').style.display=t.hasImg?'grid':'none';
+  document.getElementById('modalImgUpBtn').style.display=(mode==='cloud')?'grid':'none'; // 사진 교체는 클라우드에서만
   syncVendorBtn(); syncPlatformBtn();
   openOv('overlay');
 }
-function shareCurrent(){ if(!editingId)return; const id=editingId; closeModal(); openShare(id); }
+// 예매내역 사진 교체/등록(수정 모달에서)
+async function editImgUpload(e){
+  const f=(e.target.files||[])[0]; e.target.value='';
+  if(!f||!editingId)return;
+  if(!(mode==='cloud'&&sb)){ toast('오프라인에서는 사진을 올릴 수 없어요'); return; }
+  try{
+    toast('사진 올리는 중…');
+    const b64=await fileToB64(f);
+    const t=tickets.find(x=>String(x.id)===String(editingId)); if(!t)return;
+    const blob={seats:t.seats||[],time:t.time||'',transfer:t.transfer||{done:false},hasImg:true};
+    const {error}=await sb.from('tickets').update({img:b64,seats:blob}).eq('id',editingId);
+    if(error)throw error;
+    t.hasImg=true; dataVer++;
+    document.getElementById('modalImgBtn').style.display='grid';
+    toast('예매내역 사진이 등록되었어요');
+  }catch(err){ toast('사진 업로드 실패: '+(err.message||err)); }
+}
 function viewCurrentImage(){
   if(!editingId||!(mode==='cloud'&&sb))return;
   const id=editingId;
