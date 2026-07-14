@@ -46,7 +46,8 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
-    background:var(--page);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.4;min-height:100vh;position:relative}
+    background:var(--page);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.4;min-height:100vh;position:relative;
+    overscroll-behavior-y:none} /* 브라우저 당겨서-새로고침 차단(캐러셀 쓸어내리기 제스처와 충돌) */
   .wrap{max-width:680px;margin:0 auto;padding:12px 12px calc(104px + env(safe-area-inset-bottom));overflow-x:clip;position:relative} /* 뷰 전환 슬라이드 시 가로 스크롤바 방지 + 드래그 pane 기준. 하단 여백=플로팅 독 높이 */
   #viewRoot{touch-action:pan-y} /* 세로는 브라우저 스크롤, 가로는 JS가 뷰 전환 드래그로 처리 */
   body.swiping #viewRoot,body.swiping .view-pane{will-change:transform;backface-visibility:hidden} /* 스와이프 동안만 GPU 레이어로 승격(평소엔 메모리 절약) */
@@ -241,7 +242,7 @@
   .hall{width:100%;border:none;background:transparent;color:var(--ink-faint);font-size:12.5px;font-weight:700;font-family:inherit;padding:14px 0 2px;cursor:pointer}
   .hall:active{color:var(--ink)}
   /* 홈 히어로 캐러셀: 옆으로 넘기면 다음 공연 패스 */
-  .pdeck{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:2px 12px 8px;touch-action:auto;scrollbar-width:none}
+  .pdeck{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:2px 12px 8px;touch-action:pan-x;scrollbar-width:none} /* 세로 제스처는 월렛 열기용으로 JS가 처리 */
   .pdeck::-webkit-scrollbar{display:none}
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always} /* 플릭해도 한 장씩만 */
   .pdeck .pass:only-child{flex-basis:100%}
@@ -1450,12 +1451,17 @@ function renderWallet(){
       +`<div style="height:${(list.length-1)*STEP+280}px"></div>` /* 절대배치 카드만큼 스크롤 높이 확보 */
     : '<div class="wempty">다가오는 티켓이 없어요</div>';
 }
-// 홈 캐러셀을 아래로 쓸어내리면 스택 열기
+// 홈 캐러셀을 아래로 쓸어내리면 스택 열기(브라우저 새로고침 제스처보다 먼저 가로챔)
 function initWalletPull(){
   const root=document.getElementById('viewRoot');
   let sy=0,sx=0,on=false,fired=false;
   root.addEventListener('touchstart',e=>{ const t=e.touches[0]; on=!!e.target.closest('.pdeck'); fired=false; sy=t.clientY; sx=t.clientX; },{passive:true});
-  root.addEventListener('touchmove',e=>{ if(!on||fired)return; const t=e.touches[0]; const dy=t.clientY-sy, dx=Math.abs(t.clientX-sx); if(dy>64&&dx<46){ fired=true; openWallet(); } },{passive:true});
+  root.addEventListener('touchmove',e=>{
+    if(!on||fired)return;
+    const t=e.touches[0]; const dy=t.clientY-sy, dx=Math.abs(t.clientX-sx);
+    if(dy>8&&dy>dx)e.preventDefault(); // 캐러셀 위 세로 드래그는 페이지 스크롤·PTR에 안 넘김
+    if(dy>56&&dx<46){ fired=true; openWallet(); }
+  },{passive:false});
 }
 
 /* ===== 티켓 상세(티켓표 모양) 시트 ===== */
@@ -1491,10 +1497,11 @@ function detailHTML(t){
     const tag=s.x?'<span class="xtag cancel">취소</span>':s.t?`<span class="xtag partial">양도${s.tp?' +₩'+won(s.tp):''}</span>`:'';
     return `<div class="tkt-seat"><span>${esc(seatLabel(s))}</span>${tag}</div>`;
   }).join(''):`<div class="tkt-seat"><span style="color:#b0b2b9">좌석 정보 없음</span></div>`;
-  // 금액 그리드
+  // 금액 그리드 — 양도차익(표시) = 양도로 받은 돈 − 티켓 구매금액
   const recv=ticketRecv(t);
+  const net=recv-(Number(t.price)||0);
   let grid=`<div class="dt-g"><small>매수</small><b>${Number(t.qty)||0}매</b></div><div class="dt-g"><small>가격</small><b>₩${won(t.price)}</b></div>`;
-  if(xf||pt)grid+=`<div class="dt-g"><small>양도 수령</small><b>₩${won(recv)}</b></div><div class="dt-g"><small>양도차익</small><b class="${a.profit>=0?'gn':'rd'}">${signMoney(a.profit)}</b></div>`;
+  if(xf||pt)grid+=`<div class="dt-g"><small>양도 수령</small><b>₩${won(recv)}</b></div><div class="dt-g"><small>양도차익</small><b class="${net>=0?'gn':'rd'}">${signMoney(net)}</b></div>`;
   const xinfo=xf?[t.transfer.to,t.transfer.platform].filter(Boolean).join(' · '):'';
   return `<div class="tkt">
     ${xf?'<span class="dt-stamp">양도완료</span>':''}
@@ -1508,7 +1515,7 @@ function detailHTML(t){
     <div class="tkt-perf"></div>
     <div class="tkt-sec"><small>좌석</small>${seatRows}</div>
     <div class="tkt-grid">${grid}</div>
-    ${(xf||pt)?`<div class="tkt-xin">차익 계산: 받은 ₩${won(recv)} − 티켓값 ₩${won(Math.round(recv-a.profit))}${xinfo?' · '+esc(xinfo):''}</div>`:''}
+    ${(xf||pt)?`<div class="tkt-xin">차익 계산: 받은 ₩${won(recv)} − 구매 ₩${won(t.price)}${xinfo?' · '+esc(xinfo):''}</div>`:''}
     <div class="tkt-perf"></div>
     <div class="tkt-memo">
       <small>메모</small>
