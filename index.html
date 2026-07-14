@@ -344,18 +344,10 @@
   /* 일정 있는 날: 은은한 포인트 틴트 */
   .cal-cell.has{background:var(--accent-soft)}
   .cal-cell.has .cal-day{color:var(--accent-ink);font-weight:800}
-  /* 다가오는 공연(2주 이내): 캘린더에서 살짝 떠오른 '미니 흰 티켓' — 앱 언어(흰 종이+블루 밴드) 그대로 */
-  .cal-cell.up{position:relative;z-index:1;overflow:hidden;border-radius:13px;transform:scale(1.06);
-    background:#fff;box-shadow:0 5px 14px -4px rgba(20,30,60,.28)}
-  .cal-cell.up::before{content:"";position:absolute;top:0;left:0;right:0;height:3.5px;background:var(--accent)}
-  .cal-cell.up .cal-day{color:#191b23;font-weight:800;font-size:14px}
-  :root[data-theme="dark"] .cal-cell.up{box-shadow:0 6px 16px -4px rgba(0,0,0,.6)}
   /* 오늘: 잉크 원 안의 숫자 */
   .cal-cell.today .cal-day{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--canvas);display:grid;place-items:center}
-  .cal-cell.up.today .cal-day{background:#191b23;color:#fff}
   /* 선택한 날: 잉크 아웃라인 */
   .cal-cell.sel{box-shadow:0 0 0 2px var(--ink) inset}
-  .cal-cell.up.sel{box-shadow:0 0 0 2px #191b23 inset,0 5px 14px -4px rgba(20,30,60,.28)}
   .cal-daylist{margin-top:12px;border-top:1px solid var(--line-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px}
   .cal-daylist .dl-title{font-size:13px;font-weight:700;color:var(--ink);margin:0 2px 2px}
   .cal-daylist .dl-title em{font-style:normal;font-size:11px;color:var(--ink-faint);font-weight:700;margin-left:4px}
@@ -1405,7 +1397,6 @@ function listRow(t){
 function renderCalendar(){
   const first=new Date(calY,calM,1), start=first.getDay(), days=new Date(calY,calM+1,0).getDate();
   const today=ymd(new Date());
-  const _2w=new Date(); _2w.setDate(_2w.getDate()+14); const cut2w=ymd(_2w); // 2주 이내만 효과
   const byDay={};
   tickets.forEach(t=>{if(t.date){(byDay[t.date]=byDay[t.date]||[]).push(t);}});
   const monPrefix=`${calY}-${String(calM+1).padStart(2,'0')}`;
@@ -1416,9 +1407,8 @@ function renderCalendar(){
     const ds=`${monPrefix}-${String(d).padStart(2,'0')}`;
     const wd=(start+d-1)%7;
     const list=byDay[ds]||[];
-    const upcoming=list.length&&ds>=today&&ds<=cut2w; // 2주 이내 공연만 애니메이션
-    const dots=list.length?`<span class="cal-dots">${list.slice(0,3).map((t,di)=>`<i style="background:${colorFor(t.vendor)};animation-delay:${di*220}ms"></i>`).join('')}${list.length>3?`<em>+${list.length-3}</em>`:''}</span>`:'';
-    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''} ${upcoming?'up':''} ${ds===sel?'sel':''}" onclick="calSel('${ds}')">
+    const dots=list.length?`<span class="cal-dots">${list.slice(0,3).map(t=>`<i style="background:${colorFor(t.vendor)}"></i>`).join('')}${list.length>3?`<em>+${list.length-3}</em>`:''}</span>`:'';
+    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''} ${ds===sel?'sel':''}" onclick="calSel('${ds}')">
       <span class="cal-day">${d}</span>${dots}</div>`;
   }
   const wdh=WD.map((w,i)=>`<div class="cal-wd ${i===0?'sun':''} ${i===6?'sat':''}">${w}</div>`).join('');
