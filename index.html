@@ -344,19 +344,22 @@
   /* 일정 있는 날: 은은한 포인트 틴트 */
   .cal-cell.has{background:var(--accent-soft)}
   .cal-cell.has .cal-day{color:var(--accent-ink);font-weight:800}
-  /* 다가오는 공연(2주 이내): 진한 포인트 채움 + 은은한 숨쉬기 */
-  .cal-cell.up{background:var(--accent);animation:calGlow 2.4s ease-in-out infinite}
-  .cal-cell.up .cal-day{color:#fff;font-weight:800}
-  .cal-cell.up .cal-dots i{background:#fff!important}
-  .cal-cell.up .cal-dots em{color:rgba(255,255,255,.85)}
-  @keyframes calGlow{50%{box-shadow:0 0 0 5px var(--accent-soft)}}
+  /* 다가오는 공연(2주 이내): 떠 있는 그라데이션 칩 — 확대 + 블루 글로우가 숨쉬듯 맥동 */
+  .cal-cell.up{position:relative;z-index:1;border-radius:14px;transform:scale(1.09);
+    background:linear-gradient(145deg,#6b9aff,#2E63F0 60%,#1b4fd6);
+    box-shadow:0 6px 16px -4px rgba(46,99,240,.65);
+    animation:calGlow 2.2s ease-in-out infinite}
+  .cal-cell.up .cal-day{color:#fff;font-weight:800;font-size:14px;text-shadow:0 1px 3px rgba(10,30,90,.35)}
+  .cal-cell.up .cal-dots i{background:#fff!important;box-shadow:0 0 5px rgba(255,255,255,.9)}
+  .cal-cell.up .cal-dots em{color:rgba(255,255,255,.9)}
+  @keyframes calGlow{50%{box-shadow:0 9px 24px -3px rgba(46,99,240,.95),0 0 0 5px rgba(46,99,240,.18);transform:scale(1.13)}}
   @media (prefers-reduced-motion:reduce){.cal-cell.up{animation:none}}
   /* 오늘: 잉크 원 안의 숫자 */
   .cal-cell.today .cal-day{width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--canvas);display:grid;place-items:center}
   .cal-cell.up.today .cal-day{background:#fff;color:var(--accent-ink)}
   /* 선택한 날: 잉크 아웃라인 */
   .cal-cell.sel{box-shadow:0 0 0 2px var(--ink) inset}
-  .cal-cell.up.sel{box-shadow:0 0 0 2px var(--ink) inset,0 0 0 5px var(--accent-soft)}
+  .cal-cell.up.sel{animation:none;box-shadow:0 0 0 2px var(--ink) inset,0 6px 16px -4px rgba(46,99,240,.65)}
   .cal-daylist{margin-top:12px;border-top:1px solid var(--line-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px}
   .cal-daylist .dl-title{font-size:13px;font-weight:700;color:var(--ink);margin:0 2px 2px}
   .cal-daylist .dl-title em{font-style:normal;font-size:11px;color:var(--ink-faint);font-weight:700;margin-left:4px}
