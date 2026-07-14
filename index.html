@@ -258,9 +258,10 @@
   .wclose{border:none;background:rgba(255,255,255,.12);color:#fff;width:32px;height:32px;border-radius:50%;font-size:13px;cursor:pointer;font-family:inherit}
   .wclose:active{background:rgba(255,255,255,.25)}
   /* 원통(드럼) 피커: 티켓이 원통 표면에 붙어 있고 굴려서 봄 */
-  .wdrum{flex:1;min-height:0;position:relative;perspective:900px;perspective-origin:50% 50%}
+  /* 포커스 지점을 위로 36px 올려 '전체 화면' 기준 중앙에 오게(헤더 높이 보정) */
+  .wdrum{flex:1;min-height:0;position:relative;perspective:900px;perspective-origin:50% calc(50% - 36px)}
   .wstage{position:absolute;inset:0;pointer-events:none;transform-style:preserve-3d}
-  .wstage .pass{position:absolute;top:50%;left:50%;width:min(88%,330px);transform:translate(-50%,-50%);transition:none;
+  .wstage .pass{position:absolute;top:calc(50% - 36px);left:50%;width:min(88%,330px);transform:translate(-50%,-50%);transition:none;
     backface-visibility:hidden;will-change:transform,filter;box-shadow:0 18px 40px -18px rgba(0,0,0,.8);cursor:default}
   .wscroll{position:absolute;inset:0;overflow-y:auto;z-index:5;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain}
   .wscroll::-webkit-scrollbar{display:none}
@@ -1492,7 +1493,7 @@ function initWalletDrum(){
   },{passive:true});
   scroll.addEventListener('click',e=>{
     if(!wlist.length)return;
-    const r=scroll.getBoundingClientRect(), dy=e.clientY-(r.top+r.height/2);
+    const r=scroll.getBoundingClientRect(), dy=e.clientY-(r.top+r.height/2-36); // 포커스 지점 보정과 동일 오프셋
     const cur=Math.max(0,Math.min(wlist.length-1,Math.round(scroll.scrollTop/W_ITEM)));
     if(Math.abs(dy)<86){ openDetail(wlist[cur].id); } // 센터 티켓 탭 → 상세
     else{ const n=Math.max(0,Math.min(wlist.length-1,cur+(dy>0?1:-1))); scroll.scrollTo({top:n*W_ITEM,behavior:'smooth'}); } // 위/아래 탭 → 한 칸 굴림
