@@ -234,6 +234,31 @@
   .hnone{font-size:12px;color:var(--ink-faint);text-align:center;padding:18px 0;background:var(--card);border:1px dashed var(--line);border-radius:14px}
   .hall{width:100%;border:none;background:transparent;color:var(--ink-faint);font-size:12.5px;font-weight:700;font-family:inherit;padding:14px 0 2px;cursor:pointer}
   .hall:active{color:var(--ink)}
+  /* 홈 히어로 캐러셀: 옆으로 넘기면 다음 공연 패스 */
+  .pdeck{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:2px 12px 8px;touch-action:auto;scrollbar-width:none}
+  .pdeck::-webkit-scrollbar{display:none}
+  .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center}
+  .pdeck .pass:only-child{flex-basis:100%}
+  /* ===== 티켓 상세 시트(티켓표 모양) ===== */
+  .detail-sheet{background:var(--page)}
+  .pass.big{position:relative;cursor:default;margin-top:6px}
+  .pass.big .p-top{padding:16px 18px 14px}
+  .pass.big .p-name{font-size:21px}
+  .dt-stamp{position:absolute;top:14px;right:16px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
+  .dt-seats{padding:11px 18px;display:flex;flex-direction:column;gap:7px}
+  .dt-seat{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;font-weight:600;color:#4c4e56}
+  .dt-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px 14px;padding:13px 18px 4px}
+  .dt-g small{display:block;font-size:9.5px;color:#b0b2b9;font-weight:800;letter-spacing:.08em;margin-bottom:2px}
+  .dt-g b{font-size:14px;color:#191b23;font-weight:700;font-variant-numeric:tabular-nums}
+  .dt-g b.gn{color:#0aa060}.dt-g b.rd{color:#d9453a}
+  .dt-code{padding:12px 18px 16px;text-align:center}
+  .dt-code .bc{display:inline-block;width:150px;height:26px;border-radius:2px;background:repeating-linear-gradient(90deg,#191b23 0 1.5px,transparent 1.5px 3.5px,#191b23 3.5px 6.5px,transparent 6.5px 8px,#191b23 8px 9px,transparent 9px 12px)}
+  .dt-code small{display:block;font-family:ui-monospace,Consolas,monospace;font-size:9px;color:#b0b2b9;letter-spacing:.08em;margin-top:4px}
+  .dt-memo{margin-top:12px;background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--ink-soft);line-height:1.55;white-space:pre-wrap}
+  .dt-acts{display:flex;gap:9px;margin-top:14px}
+  .dt-btn{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:13px;padding:13px 0;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .dt-btn:active{background:var(--chip)}
+  .dt-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 
   /* calendar */
   .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:12px 10px;box-shadow:var(--card-sh)}
@@ -248,6 +273,8 @@
   .cal-cell.has{background:var(--accent-soft);border-color:var(--accent-bd)}
   .cal-cell.has:active{filter:brightness(.96)}
   .cal-cell.today{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+  .cal-cell.sel{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
+  .cal-cell.sel .cal-day{color:var(--ink)}
   .cal-day{font-size:13.5px;font-weight:800;color:var(--ink);line-height:1}
   .cal-cell.today .cal-day{color:var(--accent-ink)}
   .cal-cell.sun .cal-day{color:#ef4444}.cal-cell.sat .cal-day{color:#3b82f6}
@@ -259,8 +286,10 @@
   .cal-dots em{font-size:9px;font-style:normal;font-weight:800;color:var(--ink-soft)}
   .cal-grid{touch-action:pan-y}
   .cal-hint{text-align:center;font-size:10.5px;color:var(--ink-faint);margin-top:10px;user-select:none}
-  .cal-daylist{margin-top:10px;border-top:1px solid var(--line);padding-top:10px;display:flex;flex-direction:column;gap:7px}
-  .cal-daylist .dl-title{font-size:12.5px;font-weight:800;color:var(--ink-soft);margin:0 2px 2px}
+  .cal-daylist{margin-top:12px;border-top:1px solid var(--line-soft);padding-top:12px;display:flex;flex-direction:column;gap:8px}
+  .cal-daylist .dl-title{font-size:13px;font-weight:700;color:var(--ink);margin:0 2px 2px}
+  .cal-daylist .dl-title em{font-style:normal;font-size:11px;color:var(--ink-faint);font-weight:700;margin-left:4px}
+  .cal-daylist .lrow{border:1px solid var(--line-soft);box-shadow:none}
   .cal-empty{font-size:12.5px;color:var(--ink-faint);text-align:center;padding:14px 0}
   .undated{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
   .undated .u-t{font-size:11.5px;color:var(--ink-faint);font-weight:700;margin:0 2px 6px}
@@ -527,9 +556,16 @@
   @keyframes calRipple{0%{transform:scale(1);opacity:.55}70%,100%{transform:scale(1.14);opacity:0}}
   @keyframes calDot{0%,100%{transform:scale(1)}50%{transform:scale(1.45)}}
   @media (prefers-reduced-motion:reduce){.cal-cell.up,.cal-cell.up::after,.cal-cell.up .cal-dots i{animation:none}}
+  /* 지난 공연은 한 톤 가라앉힘 → 살아있는 티켓이 도드라짐 */
+  .tk.is-past,.lrow.is-past{opacity:.62}
   /* 완전 양도 티켓은 dim+흑백(넘겨서 안 가는 표). 정상 티켓의 컬러와 확실히 대비 */
   .tk.is-transfer,.lrow.is-transfer{opacity:.48;filter:grayscale(.75)}
   .tk.is-transfer .tk-ribbon{opacity:.6}
+  /* 전체 뷰 폴리시: 리스트 날짜 = 칩 블록, 월 헤더 카운트 = 포인트 */
+  .ldate{width:48px;background:var(--chip);border-radius:12px;padding:8px 0}
+  .lrow.is-transfer .ldate,.lrow.is-cancel .ldate{background:transparent}
+  .month-head{font-size:14px}
+  .month-head .mh-count{background:var(--accent-soft);border:none;color:var(--accent-ink)}
   /* 검색창 라운드 */
   .search input{border-radius:10px}
   /* 모달: '양도' 관련 UI를 블루 테마로 통일(앰버 잔재 제거. 인식 대기열 앰버는 유지) */
@@ -538,19 +574,22 @@
   .sxl-item{border-color:var(--accent-bd)}
   #seatXferList .sxl-t{color:var(--accent-ink)}
   .cn-tag.xf{background:var(--accent)}
-  /* 입력창 개선: 회색 채움 → 흰 배경 + 얇은 헤어라인(깔끔하고 테마와 통일) */
-  .field input,.field textarea,.vbtn,.gbtn,.vadd input,.seat-edit input{background:var(--card);border:1px solid var(--line);border-radius:12px}
-  .field input,.field textarea{padding:13px 14px;font-size:15px}
-  .field input::placeholder,.field textarea::placeholder{color:var(--ink-faint)}
-  .field input:focus,.field textarea:focus,.vadd input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
-  .field label{font-weight:600;color:var(--ink-faint);font-size:12px;letter-spacing:.01em;margin-bottom:6px}
-  .vbtn,.gbtn{padding:12px 13px}
-  .vbtn.placeholder,.gbtn.placeholder{color:var(--ink-faint)}
+  /* 입력창: 채움형 — 평소 테두리 없이 부드러운 칩, 포커스에만 포인트 링 */
+  .field input,.field textarea,.vbtn,.gbtn,.vadd input,.seat-edit input{background:var(--chip);border:1.5px solid transparent;border-radius:13px;transition:border-color .15s,background .15s}
+  .field input,.field textarea{padding:13.5px 15px;font-size:15px;font-weight:600}
+  .field input::placeholder,.field textarea::placeholder{color:var(--ink-faint);font-weight:500}
+  .field input:focus,.field textarea:focus,.vadd input:focus,.seat-edit input:focus{background:var(--card);border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+  .field label{font-weight:700;color:var(--ink-faint);font-size:11.5px;letter-spacing:.04em;margin:0 4px 6px}
+  .vbtn,.gbtn{padding:12.5px 14px;font-weight:600}
+  .vbtn.placeholder,.gbtn.placeholder{color:var(--ink-faint);font-weight:500}
   .two{gap:11px}
-  .sheet{border-radius:22px 22px 0 0}
-  /* 모달 폴리시: 회색/색면 청크·촌스러운 버튼 정리(아웃라인·화이트 기반) */
-  .seat-edit{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:40px 13px 13px}
-  .seat-edit input{border-radius:10px}
+  .sheet{border-radius:24px 24px 0 0;padding:6px 18px 26px}
+  .sheet h2{font-size:18px;margin:6px 2px 16px}
+  .save-row .save{border-radius:14px;box-shadow:0 8px 18px -8px rgba(46,99,240,.5)}
+  .save-row .cancel{border-radius:14px}
+  /* 모달 폴리시: 회색/색면 청크·촌스러운 버튼 정리 */
+  .seat-edit{background:var(--card);border:1px solid var(--line-soft);border-radius:15px;padding:42px 13px 13px;box-shadow:var(--card-sh)}
+  .seat-edit input{border-radius:11px;padding:10px 11px}
   .seat-btn{background:transparent;color:var(--ink-soft);font-weight:600}
   .seat-btn.cancel{background:transparent;color:var(--danger-ink);border-color:var(--danger-bd)}
   .seat-btn.xfer{background:transparent;color:var(--accent-ink);border-color:var(--accent-bd)}
@@ -803,12 +842,11 @@
   </div>
 </div>
 
-<!-- Day tickets popup -->
-<div class="overlay centered" id="dayOverlay" onclick="if(event.target===this)closeDay()">
-  <div class="sheet">
+<!-- Ticket detail (티켓표 모양) -->
+<div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="sheet detail-sheet">
     <div class="grab"></div>
-    <h2 id="dayTitle">날짜</h2>
-    <div id="dayBody"></div>
+    <div id="detailBody"></div>
   </div>
 </div>
 
@@ -1171,27 +1209,33 @@ function ddayInfo(dateStr,today){
   const diff=Math.round((a-b)/86400000);
   return {diff, label: diff===0?'오늘':diff>0?'D-'+diff:'지남', soon: diff>=0&&diff<=7};
 }
-// 홈 뷰: 히어로 티켓 패스(가장 가까운 공연, 완전 양도 제외) + 나머지 다가오는 티켓 리스트
+// 티켓 일련번호 표기(패스·상세·공유카드 공용)
+function ticketNo(t){const d=String(t.date||'').replace(/-/g,'')||'0000';const id=String(t.id).replace(/[^0-9a-zA-Z]/g,'').slice(-4).toUpperCase()||'0000';return `NO. ${d}-${id}`;}
+// 티켓 패스 카드 HTML(홈 캐러셀용)
+function passHTML(t,today){
+  const dd=ddayInfo(t.date,today), c=colorFor(t.vendor), sl=seatLine(t);
+  return `<div class="pass" data-id="${t.id}" onclick="openDetail('${jsAttr(String(t.id))}')">
+    <div class="p-top">
+      <div class="p-row"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'')}</span><span class="ddy">${dd.diff===1?'내일':dd.label}</span></div>
+      <div class="p-name">${esc(t.name||'(공연명 없음)')}</div>
+      <div class="p-meta">${esc(fmtDate(t.date,t.time))}</div>
+    </div>
+    <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+    <div class="p-bot">
+      <div class="p-seat">${esc(sl||'좌석 미입력')}<small>${Number(t.qty)||0}매 · ₩${won(t.price)}</small></div>
+      <div class="p-code"><span class="bc"></span><small>${esc(ticketNo(t))}</small></div>
+    </div>
+  </div>`;
+}
+// 홈 뷰: 히어로 = 다가오는 공연 패스 캐러셀(좌우 스와이프, 완전 양도 제외) + 나머지 리스트
 function homeHTML(){
   const today=ymd(new Date());
   const fut=byDate(filtered()).filter(t=>t.date&&t.date>=today);
-  const heroT=fut.find(t=>!(t.transfer&&t.transfer.done)); // 히어로 = 완전 양도 아닌 가장 가까운 공연
-  const rest=fut.filter(t=>t!==heroT);
+  const deckTs=fut.filter(t=>!(t.transfer&&t.transfer.done)); // 캐러셀 = 완전 양도 아닌 다가오는 공연들
+  const rest=fut.filter(t=>t!==deckTs[0]);
   let hero;
-  if(heroT){
-    const dd=ddayInfo(heroT.date,today), c=colorFor(heroT.vendor), sl=seatLine(heroT);
-    hero=`<div class="pass" data-id="${heroT.id}" onclick="edit('${jsAttr(String(heroT.id))}')">
-      <div class="p-top">
-        <div class="p-row"><span class="vch"><i style="background:${c}"></i>${esc(heroT.vendor||'')}</span><span class="ddy">${dd.diff===1?'내일':dd.label}</span></div>
-        <div class="p-name">${esc(heroT.name||'(공연명 없음)')}</div>
-        <div class="p-meta">${esc(fmtDate(heroT.date,heroT.time))}</div>
-      </div>
-      <div class="p-perf"><i class="l"></i><i class="r"></i></div>
-      <div class="p-bot">
-        <div class="p-seat">${esc(sl||'좌석 미입력')}<small>${Number(heroT.qty)||0}매 · ₩${won(heroT.price)}</small></div>
-        <div class="p-code"><span class="bc"></span><small>NO. ${esc(String(heroT.date).replace(/-/g,'')+'-'+String(heroT.id).replace(/[^0-9a-zA-Z]/g,'').slice(-4).toUpperCase())}</small></div>
-      </div>
-    </div>`;
+  if(deckTs.length){
+    hero=`<div class="pdeck">${deckTs.map(t=>passHTML(t,today)).join('')}</div>`;
   }else{
     hero=`<div class="pass empty-pass"><div class="p-top"><div style="font-size:26px">🎫</div><div class="p-name" style="font-size:14px;margin-top:6px">다가오는 공연이 없어요</div><div class="p-meta" style="font-family:inherit">오른쪽 위 ＋ 로 티켓을 추가해 보세요</div></div></div>`;
   }
@@ -1199,14 +1243,14 @@ function homeHTML(){
     const dd=ddayInfo(t.date,today), c=colorFor(t.vendor), sl=seatLine(t);
     const p=t.date.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
     const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t);
-    return `<div class="hrow${xf?' is-transfer':''}" data-id="${t.id}" onclick="edit('${jsAttr(String(t.id))}')">
+    return `<div class="hrow${xf?' is-transfer':''}" data-id="${t.id}" onclick="openDetail('${jsAttr(String(t.id))}')">
       <div class="h-d"><b>${p[1]}.${p[2]}</b><span>${WD[dt.getDay()]} ${dd.label}</span></div>
       <div class="h-b"><div class="h-n"><i style="background:${c}"></i><span>${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':pt?'<span class="xtag partial">일부 양도</span>':''}</div>${sl?`<div class="h-s">${esc(sl)}</div>`:''}</div>
       <div class="h-r"><b>₩${won(t.price)}</b><span>${Number(t.qty)||0}매</span></div>
     </div>`;
   }).join('');
   return `<div class="home">
-    <div class="hsec">다음 공연</div>
+    <div class="hsec">다음 공연 ${deckTs.length>1?`<em>옆으로 넘겨 ${deckTs.length}장</em>`:''}</div>
     ${hero}
     <div class="hsec">다가오는 티켓 <em>${rest.length}건</em></div>
     ${rest.length?`<div class="hlist">${rows}</div>`:`<div class="hnone">예정된 다른 티켓이 없어요</div>`}
@@ -1250,12 +1294,13 @@ function seatLine(t){
 function tileCard(t){
   const c=colorFor(t.vendor);
   const sel=selectedIds.has(String(t.id));
-  const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
+  const click=selectMode?`toggleSelect('${t.id}')`:`openDetail('${t.id}')`;
   const d=dayLabel(t); const sl=seatLine(t);
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t), pt=!xf&&hasSeatTransfer(t);
+  const past=t.date&&t.date<ymd(new Date());
   // Figma: 일반 카드는 흰 바탕 + 헤어라인(벤더색은 스와치로만). 양도/취소는 CSS 컬러블록.
   const tint='';
-  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
+  return `<div class="tk ${selectMode?'sel-mode':''} ${xf?'is-transfer':''} ${xc?'is-cancel':''} ${past?'is-past':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     ${xf?'<span class="tk-ribbon">양도완료</span>':(pt?'<span class="tk-ribbon partial">일부 양도</span>':(xc?'<span class="tk-ribbon cancel">부분취소</span>':''))}
     <div class="tk-top">
@@ -1276,10 +1321,11 @@ function listRow(t){
   let dm='—',dw='';
   if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dm=p[1]+'/'+p[2];dw=WD[dt.getDay()];}
   const sel=selectedIds.has(String(t.id));
-  const click=selectMode?`toggleSelect('${t.id}')`:`edit('${t.id}')`;
+  const click=selectMode?`toggleSelect('${t.id}')`:`openDetail('${t.id}')`;
   const xf=t.transfer&&t.transfer.done, xc=hasCancel(t), pt=!xf&&hasSeatTransfer(t);
+  const past=t.date&&t.date<ymd(new Date());
   const tint='';
-  return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''}" data-id="${t.id}" onclick="${click}"${tint}>
+  return `<div class="lrow ${xf?'is-transfer':''} ${xc?'is-cancel':''} ${past?'is-past':''}" data-id="${t.id}" onclick="${click}"${tint}>
     ${selectMode?`<span class="tk-check ${sel?'on':''}"></span>`:''}
     <div class="ldate ${t.date?'':'none'}"><b>${t.date?dm:'—'}</b>${dw?`<span>${dw}</span>`:''}</div>
     <div class="lbody">
@@ -1297,39 +1343,97 @@ function renderCalendar(){
   const _2w=new Date(); _2w.setDate(_2w.getDate()+14); const cut2w=ymd(_2w); // 2주 이내만 효과
   const byDay={};
   tickets.forEach(t=>{if(t.date){(byDay[t.date]=byDay[t.date]||[]).push(t);}});
+  const monPrefix=`${calY}-${String(calM+1).padStart(2,'0')}`;
+  const sel=(selDay&&selDay.startsWith(monPrefix))?selDay:null; // 선택은 표시 중인 달에서만
   let cells='';
   for(let i=0;i<start;i++)cells+=`<div class="cal-cell empty"></div>`;
   for(let d=1;d<=days;d++){
-    const ds=`${calY}-${String(calM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ds=`${monPrefix}-${String(d).padStart(2,'0')}`;
     const wd=(start+d-1)%7;
     const list=byDay[ds]||[];
     const upcoming=list.length&&ds>=today&&ds<=cut2w; // 2주 이내 공연만 애니메이션
     const dots=list.length?`<span class="cal-dots">${list.slice(0,3).map((t,di)=>`<i style="background:${colorFor(t.vendor)};animation-delay:${di*220}ms"></i>`).join('')}${list.length>3?`<em>+${list.length-3}</em>`:''}</span>`:'';
-    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''} ${upcoming?'up':''}" onclick="calOpen('${ds}')">
+    cells+=`<div class="cal-cell ${wd===0?'sun':''} ${wd===6?'sat':''} ${ds===today?'today':''} ${list.length?'has':''} ${upcoming?'up':''} ${ds===sel?'sel':''}" onclick="calSel('${ds}')">
       <span class="cal-day">${d}</span>${dots}</div>`;
   }
   const wdh=WD.map((w,i)=>`<div class="cal-wd ${i===0?'sun':''} ${i===6?'sat':''}">${w}</div>`).join('');
+  // 선택한 날짜의 내역을 캘린더 아래 인라인으로
+  let dayHTML='';
+  if(sel){
+    const list=byDate(byDay[sel]||[]);
+    const p=sel.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
+    dayHTML=`<div class="cal-daylist"><div class="dl-title">${p[1]}월 ${p[2]}일 (${WD[dt.getDay()]})${list.length?` <em>${list.length}건</em>`:''}</div>${list.length?`<div class="list">${list.map(listRow).join('')}</div>`:`<div class="cal-empty">이 날은 일정이 없어요</div>`}</div>`;
+  }
   const undated=tickets.filter(t=>!t.date);
   const undHTML=undated.length?`<div class="undated"><div class="u-t">📌 날짜 미정 ${undated.length}건</div><div class="list">${undated.map(listRow).join('')}</div></div>`:'';
   return `<div class="cal">
     <div class="cal-head"><button onclick="calMove(-1)">‹</button><div class="mon">${calY}년 ${calM+1}월</div><button onclick="calMove(1)">›</button></div>
     <div class="cal-grid">${wdh}${cells}</div>
-    <div class="cal-hint">← 좌우로 넘겨 월 이동 →</div>
+    <div class="cal-hint">날짜를 누르면 그날 내역 · ← 좌우로 넘겨 월 이동 →</div>
+    ${dayHTML}
     ${undHTML}
   </div>`;
 }
+function calSel(ds){ selDay=(selDay===ds?null:ds); render(); } // 같은 날 다시 누르면 접기
 function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++;}render();}
 // 전역 calY/calM을 안 바꾸고 특정 달 캘린더 HTML 얻기(스와이프 월 이동 pane용)
 function calHTMLFor(y,m){ const oy=calY,om=calM; calY=y;calM=m; const h=renderCalendar(); calY=oy;calM=om; return h; }
-function calOpen(ds){
-  const list=tickets.filter(t=>String(t.date)===ds);
-  if(!list.length)return;
-  const p=ds.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
-  document.getElementById('dayTitle').textContent=`${p[1]}월 ${p[2]}일 (${WD[dt.getDay()]}) · ${list.length}건`;
-  document.getElementById('dayBody').innerHTML=`<div class="list">${byDate(list).map(listRow).join('')}</div>`;
-  openOv('dayOverlay');
+/* ===== 티켓 상세(티켓표 모양) 시트 ===== */
+let detailId=null;
+function openDetail(id){
+  const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
+  detailId=id;
+  document.getElementById('detailBody').innerHTML=detailHTML(t);
+  openOv('detailOverlay');
 }
-function closeDay(){ closeOv('dayOverlay'); }
+function closeDetail(){ closeOv('detailOverlay'); }
+function detailEdit(){ const id=detailId; closeDetail(); edit(id); }
+function detailShare(){ const id=detailId; closeDetail(); openShare(id); }
+function detailImg(){
+  if(!detailId||!(mode==='cloud'&&sb))return;
+  sb.from('tickets').select('img').eq('id',detailId).single().then(({data})=>{
+    if(!data||!data.img){ toast('사진을 불러올 수 없어요'); return; }
+    openImgView(data.img);
+  });
+}
+function detailHTML(t){
+  const today=ymd(new Date());
+  const c=colorFor(t.vendor), a=ticketAcct(t);
+  const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t);
+  const dd=t.date?ddayInfo(t.date,today):null;
+  const status=xf?'양도완료':(dd?(dd.diff<0?'관람 완료':(dd.diff===1?'내일':dd.label)):'날짜 미정');
+  // 좌석: 한 줄씩 + 상태 태그
+  const seats=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no);
+  const seatRows=seats.length?seats.map(s=>{
+    const tag=s.x?'<span class="xtag cancel">취소</span>':s.t?`<span class="xtag partial">양도${s.tp?' +₩'+won(s.tp):''}</span>`:'';
+    return `<div class="dt-seat"><span>${esc(seatLabel(s))}</span>${tag}</div>`;
+  }).join(''):`<div class="dt-seat"><span style="color:var(--ink-faint)">좌석 정보 없음</span></div>`;
+  // 금액 그리드
+  const recv=ticketRecv(t);
+  let grid=`<div class="dt-g"><small>매수</small><b>${Number(t.qty)||0}매</b></div><div class="dt-g"><small>가격</small><b>₩${won(t.price)}</b></div>`;
+  if(xf||pt)grid+=`<div class="dt-g"><small>양도 수령</small><b>₩${won(recv)}</b></div><div class="dt-g"><small>양도차익</small><b class="${a.profit>=0?'gn':'rd'}">${signMoney(a.profit)}</b></div>`;
+  else grid+=`<div class="dt-g"><small>예매처</small><b>${esc(t.vendor||'—')}</b></div><div class="dt-g"><small>상태</small><b class="gn">전량 보유</b></div>`;
+  const xinfo=xf?[t.transfer.to,t.transfer.platform].filter(Boolean).join(' · '):'';
+  return `<div class="pass big${xf?' done':''}">
+    ${xf?'<span class="dt-stamp">양도완료</span>':''}
+    <div class="p-top">
+      <div class="p-row"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'')}</span><span class="ddy">${esc(status)}</span></div>
+      <div class="p-name">${esc(t.name||'(공연명 없음)')}</div>
+      <div class="p-meta">${esc(t.date?fmtDate(t.date,t.time):'날짜 미정')}</div>
+    </div>
+    <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+    <div class="dt-seats">${seatRows}</div>
+    <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+    <div class="dt-grid">${grid}</div>
+    <div class="dt-code"><span class="bc"></span><small>${esc(ticketNo(t))}${xinfo?' · '+esc(xinfo):''}</small></div>
+  </div>
+  ${t.memo?`<div class="dt-memo">${esc(t.memo)}</div>`:''}
+  <div class="dt-acts">
+    <button class="dt-btn primary" onclick="detailEdit()">✏️ 수정</button>
+    <button class="dt-btn" onclick="detailShare()">📤 공유</button>
+    ${t.hasImg?'<button class="dt-btn" onclick="detailImg()">🖼 예매내역</button>':''}
+  </div>`;
+}
 // 실지출/양도차익이 어떻게 계산됐는지 티켓별 내역 팝업
 function openBreakdown(kind){
   const isSpend=kind==='spend';
@@ -1645,7 +1749,7 @@ function openModal(){
 function closeModal(){closeOv('overlay');}
 function edit(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
-  closeOv('dayOverlay'); closeOv('breakdownOverlay'); // 목록 팝업(캘린더 날짜·금액상세)에서 아이템 열면 그 팝업은 닫음(안 닫히던 버그)
+  closeOv('detailOverlay'); closeOv('breakdownOverlay'); // 상세·금액상세 위에서 수정 열면 그 시트는 닫음
   editingId=t.id; formVendor=t.vendor||'';
   document.getElementById('modalTitle').textContent='티켓 수정';
   document.getElementById('fName').value=t.name||'';
@@ -1866,36 +1970,73 @@ function wrapCanvasText(x,text,maxW){
   if(line)out.push(line);
   return out.length?out:[''];
 }
-// 공연정보를 예쁜 카드 이미지 1장으로(스크린샷은 별도 파일로 함께 보냄)
+// 공연정보를 '실물 티켓 패스' 이미지 1장으로(앱 홈 히어로와 같은 모양. 스크린샷은 별도 파일로 함께 보냄)
 function composeInfoCard(t){
-  const W=820, pad=36, contentW=W-pad*2, labelX=pad+112;
+  const W=880, M=44, r=30, pad=38;                 // 캔버스 폭·바깥 여백·티켓 라운드·티켓 안 여백
+  const TW=W-M*2, cw=TW-pad*2;                     // 티켓 폭·내용 폭
   const c=document.createElement('canvas'), x=c.getContext('2d');
-  const seatStr=s=>{const no=s.no?(/^\d+$/.test(s.no)?s.no+'번':s.no):'';const base=[s.grade,(s.floor?s.floor+'층':''),(s.zone?s.zone+'구역':''),(s.row?s.row+'열':''),no].filter(Boolean).join(' ');return s.x?base+' (취소)':base;};
-  const ss=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no).map(seatStr).join(' / ');
-  const qp=[]; if(Number(t.qty))qp.push(Number(t.qty)+'매'); if(Number(t.price))qp.push('₩'+won(t.price));
-  const rows=[];
-  const add=(l,v)=>{ if(v)rows.push([l,v]); };
-  add('예매처',t.vendor); add('일시',t.date?fmtDate(t.date,t.time):''); add('매수·가격',qp.join('   ·   ')); add('좌석',ss);
-  if(t.transfer&&t.transfer.done)add('양도',[t.transfer.price?won(t.transfer.price)+'원':'',t.transfer.to,t.transfer.platform].filter(Boolean).join(' · ')||'완료');
-  add('메모',t.memo);
-  const titleFont='800 38px system-ui,-apple-system,sans-serif', valFont='500 25px system-ui,sans-serif', labelFont='700 21px system-ui,sans-serif';
+  const vcol=colorFor(t.vendor);
+  const today=ymd(new Date());
+  const dd=t.date?ddayInfo(t.date,today):null;
+  const xfd=t.transfer&&t.transfer.done;
+  const badge=xfd?'양도완료':(dd?(dd.diff<0?'관람 완료':(dd.diff===1?'내일':dd.label)):'날짜 미정');
+  const rr=(x0,y0,w,h,rad)=>{x.beginPath();x.moveTo(x0+rad,y0);x.arcTo(x0+w,y0,x0+w,y0+h,rad);x.arcTo(x0+w,y0+h,x0,y0+h,rad);x.arcTo(x0,y0+h,x0,y0,rad);x.arcTo(x0,y0,x0+w,y0,rad);x.closePath();};
+  // 내용 측정
+  const titleFont='800 44px system-ui,-apple-system,sans-serif';
+  const seatFont='500 24px system-ui,sans-serif';
   x.textBaseline='top';
-  x.font=titleFont; const titleLines=wrapCanvasText(x,t.name||'(공연명 없음)',contentW);
-  x.font=valFont; const measured=rows.map(([l,v])=>({l,vl:wrapCanvasText(x,v,contentW-112)}));
-  const titleH=titleLines.length*46;
-  let bodyH=0; measured.forEach(r=>bodyH+=Math.max(1,r.vl.length)*34+10);
-  c.width=W; c.height=pad+titleH+18+bodyH+pad;
-  x.fillStyle='#ffffff'; x.fillRect(0,0,c.width,c.height);
-  x.fillStyle='#4f46e5'; x.fillRect(0,0,W,7);
-  let y=pad+6; x.fillStyle='#18181b'; x.font=titleFont;
-  titleLines.forEach(l=>{ x.fillText(l,pad,y); y+=46; });
-  y+=18;
-  measured.forEach(r=>{
-    x.font=labelFont; x.fillStyle='#98a0b3'; x.fillText(r.l,pad,y+2);
-    x.font=valFont; x.fillStyle='#2a3345'; let yy=y;
-    r.vl.forEach(l=>{ x.fillText(l,labelX,yy); yy+=34; });
-    y+=Math.max(1,r.vl.length)*34+10;
-  });
+  x.font=titleFont; const titleLines=wrapCanvasText(x,t.name||'(공연명 없음)',cw);
+  const seatStr=s=>{const base=seatLabel(s);return s.x?base+' (취소)':s.t?base+' (양도)':base;};
+  const seats=(t.seats||[]).filter(s=>s.grade||s.floor||s.zone||s.row||s.no).map(seatStr);
+  x.font=seatFont; const seatLines=seats.length?wrapCanvasText(x,seats.join('  ·  '),cw-190):['좌석 정보 없음'];
+  const qp=[Number(t.qty)?Number(t.qty)+'매':'',Number(t.price)?'₩'+won(t.price):''].filter(Boolean).join(' · ');
+  const topH=pad+34+18+titleLines.length*56+40+30;                              // 헤더+제목+일시
+  const botH=24+Math.max(seatLines.length*34+(qp?40:0)+(xfd?34:0),96)+30;       // 좌석/가격(+양도) vs 바코드
+  const TH=topH+botH, H=TH+M*2;
+  c.width=W; c.height=H;
+  // 배경(연회색) + 티켓 흰 카드
+  x.fillStyle='#eef0f4'; x.fillRect(0,0,W,H);
+  x.save(); x.shadowColor='rgba(20,25,40,.18)'; x.shadowBlur=30; x.shadowOffsetY=10;
+  rr(M,M,TW,TH,r); x.fillStyle='#ffffff'; x.fill(); x.restore();
+  // 헤더: 예매처(색점) + D-day 칩
+  let y=M+pad;
+  x.beginPath(); x.arc(M+pad+9,y+12,9,0,7); x.fillStyle=vcol; x.fill();
+  x.font='700 23px system-ui,sans-serif'; x.fillStyle='#8b8d95'; x.fillText(t.vendor||'',M+pad+28,y);
+  x.font='800 23px system-ui,sans-serif';
+  const bw=x.measureText(badge).width+36;
+  rr(M+TW-pad-bw,y-6,bw,40,11); x.fillStyle='#191b23'; x.fill();
+  x.fillStyle='#ffffff'; x.fillText(badge,M+TW-pad-bw+18,y+1);
+  y+=34+18;
+  // 제목 + 일시
+  x.font=titleFont; x.fillStyle='#191b23';
+  titleLines.forEach(l=>{x.fillText(l,M+pad,y); y+=56;});
+  y+=6;
+  x.font='600 24px ui-monospace,Consolas,monospace'; x.fillStyle='#8b8d95';
+  x.fillText(t.date?fmtDate(t.date,t.time):'날짜 미정',M+pad,y);
+  // 절취선 + 양쪽 노치
+  const py=M+topH;
+  x.setLineDash([10,8]); x.strokeStyle='#e4e4e8'; x.lineWidth=3;
+  x.beginPath(); x.moveTo(M+22,py); x.lineTo(M+TW-22,py); x.stroke(); x.setLineDash([]);
+  x.fillStyle='#eef0f4';
+  x.beginPath(); x.arc(M,py,16,0,7); x.fill();
+  x.beginPath(); x.arc(M+TW,py,16,0,7); x.fill();
+  // 아래: 좌석·매수·가격(좌) + 바코드(우)
+  y=py+28;
+  x.font=seatFont; x.fillStyle='#4c4e56';
+  seatLines.forEach(l=>{x.fillText(l,M+pad,y); y+=34;});
+  if(qp){ x.font='800 28px system-ui,sans-serif'; x.fillStyle='#191b23'; x.fillText(qp,M+pad,y+4); }
+  if(xfd){ const xi=[t.transfer.price?'₩'+won(t.transfer.price):'',t.transfer.platform].filter(Boolean).join(' · '); if(xi){x.font='600 21px system-ui,sans-serif'; x.fillStyle='#8b8d95'; x.fillText('양도 '+xi,M+pad,y+44);} }
+  // 바코드(id 기반 결정적 패턴)
+  const bx=M+TW-pad-150, by=py+26, seed=String(t.id).split('').reduce((a,ch)=>(a*31+ch.charCodeAt(0))>>>0,7);
+  let sx2=bx, s2=seed; x.fillStyle='#191b23';
+  while(sx2<bx+150){ s2=(s2*1103515245+12345)>>>0; const w2=1.5+(s2%4)*1.6; x.fillRect(sx2,by,w2,60); sx2+=w2+2+(s2>>8)%4; }
+  x.font='600 17px ui-monospace,Consolas,monospace'; x.fillStyle='#b0b2b9';
+  x.fillText(ticketNo(t),bx,by+72);
+  // 양도완료 스탬프
+  if(xfd){ x.save(); x.translate(W/2,py); x.rotate(-0.22); x.globalAlpha=.3;
+    x.font='900 54px system-ui,sans-serif'; const sw=x.measureText('양도완료').width;
+    x.strokeStyle='#2E63F0'; x.lineWidth=5; rr(-sw/2-24,-46,sw+48,92,14); x.stroke();
+    x.fillStyle='#2E63F0'; x.fillText('양도완료',-sw/2,-27); x.restore(); }
   return c.toDataURL('image/jpeg',0.92).split(',')[1];
 }
 async function doShare(){
@@ -2069,6 +2210,7 @@ function initCalSwipe(){
   }
   root.addEventListener('touchstart',e=>{
     if(_viewAnim||e.touches.length>1)return;
+    if(e.target.closest('.pdeck'))return; // 홈 패스 캐러셀은 자체 가로 스크롤 → 뷰 전환 드래그 제외
     const t=e.touches[0]; sx=t.clientX; sy=t.clientY; active=true; decided=false; kind=null; dir=0; commit=null; calSwiped=false;
     settleEase=EASE; settleMs=200; passRatio=0.22; // 기본(뷰 전환). 월 이동이면 아래에서 교체
     W=root.offsetWidth||320;
