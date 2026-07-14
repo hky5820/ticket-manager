@@ -245,11 +245,13 @@
   .overlay.centered .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:420px;overflow-y:auto}
   .tkt{position:relative;background:#fff;color:#191b23;border-radius:18px 18px 0 0;max-width:330px;margin:0 auto;overflow:hidden;box-shadow:0 24px 60px -18px rgba(0,0,0,.6)}
   .tkt-band{height:5px}
-  .tkt-hd{display:flex;justify-content:space-between;align-items:center;padding:14px 18px 0}
+  .tkt-hd{display:flex;justify-content:space-between;align-items:center;padding:11px 12px 0 18px}
   .tkt-hd .vch{font-size:11px}
-  .tkt-st{font-size:11px;font-weight:800;background:#191b23;color:#fff;border-radius:7px;padding:2.5px 10px;white-space:nowrap}
-  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:11px 18px 0}
-  .tkt-when{display:flex;gap:28px;padding:14px 18px 16px}
+  .tkt-ics{display:flex;gap:5px}
+  .tkt-ic{border:none;background:#f1f2f5;color:#5b5e68;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;cursor:pointer;font-family:inherit;padding:0}
+  .tkt-ic:active{background:#e4e5ea;color:#191b23}
+  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:8px 18px 0}
+  .tkt-when{display:flex;gap:24px;padding:14px 18px 16px}
   .tkt-when small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em}
   .tkt-when b{display:block;font-size:24px;font-weight:800;letter-spacing:-.5px;font-variant-numeric:tabular-nums;margin-top:3px;line-height:1.1}
   .tkt-when span{display:block;font-size:10.5px;color:#8b8d95;font-weight:600;margin-top:2px}
@@ -257,21 +259,20 @@
   .tkt-sec{padding:13px 18px 11px}
   .tkt-sec>small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em;margin-bottom:7px}
   .tkt-seat{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;font-weight:700;color:#33353c;padding:3.5px 0}
-  .tkt-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px 14px;padding:13px 18px 16px}
+  .tkt-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px 14px;padding:2px 18px 15px}
   .dt-g small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em;margin-bottom:3px}
   .dt-g b{font-size:14.5px;color:#191b23;font-weight:700;font-variant-numeric:tabular-nums}
   .dt-g b.gn{color:#0aa060}.dt-g b.rd{color:#d9453a}
-  .tkt-bc{padding:15px 18px 18px;text-align:center}
-  .tkt-bc .bc{display:block;height:46px;width:82%;margin:0 auto;border-radius:2px;background:repeating-linear-gradient(90deg,#191b23 0 2px,transparent 2px 5px,#191b23 5px 9px,transparent 9px 11px,#191b23 11px 12.5px,transparent 12.5px 16px)}
-  .tkt-bc small{display:block;font-family:ui-monospace,Consolas,monospace;font-size:9.5px;color:#b0b2b9;letter-spacing:.1em;margin-top:6px}
+  .tkt-xin{padding:0 18px 13px;margin-top:-6px;font-size:11px;font-weight:600;color:#8b8d95}
+  /* 메모 스텁(절취선 아래) */
+  .tkt-memo{padding:12px 18px 15px}
+  .tkt-memo>small{display:block;font-size:9px;color:#b0b2b9;font-weight:800;letter-spacing:.16em;margin-bottom:5px}
+  .tkt-memo .tm-tx{font-size:12.5px;color:#4c4e56;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+  .tkt-memo .tm-tx.none{color:#c3c5cc}
+  .tkt-no{margin-top:9px;text-align:right;font-family:ui-monospace,Consolas,monospace;font-size:9px;color:#c3c5cc;letter-spacing:.1em}
   /* 종이 절단면(톱니) */
   .tkt-zig{height:11px;max-width:330px;margin:0 auto;background:conic-gradient(from -45deg at 50% 0,#fff 90deg,transparent 0) 0 0/14px 100% repeat-x;filter:drop-shadow(0 10px 18px rgba(0,0,0,.28))}
-  .dt-stamp{position:absolute;top:44px;right:14px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
-  .dt-memo{margin:14px auto 0;max-width:330px;background:var(--card);border:1px solid var(--card-bd);border-radius:14px;padding:12px 14px;font-size:13px;color:var(--ink-soft);line-height:1.55;white-space:pre-wrap}
-  .dt-acts{display:flex;gap:9px;margin:14px auto 0;max-width:330px}
-  .dt-btn{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:13px;padding:13px 0;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
-  .dt-btn:active{background:var(--chip)}
-  .dt-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dt-stamp{position:absolute;top:50px;right:14px;transform:rotate(9deg);z-index:1;border:2.5px solid #2E63F0;color:#2E63F0;border-radius:9px;font-size:14px;font-weight:900;padding:3px 10px;opacity:.5;letter-spacing:.05em;pointer-events:none}
 
   /* calendar — 모눈 없는 라운드 칩 스타일 */
   .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:20px;padding:16px 12px 14px;box-shadow:var(--card-sh)}
@@ -1243,7 +1244,7 @@ function homeHTML(){
   const fut=byDate(filtered()).filter(t=>t.date&&t.date>=today);
   const deckTs=fut.filter(t=>!(t.transfer&&t.transfer.done)); // 캐러셀 = 완전 양도 아닌 다가오는 공연들
   const hasX=fut.some(t=>t.transfer&&t.transfer.done);
-  let rest=fut.filter(t=>t!==deckTs[0]);
+  let rest=fut.slice(); // 리스트 = 다가오는 티켓 전부(히어로 포함 — 빠지는 항목 없이)
   if(hideXfer)rest=rest.filter(t=>!(t.transfer&&t.transfer.done)); // 토글 꺼짐 → 양도완료 표 숨김
   let hero;
   if(deckTs.length){
@@ -1254,10 +1255,10 @@ function homeHTML(){
   const rows=rest.map(t=>{
     const dd=ddayInfo(t.date,today), c=colorFor(t.vendor), sl=seatLine(t);
     const p=t.date.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
-    const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t);
+    const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t), xc=!xf&&hasCancel(t);
     return `<div class="hrow${xf?' is-transfer':''}" data-id="${t.id}" onclick="openDetail('${jsAttr(String(t.id))}')">
       <div class="h-d"><b>${p[1]}.${p[2]}</b><span>${WD[dt.getDay()]} ${dd.label}</span></div>
-      <div class="h-b"><div class="h-n"><i style="background:${c}"></i><span>${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':pt?'<span class="xtag partial">일부 양도</span>':''}</div>${sl?`<div class="h-s">${esc(sl)}</div>`:''}</div>
+      <div class="h-b"><div class="h-n"><i style="background:${c}"></i><span>${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':pt?'<span class="xtag partial">일부 양도</span>':''}${xc?'<span class="xtag cancel">부분취소</span>':''}</div>${sl?`<div class="h-s">${esc(sl)}</div>`:''}</div>
       <div class="h-r"><b>₩${won(t.price)}</b><span>${Number(t.qty)||0}매</span></div>
     </div>`;
   }).join('');
@@ -1412,7 +1413,6 @@ function detailHTML(t){
   const c=colorFor(t.vendor), a=ticketAcct(t);
   const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t);
   const dd=t.date?ddayInfo(t.date,today):null;
-  const status=xf?'양도완료':(dd?(dd.diff<0?'관람 완료':(dd.diff===0?'오늘':dd.diff===1?'내일':dd.label)):'날짜 미정');
   // 큰 날짜/시간 블록(보딩패스식)
   let dateB='—', wdB='';
   if(t.date){const p=t.date.split('-').map(Number);const dt=new Date(p[0],p[1]-1,p[2]);dateB=`${p[1]}.${p[2]}`;wdB=`${p[0]}년 · ${WD[dt.getDay()]}요일`;}
@@ -1426,31 +1426,36 @@ function detailHTML(t){
   const recv=ticketRecv(t);
   let grid=`<div class="dt-g"><small>매수</small><b>${Number(t.qty)||0}매</b></div><div class="dt-g"><small>가격</small><b>₩${won(t.price)}</b></div>`;
   if(xf||pt)grid+=`<div class="dt-g"><small>양도 수령</small><b>₩${won(recv)}</b></div><div class="dt-g"><small>양도차익</small><b class="${a.profit>=0?'gn':'rd'}">${signMoney(a.profit)}</b></div>`;
-  else grid+=`<div class="dt-g"><small>예매처</small><b>${esc(t.vendor||'—')}</b></div><div class="dt-g"><small>상태</small><b class="gn">전량 보유</b></div>`;
   const xinfo=xf?[t.transfer.to,t.transfer.platform].filter(Boolean).join(' · '):'';
   return `<div class="tkt">
     ${xf?'<span class="dt-stamp">양도완료</span>':''}
     <div class="tkt-band" style="background:${c}"></div>
-    <div class="tkt-hd"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'예매처 미정')}</span><span class="tkt-st">${esc(status)}</span></div>
+    <div class="tkt-hd">
+      <span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'예매처 미정')}</span>
+      <span class="tkt-ics">
+        <button class="tkt-ic" onclick="detailEdit()" title="수정"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="tkt-ic" onclick="detailShare()" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 13v6h14v-6"/></svg></button>
+        ${t.hasImg?'<button class="tkt-ic" onclick="detailImg()" title="예매내역 사진"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>':''}
+      </span>
+    </div>
     <div class="tkt-name">${esc(t.name||'(공연명 없음)')}</div>
     <div class="tkt-when">
       <div><small>날짜</small><b>${esc(dateB)}</b><span>${esc(wdB||'날짜 미정')}</span></div>
-      <div><small>시간</small><b>${esc(t.time||'—')}</b><span>${dd&&dd.diff>=0?'공연까지 '+(dd.diff===0?'오늘':dd.diff+'일'):''}</span></div>
+      <div><small>시간</small><b>${esc(t.time||'—')}</b><span>&nbsp;</span></div>
+      <div><small>디데이</small><b>${esc(dd?dd.label:'미정')}</b><span>${dd&&dd.diff>0?'공연까지 '+dd.diff+'일':dd&&dd.diff===0?'오늘이에요':'&nbsp;'}</span></div>
     </div>
     <div class="tkt-perf"></div>
     <div class="tkt-sec"><small>좌석</small>${seatRows}</div>
-    <div class="tkt-perf"></div>
     <div class="tkt-grid">${grid}</div>
+    ${xinfo?`<div class="tkt-xin">양도 · ${esc(xinfo)}</div>`:''}
     <div class="tkt-perf"></div>
-    <div class="tkt-bc"><span class="bc"></span><small>${esc(ticketNo(t))}${xinfo?' · '+esc(xinfo):''}</small></div>
+    <div class="tkt-memo">
+      <small>메모</small>
+      <div class="tm-tx${t.memo?'':' none'}">${t.memo?esc(t.memo):'메모가 없어요'}</div>
+      <div class="tkt-no">${esc(ticketNo(t))}</div>
+    </div>
   </div>
-  <div class="tkt-zig"></div>
-  ${t.memo?`<div class="dt-memo">${esc(t.memo)}</div>`:''}
-  <div class="dt-acts">
-    <button class="dt-btn primary" onclick="detailEdit()">✏️ 수정</button>
-    <button class="dt-btn" onclick="detailShare()">📤 공유</button>
-    ${t.hasImg?'<button class="dt-btn" onclick="detailImg()">🖼 예매내역</button>':''}
-  </div>`;
+  <div class="tkt-zig"></div>`;
 }
 // 실지출/양도차익이 어떻게 계산됐는지 티켓별 내역 팝업
 function openBreakdown(kind){
