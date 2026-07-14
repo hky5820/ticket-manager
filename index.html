@@ -199,7 +199,7 @@
   .hxf.on{color:var(--accent-ink);border-color:var(--accent-bd);background:var(--accent-soft)}
   .home>.hsec:first-child{margin-top:2px}
   /* 히어로 = 실물 티켓 패스(절취선·노치·바코드). 다크에서도 항상 흰 카드 */
-  .pass{background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s}
+  .pass{position:relative;background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s}
   .pass:active{transform:scale(.99)}
   :root[data-theme="dark"] .pass{border-color:transparent;box-shadow:0 12px 28px -12px rgba(0,0,0,.7)}
   .p-top{padding:13px 15px 12px}
@@ -1294,10 +1294,12 @@ function ddayInfo(dateStr,today){
 }
 // 티켓 일련번호 표기(패스·상세·공유카드 공용)
 function ticketNo(t){const d=String(t.date||'').replace(/-/g,'')||'0000';const id=String(t.id).replace(/[^0-9a-zA-Z]/g,'').slice(-4).toUpperCase()||'0000';return `NO. ${d}-${id}`;}
-// 티켓 패스 카드 HTML(홈 캐러셀용)
+// 티켓 패스 카드 HTML(홈 캐러셀·드럼 공용). 양도완료면 스탬프 표기
 function passHTML(t,today){
   const dd=ddayInfo(t.date,today), c=colorFor(t.vendor), sl=seatLine(t);
+  const xf=t.transfer&&t.transfer.done;
   return `<div class="pass" data-id="${t.id}" onclick="openDetail('${jsAttr(String(t.id))}')">
+    ${xf?'<span class="dt-stamp">양도완료</span>':''}
     <div class="p-top">
       <div class="p-row"><span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'')}</span><span class="ddy">${dd.diff===1?'내일':dd.label}</span></div>
       <div class="p-name">${esc(t.name||'(공연명 없음)')}</div>
@@ -1441,7 +1443,7 @@ function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++
 // 전역 calY/calM을 안 바꾸고 특정 달 캘린더 HTML 얻기(스와이프 월 이동 pane용)
 function calHTMLFor(y,m){ const oy=calY,om=calM; calY=y;calM=m; const h=renderCalendar(); calY=oy;calM=om; return h; }
 /* ===== 티켓 드럼(원통 피커): 네이티브 스크롤을 회전각으로 변환 ===== */
-const W_ITEM=120, W_ANG=22, W_R=430; // 스크롤 1칸(px) · 칸당 궤적각 · 원통 반지름
+const W_ITEM=120, W_ANG=20, W_R=330; // 스크롤 1칸(px) · 칸당 궤적각 · 원통 반지름(작을수록 상하 폭 좁음)
 let wlist=[];
 function openWallet(){ openOv('walletOverlay'); renderWallet(); } // 열고 나서 렌더(닫힌 상태에선 높이 측정이 0)
 function closeWallet(){ closeOv('walletOverlay'); }
