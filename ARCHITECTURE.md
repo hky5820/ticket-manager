@@ -3,7 +3,7 @@
 `index.html` 단일 파일 앱의 **비직관적인 핵심 설계**만 정리한 개발자용 문서.
 (사용법·배포는 [README.md](README.md), Supabase 스키마는 자동 메모리 참고.)
 
-전역 상태: `tickets[]`(현재 티켓), `view`(calendar|tile|list), `calY/calM`(캘린더 표시 연/월),
+전역 상태: `tickets[]`(현재 티켓), `view`(home|calendar|tile|list — 홈=히어로 패스+다가오는 리스트, 전체 탭=tile·list), `calY/calM`(캘린더 표시 연/월),
 `mode`(cloud|local), `editingId/editCanceled/formVendor/formPlatform`(모달 편집 상태).
 거의 모든 UI 갱신은 `render()` 한 곳을 거친다(스탯·pending·select바·다가오는공연 + `#viewRoot`).
 
@@ -57,15 +57,13 @@ seats(jsonb) = {
   (`#hex`→`rgb()`, `220ms` 정규화, inline style 변형)해서 원본 문자열과 **절대 안 맞는다.**
   → 캘린더가 이것 때문에 일정 있는 달마다 매번 재렌더됐었음.
 - 해결: **생성한 html 문자열을 JS 변수에 저장해 그걸로 비교**한다.
-  - `_upSig` = 다가오는 공연, `_calSig` = 캘린더.
-- 다가오는 공연은 뷰마다 HTML이 동일해야 뷰 전환 시 재렌더 안 됨 → 캘린더 전용 `in-cal`
-  클래스(등장 애니메이션)를 **제거**함. (뷰 전환 때 upnext가 리프레시되던 버그의 원인이었음)
-- 등장 애니메이션은 "이전에 비어있다 → 카드 생김"일 때만(`.no-anim` 클래스로 최초 로드 억제).
+  - `_homeSig` = 홈 뷰, `_calSig` = 캘린더. (구 `_upSig`/#upnext는 홈 뷰로 흡수되어 폐기)
 
 ## 4. 뷰 전환 · 캘린더 월 이동 스와이프 — `initCalSwipe()`
 
 손가락을 **실시간으로 따라 움직이는** 인터랙티브 드래그(아이폰 페이지 전환 느낌).
-`#viewRoot`에 touch 리스너, `#upnext`는 `#viewRoot` 밖이라 안 잡힘(가로 스크롤 유지).
+`#viewRoot`에 touch 리스너(헤더·검색창은 밖이라 안 잡힘). 순서 `SWIPE_VIEWS=['home','calendar','tile','list']`,
+하단 내비는 **플로팅 독**(#dock: 홈·캘린더·전체·설정, '전체'=tile·list 공용 활성). 추가는 헤더 ＋ → addOverlay 시트.
 
 동작 분기(첫 가로 이동에서 결정):
 - **`.cal-grid` 안 + 캘린더 뷰** → 월 이동. 인접 달을 `calHTMLFor(y,m)`로 렌더한 pane 슬라이드.

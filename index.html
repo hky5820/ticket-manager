@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta id="metaTheme" name="theme-color" content="#fafafa">
+<meta id="metaTheme" name="theme-color" content="#f4f4f6">
 <title>티켓 보관함</title>
 <script>
   // 첫 페인트 전에 테마 지정(깜빡임 방지)
-  (function(){try{var s=localStorage.getItem('tm_theme')||'auto';var d=s==='dark'||(s!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.getElementById('metaTheme');if(m)m.content=d?'#111113':'#fafafa';}catch(e){}})();
+  (function(){try{var s=localStorage.getItem('tm_theme')||'auto';var d=s==='dark'||(s!=='light'&&matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');var m=document.getElementById('metaTheme');if(m)m.content=d?'#0d0e12':'#f4f4f6';}catch(e){}})();
 </script>
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="mobile-web-app-capable" content="yes">
@@ -18,13 +18,13 @@
 <link rel="icon" type="image/png" href="icon-192.png">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  /* ===== 디자인 토큰: Airbnb 언어 — 흰 캔버스 + Rausch 단일 포인트 + 소프트 섀도우 ===== */
+  /* ===== 디자인 토큰: 다크 우선 "티켓 패스" 언어 — 소프트 그레이 캔버스 + 흰 카드 + 블루 포인트 ===== */
   :root{
-    --canvas:#ffffff; --page:#ffffff; --card:#ffffff; --chip:#f7f7f7;
-    --ink:#222222; --ink-soft:#3f3f3f; --ink-faint:#767676;
-    --line:#dddddd; --line-soft:#ebebeb;
+    --canvas:#f4f4f6; --page:#f4f4f6; --card:#ffffff; --chip:#ececef;
+    --ink:#1a1c22; --ink-soft:#4c4e56; --ink-faint:#8e9096;
+    --line:#e2e3e8; --line-soft:#ebebee;
     /* accent = 블루. 모든 CTA·활성·강조를 담당하는 단일 브랜드색 */
-    --accent:#2f80ed; --accent-ink:#1b63d6; --accent-soft:#eaf2fe; --accent-bd:#2f80ed;
+    --accent:#2E63F0; --accent-ink:#1b4fd6; --accent-soft:#e8eefe; --accent-bd:#2E63F0;
     --partial:#ec4899; --partial-soft:#fdeaf3; /* 일부 양도 구분색(핑크 — 파랑과 대비) */
     --danger:#c13515; --danger-ink:#b32505; --danger-soft:#fbeceb; --danger-bd:#f3ccc4;
     --ok:#008a05;
@@ -44,22 +44,22 @@
   html,body{margin:0;padding:0}
   body{font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,-apple-system,sans-serif;
     background:var(--page);color:var(--ink);-webkit-font-smoothing:antialiased;line-height:1.4;min-height:100vh;position:relative}
-  .wrap{max-width:680px;margin:0 auto;padding:12px 12px 96px;overflow-x:clip;position:relative} /* 뷰 전환 슬라이드 시 가로 스크롤바 방지 + 드래그 pane 기준 */
+  .wrap{max-width:680px;margin:0 auto;padding:12px 12px calc(104px + env(safe-area-inset-bottom));overflow-x:clip;position:relative} /* 뷰 전환 슬라이드 시 가로 스크롤바 방지 + 드래그 pane 기준. 하단 여백=플로팅 독 높이 */
   #viewRoot{touch-action:pan-y} /* 세로는 브라우저 스크롤, 가로는 JS가 뷰 전환 드래그로 처리 */
   body.swiping #viewRoot,body.swiping .view-pane{will-change:transform;backface-visibility:hidden} /* 스와이프 동안만 GPU 레이어로 승격(평소엔 메모리 절약) */
   .view-pane{z-index:2;contain:content} /* 스와이프 중 인입되는 뷰(현재 뷰 위로 슬라이드) */
   body.swiping *{animation-play-state:paused!important} /* 슬라이드 중 애니메이션 정지 → 끊김 방지 */
 
-  /* top bar */
-  .topbar{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:10px}
-  .topbar-right{display:flex;align-items:center;gap:8px}
-  .seg{display:inline-flex;background:var(--chip);border:1px solid var(--line);border-radius:12px;padding:3px}
-  .seg button{border:none;background:transparent;border-radius:9px;padding:7px 12px;font-size:13px;font-weight:700;color:var(--ink-soft);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:5px;transition:.15s}
-  .seg button.on{background:var(--card);color:var(--accent-ink);box-shadow:var(--shadow-sm)}
-  .pill{border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 11px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:inherit;color:var(--ink-soft);display:flex;align-items:center;gap:5px;white-space:nowrap}
-  .pill .dot{width:7px;height:7px;border-radius:99px;background:var(--ink-faint)}
-  .pill.on{color:var(--accent-ink);border-color:var(--accent-bd);background:var(--accent-soft)}
-  .pill.on .dot{background:var(--ok)}
+  /* app header — 워드마크 + 우측 아이콘(추가·검색·동기화) */
+  .apphd{display:flex;align-items:center;justify-content:space-between;margin:4px 2px 10px}
+  .wm{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;letter-spacing:-.3px;color:var(--ink)}
+  .wm i{width:22px;height:22px;border-radius:7px;background:var(--ink);position:relative;flex:none}
+  .wm i::after{content:"";position:absolute;left:4.5px;top:6.5px;width:13px;height:9px;border-radius:2.5px;background:var(--page);transform:rotate(-14deg)}
+  .hd-ic{display:flex;gap:4px;align-items:center}
+  .hicon{border:none;background:transparent;color:var(--ink-soft);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;padding:0}
+  .hicon:active{background:var(--chip)}
+  .hicon .dot{width:8px;height:8px;border-radius:99px;background:var(--ink-faint)}
+  .hicon.on .dot{background:#34c759;box-shadow:0 0 6px rgba(52,199,89,.55)}
   .icon-btn{border:1px solid var(--line);background:var(--card);border-radius:999px;width:32px;height:32px;flex:0 0 auto;font-size:14px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center}
   .icon-btn.on{background:var(--danger-soft);border-color:var(--danger-bd);color:var(--danger-ink)}
 
@@ -88,8 +88,9 @@
   .pend-item-btns{display:flex;gap:8px}
   .pend-item-btns .sb-btn{flex:1;text-align:center}
 
-  /* search */
-  .search{position:relative;margin-bottom:12px}
+  /* search — 기본 숨김, 헤더 돋보기로 토글 */
+  .search{position:relative;margin-bottom:12px;display:none}
+  .search.on{display:block}
   .search input{width:100%;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:10px 12px 10px 36px;font-size:14px;color:var(--ink);outline:none}
   .search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
   .search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--ink-faint)}
@@ -186,21 +187,53 @@
   .lrow.is-transfer .nm{color:var(--warn-ink)}
   .ldot{flex:none;width:9px;height:9px;border-radius:99px}
 
-  /* 다가오는 공연 요약 */
-  .upnext{margin-bottom:14px}
-  .up-h{font-size:13px;font-weight:800;color:var(--ink);margin:0 2px 9px;display:flex;align-items:center;gap:6px}
-  .up-h span{font-size:11px;font-weight:700;color:var(--ink-faint);background:var(--chip);border:1px solid var(--line);padding:1px 8px;border-radius:999px}
-  .up-scroll{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;scroll-snap-type:x proximity}
-  .up-scroll::-webkit-scrollbar{display:none}
-  .up-card{position:relative;flex:0 0 auto;width:126px;height:92px;scroll-snap-align:start;background:var(--card);border:1px solid var(--card-bd);border-radius:16px;padding:8px 10px;box-shadow:var(--card-sh);cursor:pointer;display:flex;flex-direction:column;gap:3px;overflow:hidden;animation:upIn .4s cubic-bezier(.2,.85,.25,1) both}
-  .up-card:active{transform:scale(.97)}
-  @keyframes upIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  .upnext.no-anim .up-card{animation:none} /* 최초 로드 등 등장 애니메이션 생략 */
-  .up-card.is-soon{border-color:var(--accent-bd)}
-  .up-dday{align-self:flex-start;font-size:10px;font-weight:800;color:#fff;background:var(--accent);padding:1px 7px;border-radius:999px}
-  .up-dday.soon{background:#f97316}
-  .up-name{font-size:12px;font-weight:800;line-height:1.25;word-break:keep-all;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-  .up-date{font-size:10.5px;color:var(--accent-ink);font-weight:700;margin-top:auto}
+  /* ===== 홈 뷰: 히어로 티켓 패스 + 다가오는 티켓 리스트 ===== */
+  .hsec{display:flex;align-items:baseline;justify-content:space-between;font-size:13.5px;font-weight:700;color:var(--ink);margin:15px 2px 9px}
+  .hsec em{font-style:normal;font-size:11px;color:var(--ink-faint);font-weight:600}
+  .home>.hsec:first-child{margin-top:2px}
+  /* 히어로 = 실물 티켓 패스(절취선·노치·바코드). 다크에서도 항상 흰 카드 */
+  .pass{background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s}
+  .pass:active{transform:scale(.99)}
+  :root[data-theme="dark"] .pass{border-color:transparent;box-shadow:0 12px 28px -12px rgba(0,0,0,.7)}
+  .p-top{padding:13px 15px 12px}
+  .p-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+  .vch{display:inline-flex;align-items:center;gap:6px;font-size:10.5px;font-weight:700;color:#8b8d95}
+  .vch i{width:9px;height:9px;border-radius:3px;flex:none}
+  .ddy{font-size:11px;font-weight:800;background:#191b23;color:#fff;border-radius:7px;padding:2px 9px;white-space:nowrap}
+  .p-name{font-size:18px;font-weight:800;letter-spacing:-.4px;line-height:1.25;word-break:keep-all}
+  .p-meta{font-family:ui-monospace,"SF Mono",Consolas,monospace;font-size:11px;color:#8b8d95;margin-top:4px}
+  .p-perf{height:0;border-top:2px dashed #e6e6ea;margin:0 10px;position:relative}
+  .p-perf i{position:absolute;top:-8px;width:16px;height:16px;border-radius:50%;background:var(--page)}
+  .p-perf i.l{left:-18px}.p-perf i.r{right:-18px}
+  .p-bot{padding:11px 15px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .p-seat{font-size:12px;font-weight:600;color:#4c4e56;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .p-seat small{display:block;font-size:10.5px;color:#8b8d95;font-weight:600;margin-top:2px}
+  .p-code{flex:none;text-align:right}
+  .p-code .bc{display:inline-block;width:78px;height:22px;border-radius:2px;background:repeating-linear-gradient(90deg,#191b23 0 1.5px,transparent 1.5px 3.5px,#191b23 3.5px 6.5px,transparent 6.5px 8px,#191b23 8px 9px,transparent 9px 12px)}
+  .p-code small{display:block;font-family:ui-monospace,Consolas,monospace;font-size:8.5px;color:#b0b2b9;letter-spacing:.06em;margin-top:3px}
+  .pass.empty-pass{cursor:default;text-align:center}
+  .pass.empty-pass .p-top{padding:26px 14px}
+  /* 홈: 다가오는 티켓 리스트(한 카드 안에 행으로) */
+  .hlist{background:var(--card);border:1px solid var(--card-bd);border-radius:16px;overflow:hidden;box-shadow:var(--card-sh)}
+  .hrow{display:flex;align-items:center;gap:11px;padding:11px 13px;cursor:pointer;-webkit-touch-callout:none;user-select:none}
+  .hrow+.hrow{border-top:1px solid var(--line-soft)}
+  .hrow:active{background:var(--chip)}
+  .hrow.is-transfer{opacity:.45;filter:grayscale(.7)}
+  .h-d{flex:none;width:47px;line-height:1.25}
+  .h-d b{display:block;font-size:13.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .h-d span{font-size:9.5px;color:var(--ink-faint);font-weight:700}
+  .h-b{flex:1;min-width:0}
+  .h-n{display:flex;align-items:center;gap:6px;font-size:13.5px;font-weight:700;letter-spacing:-.2px}
+  .h-n i{width:8px;height:8px;border-radius:3px;flex:none}
+  .h-n span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .h-n .xtag{flex:none;font-style:normal}
+  .h-s{font-size:10.5px;color:var(--ink-faint);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .h-r{flex:none;text-align:right}
+  .h-r b{display:block;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+  .h-r span{font-size:9.5px;color:var(--ink-faint);font-weight:600}
+  .hnone{font-size:12px;color:var(--ink-faint);text-align:center;padding:18px 0;background:var(--card);border:1px dashed var(--line);border-radius:14px}
+  .hall{width:100%;border:none;background:transparent;color:var(--ink-faint);font-size:12.5px;font-weight:700;font-family:inherit;padding:14px 0 2px;cursor:pointer}
+  .hall:active{color:var(--ink)}
 
   /* calendar */
   .cal{background:var(--card);border:1px solid var(--card-bd);border-radius:18px;padding:12px 10px;box-shadow:var(--card-sh)}
@@ -239,26 +272,15 @@
   .spinner{width:30px;height:30px;border:3px solid var(--line);border-top-color:var(--accent);border-radius:50%;margin:0 auto 12px;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* util + fab */
+  /* util */
   .util{display:flex;gap:8px;justify-content:center;margin-top:20px;flex-wrap:wrap}
   .util button{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);border-radius:10px;padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
-  /* 추가 스피드다이얼(부채꼴) */
-  .fab-wrap{position:fixed;left:50%;transform:translateX(-50%);bottom:20px;z-index:41}
-  .fab{position:relative;z-index:2;background:var(--accent);color:#fff;border:none;padding:13px 24px;border-radius:999px;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px -8px rgba(79,70,229,.5);display:flex;align-items:center;gap:7px;font-family:inherit}
-  .fab:active{transform:scale(.96)}
-  .fab-plus{transition:transform .3s cubic-bezier(.2,.9,.3,1.3)}
-  .fab-wrap.open .fab-plus{transform:rotate(135deg)}
-  .fab-item{position:absolute;left:50%;bottom:5px;margin-left:-28px;z-index:1;width:56px;height:56px;border-radius:50%;border:none;cursor:pointer;color:#fff;font-family:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px) scale(.35);pointer-events:none;transition:transform .32s cubic-bezier(.2,.9,.3,1.45),opacity .2s}
-  .fab-item .fi-ic{font-size:21px;line-height:1}
-  .fab-item .fi-lb{font-size:9.5px;font-weight:800;letter-spacing:-.2px}
-  .fab-item.manual{background:var(--accent)}
-  .fab-item.photo{background:var(--warn-strong)}
-  .fab-wrap.open .fab-item{opacity:1;pointer-events:auto}
-  .fab-wrap.open .fab-item.manual{transform:translate(-54px,-66px) scale(1)}
-  .fab-wrap.open .fab-item.photo{transform:translate(54px,-66px) scale(1);transition-delay:.05s}
-  .fab-item:active{filter:brightness(.95)}
-  .fab-scrim{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
-  .fab-scrim.on{opacity:1;pointer-events:auto}
+  /* ===== 플로팅 독 (가운데): 홈·캘린더·전체·설정. 라이트/다크 모두 다크 유리 ===== */
+  .dock{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(14px + env(safe-area-inset-bottom));z-index:41;display:flex;align-items:center;gap:2px;padding:8px 10px;border-radius:999px;background:rgba(24,25,31,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);box-shadow:0 14px 30px -12px rgba(0,0,0,.55)}
+  .dock .dtab{border:none;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:9.5px;font-weight:600;width:56px;padding:2px 0;color:#83858e;cursor:pointer;font-family:inherit}
+  .dock .dtab svg{stroke:currentColor}
+  .dock .dtab.on{color:#fff}
+  .dock .dtab:active{transform:scale(.94)}
 
   .select-bar{position:fixed;left:0;right:0;bottom:0;z-index:45;display:none;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line);box-shadow:0 -8px 24px -12px rgba(0,0,0,.15)}
   .select-bar.on{display:flex}
@@ -268,9 +290,7 @@
   .sb-btn:active{transform:scale(.96);background:var(--chip)}
   .sb-btn.danger{background:var(--danger-soft);color:var(--danger-ink);border:1px solid var(--danger-bd);font-weight:800}
   .sb-btn.danger:active{background:#fee2e2}
-  body.selecting .fab-wrap,body.selecting .fab-settings{display:none}
-  .fab-settings{position:fixed;right:16px;bottom:24px;z-index:41;width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink-soft);font-size:20px;cursor:pointer;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center}
-  .fab-settings:active{transform:scale(.94)}
+  body.selecting .dock{display:none}
   .tk-check{position:absolute;top:10px;left:10px;width:20px;height:20px;border-radius:50%;border:2px solid var(--line);background:var(--card);z-index:2}
   .tk-check.on{background:var(--accent);border-color:var(--accent)}
   .tk-check.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:900}
@@ -408,16 +428,16 @@
   .btn-danger:active{background:#fee2e2}
   .btn-primary{width:100%;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;background:var(--accent);color:#fff}
 
-  .toast{position:fixed;bottom:84px;left:50%;transform:translateX(-50%);z-index:60;background:#18181b;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);z-index:60;background:#18181b;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;max-width:86vw;text-align:center}
   .toast.on{opacity:1;transform:translateX(-50%) translateY(-6px)}
 
-  /* ===== 다크모드 (data-theme='dark') — Rausch 유지, 다크 캔버스 ===== */
+  /* ===== 다크모드 (data-theme='dark') — 시안 ②-R의 딥 다크 캔버스 ===== */
   :root[data-theme="dark"]{
-    --canvas:#181819; --page:#181819; --card:#222224; --chip:#2a2a2c;
-    --ink:#f2f2f2; --ink-soft:#c4c4c6; --ink-faint:#8a8a8e;
-    --line:#38383b; --line-soft:#333335;
+    --canvas:#0d0e12; --page:#0d0e12; --card:#17181d; --chip:#1f2026;
+    --ink:#f2f2f0; --ink-soft:#c6c7cd; --ink-faint:#8e9096;
+    --line:#26272d; --line-soft:#222329;
     /* accent = 블루(다크에서 약간 밝게) */
-    --accent:#4e9bff; --accent-ink:#7db4ff; --accent-soft:rgba(78,155,255,.16); --accent-bd:#4e9bff;
+    --accent:#4e8cff; --accent-ink:#7dabff; --accent-soft:rgba(78,140,255,.16); --accent-bd:#4e8cff;
     --partial:#f472b6; --partial-soft:rgba(244,114,182,.16); /* 일부 양도 구분색(핑크) */
     --danger:#ff6f57; --danger-ink:#ff8f7c; --danger-soft:rgba(255,111,87,.14); --danger-bd:rgba(255,111,87,.4);
     --ok:#4caf50;
@@ -434,13 +454,12 @@
   :root[data-theme="dark"] .lrow.is-transfer .nm,:root[data-theme="dark"] .tk.is-transfer .tk-name{color:var(--ink)}
   :root[data-theme="dark"] .cal-wd.sat,:root[data-theme="dark"] .cal-cell.sat .cal-day{color:#60a5fa}
   :root[data-theme="dark"] .cal-wd.sun,:root[data-theme="dark"] .cal-cell.sun .cal-day{color:#f87171}
-  :root[data-theme="dark"] .cal-cell{background:#141416}
+  :root[data-theme="dark"] .cal-cell{background:#121318}
   :root[data-theme="dark"] .badge{color:#111}
   :root[data-theme="dark"] .switch .track:before{background:#e4e4e7}
   :root[data-theme="dark"] .statusbox.good{background:rgba(52,211,153,.12);border-color:rgba(52,211,153,.3);color:#6ee7b7}
   :root[data-theme="dark"] .sb-btn.danger:active,:root[data-theme="dark"] .btn-danger:active{background:rgba(248,113,113,.2)}
   :root[data-theme="dark"] .toast{background:#f4f4f5;color:#18181b}
-  :root[data-theme="dark"] .fab{box-shadow:0 8px 20px -8px rgba(0,0,0,.6)}
 
   /* 테마 세그먼트(설정) */
   .theme-seg{display:flex;gap:6px;background:var(--chip);border:1px solid var(--line);border-radius:50px;padding:4px;margin-bottom:10px}
@@ -450,22 +469,15 @@
   /* ============================================================
      Figma 언어 오버라이드 — 흑백 코어 · 알약 · 모노 라벨 · 파스텔 블록
      (구조만 여기서 재정의, 색은 위 토큰이 담당) ============================================================ */
-  /* 뷰 탭: 라운드 사각 세그먼트, 선택=잉크 */
-  .seg{background:transparent;border:none;padding:0;gap:6px;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
-  .seg button{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 15px;color:var(--ink);font-weight:500}
-  .seg button.on{background:var(--accent);color:var(--canvas);box-shadow:none}
   /* accent 위 글자는 canvas로 — 다크 반전 시 자동 대비 */
-  .fab,.btn-primary,.save-row .save,.vadd button,.fab-item.manual,.fab-item.photo{color:var(--canvas)}
-  .up-dday,.tk-ribbon{color:var(--canvas)}
+  .btn-primary,.save-row .save,.vadd button{color:var(--canvas)}
+  .tk-ribbon{color:var(--canvas)}
   .tk-check.on::after{color:var(--canvas)}
-  .fab,.fab-item.manual,.fab-item.photo{background:var(--accent)}
-  .fab{box-shadow:var(--shadow)}
   /* 양도/취소 표시 = 티켓 '스탬프' (아웃라인 뱃지). 양도표임을 바로 알면서 멋스럽게 */
   .xtag{border:1.2px solid var(--accent);background:var(--accent-soft);color:var(--accent-ink);font-size:9px;font-weight:800;padding:1.5px 6px;border-radius:6px;letter-spacing:0;white-space:nowrap}
   .xtag.cancel{border-color:var(--cancel-mark);background:var(--chip);color:var(--ink-faint)}
   .xtag.partial{border-color:var(--partial);border-style:dashed;background:var(--partial-soft);color:var(--partial)}
   .badge{color:var(--ink)}
-  .up-dday.soon{background:var(--coral);color:#fff}
   /* 타일: 중앙에 반투명 '스탬프' 워터마크(내용은 비치되 양도 티켓임을 표시) */
   .tk-ribbon{top:50%;left:50%;right:auto;bottom:auto;width:auto;transform:translate(-50%,-50%) rotate(-15deg);
     border:2.5px solid var(--accent);background:transparent;color:var(--accent);border-radius:9px;
@@ -474,15 +486,14 @@
   .tk-ribbon.cancel{border-color:var(--cancel-mark);color:var(--cancel-mark)}
   .tk-ribbon.partial{border-color:var(--partial);border-style:dashed;color:var(--partial);opacity:.42} /* 일부 양도=핑크 점선(파랑과 대비로 눈에 띔) */
   /* 굵기 절제(Airtable: bold-for-its-own-sake 지양, 500~600) */
-  .tk-name,.lname,.up-name,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
-  .stats b,.up-h,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
-  .seg button,.pill,.btn-primary,.save-row button,.up-dday,.tk-qty,.tk-vendor{font-weight:500}
+  .tk-name,.lname,.tk-when,.tk-price,.cal-day,.cal-head .mon,.month-head,
+  .stats b,.lsub b,.ldate b,.pend-st,.act-title,.sheet h2,.mtitle{font-weight:600}
+  .btn-primary,.save-row button,.tk-qty,.tk-vendor{font-weight:500}
   /* 좌석줄: pill 배경 제거하고 담백한 캡션으로 */
   .tk-seatline{background:transparent;padding:0;height:auto;font-weight:400;color:var(--ink-soft);letter-spacing:0}
   /* 카드 라운드(Airbnb: 부드러운 14~16px) */
   .tk{border-radius:16px}
   .lrow{border-radius:14px}
-  .up-card{border-radius:16px}
   .cal{border-radius:16px}
   /* 양도 = 흰 카드 유지 + Rausch 리본·가격·스트라이프로만 표시(과한 색면 지양) */
   .tk.is-transfer{background:var(--card)}
@@ -497,14 +508,6 @@
   /* 일부 양도 카드는 취소 좌석이 있어도 정상 흰색으로(일반 티켓처럼) */
   .tk.is-cancel:has(.tk-ribbon.partial){background:var(--card)}
   .lrow.is-cancel:has(.xtag.partial){background:var(--card)}
-  /* 다가오는 공연: 시그니처 카드(코랄·피치·민트 순환). 첫 카드=코랄(흰 글자) */
-  /* 다가오는 공연: 첫 카드만 하이라이트, 나머지는 색 통일 */
-  #upnext .up-card{background:var(--chip)!important}
-  #upnext .up-card:first-child{background:var(--accent)!important}
-  #upnext .up-card:first-child .up-name,#upnext .up-card:first-child .up-date{color:#fff}
-  #upnext .up-card:first-child .up-dday{background:#fff;color:var(--accent-ink)}
-  #upnext .up-card:not(:first-child) .up-dday{background:var(--accent-soft);color:var(--accent-ink)}
-  .up-card::after{display:none} /* 잔여 광택 제거 */
   /* 예매처 식별색: 점 → 라운드 사각 스와치 */
   .tk-vendor i{border-radius:3px;width:9px;height:9px}
   .ldot{border-radius:3px}
@@ -570,24 +573,23 @@
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar">
-    <div class="seg" id="viewSeg">
-      <button data-v="calendar" onclick="setView('calendar')">캘린더</button>
-      <button data-v="tile" onclick="setView('tile')">타일</button>
-      <button data-v="list" onclick="setView('list')">리스트</button>
+  <div class="apphd">
+    <div class="wm"><i></i>티켓 보관함</div>
+    <div class="hd-ic">
+      <button class="hicon" onclick="openAdd()" title="티켓 추가"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+      <button class="hicon" onclick="toggleSearch()" title="검색"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></button>
+      <button class="hicon" id="syncPill" onclick="openSync()" title="동기화 상태"><span class="dot"></span></button>
     </div>
-    <button class="pill" id="syncPill" onclick="openSync()"><span class="dot"></span><span id="syncPillTxt">동기화</span></button>
   </div>
 
   <div class="stats" id="stats"></div>
   <div id="pending"></div>
 
-  <div class="search">
+  <div class="search" id="searchWrap">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
     <input id="search" type="text" placeholder="공연명 · 예매처 검색" oninput="render()">
   </div>
 
-  <div id="upnext"></div>
   <div id="viewRoot"></div>
 </div>
 
@@ -600,16 +602,24 @@
   </span>
 </div>
 
-<div class="fab-scrim" id="fabScrim" onclick="closeAddMenu()"></div>
-<div class="fab-wrap" id="fabWrap">
-  <button class="fab-item manual" onclick="fabManual()"><span class="fi-ic">✏️</span><span class="fi-lb">수기</span></button>
-  <button class="fab-item photo" onclick="fabPhoto()"><span class="fi-ic">📷</span><span class="fi-lb">사진</span></button>
-  <button class="fab" id="fabAdd" onclick="toggleAddMenu()">
-    <svg class="fab-plus" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    추가
-  </button>
+<!-- 플로팅 독 (가운데): 홈·캘린더·전체·설정 -->
+<div class="dock" id="dock">
+  <button class="dtab" data-v="home" onclick="setView('home')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>홈</button>
+  <button class="dtab" data-v="calendar" onclick="setView('calendar')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</button>
+  <button class="dtab" data-v="all" onclick="setView('tile')"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>전체</button>
+  <button class="dtab" onclick="openSettings()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2.1" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9 17 7M7 17l-2.1 2.1"/></svg>설정</button>
 </div>
-<button class="fab-settings" id="settingsBtn" onclick="openSettings()" title="설정">⚙️</button>
+
+<!-- 티켓 추가 시트 (헤더 + 버튼) -->
+<div class="overlay" id="addOverlay" onclick="if(event.target===this)closeAdd()">
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="act-title">티켓 추가</div>
+    <button class="act-btn" onclick="addPhoto()">📷 캡처 올리기 (AI 자동 인식)</button>
+    <button class="act-btn" onclick="addManual()">✏️ 수기로 입력</button>
+    <button class="act-btn cancel" onclick="closeAdd()">취소</button>
+  </div>
+</div>
 <input type="file" id="aiFile" accept="image/*" multiple style="display:none" onchange="aiUpload(event)">
 <input type="file" id="pendReplaceFile" accept="image/*" style="display:none" onchange="pendReplaceFile(event)">
 
@@ -872,7 +882,7 @@ const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publis
 
 let tickets=load(LS_TICKETS,[]);
 let pendings=[];
-let _upSig=null; // 다가오는 공연 이전 렌더 내용 시그니처(DOM 밖 보관) — null=아직 안 그림, ''=비어있음
+let _homeSig=null; // 홈 뷰 이전 렌더 시그니처(DOM 밖 보관) — 25초 새로고침마다 내용이 같으면 재렌더 안 함
 let _calSig=null; // 캘린더 이전 렌더 시그니처. root.innerHTML은 브라우저가 재직렬화(#hex→rgb 등)해 원본과 안 맞으므로 DOM 대신 문자열로 비교
 let dataVer=0; // 로컬 티켓 변경(저장/삭제/복제/import)마다 증가. 조회 도중 로컬 변경이 나면 오래된 새로고침 스냅샷이 덮어쓰지 않도록 하는 가드용
 let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
@@ -880,7 +890,8 @@ let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
 let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
 let vcolors=load(LS_VCOLORS,{});
 let gradeTargetBtn=null;
-let view=load(LS_VIEW,'tile');
+let view=load(LS_VIEW,'home');
+if(!['home','calendar','tile','list'].includes(view))view='home';
 let tileCols=load('tm_tilecols',2); // 타일 뷰 한 행 개수(핀치로 1~4 조절)
 function applyTileCols(){ tileCols=Math.max(1,Math.min(4,tileCols)); const n=Math.round(tileCols); document.body.dataset.cols=n; document.body.style.setProperty('--tile-cols',n); } // 값은 소수로 누적 유지(wheel), 표시만 반올림
 let editingId=null, formVendor='', formPlatform='', editCanceled=[];
@@ -893,11 +904,6 @@ function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??d
 function saveLocal(){localStorage.setItem(LS_TICKETS,JSON.stringify(tickets));localStorage.setItem(LS_VENDORS,JSON.stringify(vendors));}
 function getCfg(){const c=load(LS_CFG,null);return (c&&c.url&&c.key)?c:{...BUILTIN_CFG};}
 function colorFor(v){v=v||'';if(vcolors[v])return vcolors[v];if(VENDOR_COLORS[v])return VENDOR_COLORS[v];let h=0;for(let i=0;i<v.length;i++)h=(h*31+v.charCodeAt(i))>>>0;return PALETTE[h%PALETTE.length];}
-function hexA(hex,a){const m=/^#?([0-9a-f]{6})$/i.exec(String(hex||''));if(!m)return `rgba(108,140,255,${a})`;const n=parseInt(m[1],16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
-// 예매처색 플랫 틴트: 카드 표면 위에 은은한 단색 한 겹(가독성 우선)
-function tintBg(c,strong){const dark=document.documentElement.getAttribute('data-theme')==='dark';
-  const a=dark?(strong?.16:.10):(strong?.10:.06);
-  return `linear-gradient(${hexA(c,a)},${hexA(c,a)}),var(--card)`;}
 function won(n){return (Number(n)||0).toLocaleString('ko-KR');}
 function money(v){v=Math.round(v);return (v<0?'−₩':'₩')+won(Math.abs(v));} // 음수는 −₩ 로
 function signMoney(v){v=Math.round(v);return (v>0?'+₩':v<0?'−₩':'₩')+won(Math.abs(v));} // 양도차익용: +/− 부호 표시
@@ -1044,14 +1050,15 @@ async function pendReplaceFile(e){
   }catch(err){ toast('교체 실패: '+(err.message||err)); }
 }
 function updateSyncPill(){
-  const pill=document.getElementById('syncPill'), txt=document.getElementById('syncPillTxt');
-  if(mode==='cloud'){pill.classList.add('on');txt.textContent='동기화';}else{pill.classList.remove('on');txt.textContent='오프라인';}
+  const pill=document.getElementById('syncPill'); if(!pill)return;
+  pill.classList.toggle('on',mode==='cloud');
+  pill.title=mode==='cloud'?'동기화 중 (클라우드 자동 저장)':'오프라인 (이 기기에 임시 저장)';
 }
 
 /* ===== render ===== */
 let selectMode=false, selectedIds=new Set();
 function toggleSelectMode(){
-  if(view==='calendar'){ toast('캘린더 보기에서는 사용할 수 없어요'); return; }
+  if(view==='calendar'||view==='home'){ toast('전체 탭에서 사용할 수 있어요'); return; }
   selectMode=!selectMode; selectedIds.clear(); render();
 }
 function cancelSelectMode(){ selectMode=false; selectedIds.clear(); render(); }
@@ -1071,7 +1078,6 @@ function renderSelectBar(){
   const bar=document.getElementById('selectBar'); if(!bar)return;
   bar.classList.toggle('on',selectMode);
   document.body.classList.toggle('selecting',selectMode);
-  const sb2=document.getElementById('settingsBtn'); if(sb2)sb2.classList.toggle('on',selectMode);
   if(!selectMode)return;
   document.getElementById('selectCount').textContent=`${selectedIds.size}개 선택`;
   const ids=byDate(filtered()).map(t=>String(t.id));
@@ -1093,7 +1099,7 @@ async function bulkDelete(){
 function setView(v){
   if(v===view)return; // 같은 뷰면 무시
   const dir=SWIPE_VIEWS.indexOf(v)>SWIPE_VIEWS.indexOf(view)?1:-1; // 오른쪽 뷰=+1(왼쪽으로 밀림)
-  view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));if(v==='calendar'){selectMode=false;selectedIds.clear();}
+  view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));if(v==='calendar'||v==='home'){selectMode=false;selectedIds.clear();}
   animateViewSwitch(dir);
 }
 // 아이폰 화면 전환처럼: 현재 뷰를 방향대로 밀어 내보내고, 새 뷰를 반대편에서 밀어 들어오게
@@ -1124,8 +1130,8 @@ function filtered(){
 function byDate(a){return a.slice().sort((x,y)=>{const dx=x.date||'9999',dy=y.date||'9999';if(dx!==dy)return dx<dy?-1:1;return (x.time||'')<(y.time||'')?-1:1;});}
 
 function render(){
-  // seg
-  document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('on',b.dataset.v===view));
+  // dock 활성 표시('전체'는 타일·리스트 공용)
+  document.querySelectorAll('#dock .dtab[data-v]').forEach(b=>{const v=b.dataset.v;b.classList.toggle('on',v===view||(v==='all'&&(view==='tile'||view==='list')));});
   // stats
   const acc=tickets.reduce((a,t)=>{const r=ticketAcct(t);a.held+=r.held;a.spend+=r.spend;a.profit+=r.profit;return a;},{held:0,spend:0,profit:0});
   const prof=Math.round(acc.profit);
@@ -1137,16 +1143,19 @@ function render(){
 
   renderPending();
   renderSelectBar();
-  renderUpcoming();
 
   const root=document.getElementById('viewRoot');
-  if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;_calSig=null;return;}
-  if(view==='calendar'){ const html=viewHTML('calendar'); if(_calSig!==html){root.innerHTML=html;_calSig=html;} return; } // 내용 그대로면 재렌더 안 함(25초 리셋 깜빡임 방지). root.innerHTML은 브라우저가 재직렬화해 원본과 안 맞으므로 시그니처로 비교
+  if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;_calSig=null;_homeSig=null;return;}
+  // 홈·캘린더: 내용 그대로면 재렌더 안 함(25초 리셋 깜빡임 방지). root.innerHTML은 브라우저가 재직렬화해 원본과 안 맞으므로 시그니처로 비교
+  if(view==='home'){ const html=viewHTML('home'); if(_homeSig!==html){root.innerHTML=html;_homeSig=html;} _calSig=null; return; }
+  _homeSig=null;
+  if(view==='calendar'){ const html=viewHTML('calendar'); if(_calSig!==html){root.innerHTML=html;_calSig=html;} return; }
   _calSig=null; // 캘린더가 아닌 뷰 → 시그니처 리셋
   root.innerHTML=viewHTML(view);
 }
 // 특정 뷰의 #viewRoot 내용 HTML(전역 view를 안 바꾸고 얻음 — 스와이프 드래그 pane 렌더용)
 function viewHTML(v){
+  if(v==='home') return homeHTML();
   if(v==='calendar') return renderCalendar();
   const a=byDate(filtered());
   if(a.length===0) return emptyHTML();
@@ -1155,34 +1164,54 @@ function viewHTML(v){
   if(v==='list') return `<div class="list">${groups.map(g=>head(g)+g.items.map(listRow).join('')).join('')}</div>`;
   return `<div class="grouped">${groups.map(g=>head(g)+`<div class="tiles">${g.items.map(tileCard).join('')}</div>`).join('')}</div>`;
 }
-function emptyHTML(){const has=tickets.length>0;return `<div class="empty"><div class="ico">🎭</div><p><b>${has?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${has?'다른 키워드로 찾아보세요':'아래 + 버튼으로 추가해 보세요'}</p></div>`;}
+function emptyHTML(){const has=tickets.length>0;return `<div class="empty"><div class="ico">🎭</div><p><b>${has?'검색 결과가 없어요':'아직 등록된 티켓이 없어요'}</b></p><p>${has?'다른 키워드로 찾아보세요':'오른쪽 위 + 버튼으로 추가해 보세요'}</p></div>`;}
 
 function ddayInfo(dateStr,today){
   const a=new Date(dateStr+'T00:00:00'), b=new Date(today+'T00:00:00');
   const diff=Math.round((a-b)/86400000);
   return {diff, label: diff===0?'오늘':diff>0?'D-'+diff:'지남', soon: diff>=0&&diff<=7};
 }
-// 이번 달 + 다음 달, 오늘 이후 공연 요약(가로 스크롤)
-function renderUpcoming(){
-  const el=document.getElementById('upnext'); if(!el)return;
-  const q=(document.getElementById('search').value||'').trim();
-  if(q){ el.innerHTML=''; _upSig=''; return; }  // 검색 중엔 숨김(캘린더 포함 모든 뷰에서 표시)
-  const today=ymd(new Date()), now=new Date();
-  const endStr=ymd(new Date(now.getFullYear(), now.getMonth()+2, 0)); // 다음 달 말일
-  const up=tickets.filter(t=>t.date && t.date>=today && t.date<=endStr)
-                  .sort((a,b)=>a.date<b.date?-1:(a.date>b.date?1:(a.time||'')<(b.time||'')?-1:1));
-  if(!up.length){ el.innerHTML=''; _upSig=''; return; }
-  const cards=up.map((t,i)=>{ const dd=ddayInfo(t.date,today); const c=colorFor(t.vendor);
-    return `<div class="up-card${dd.soon?' is-soon':''}" onclick="edit('${t.id}')" style="background:${tintBg(c,true)};animation-delay:${i*55}ms">
-      <span class="up-dday ${dd.soon?'soon':''}">${dd.label}</span>
-      <span class="up-name">${esc(t.name||'공연')}</span>
-      <span class="up-date">${esc(fmtDate(t.date,t.time))}</span>
-    </div>`; }).join('');
-  const html=`<div class="upnext"><div class="up-h">🎭 다가오는 공연 <span>${up.length}건</span></div><div class="up-scroll">${cards}</div></div>`; // 뷰마다 동일 → 뷰 전환 시 재렌더·재애니메이션 안 함
-  if(_upSig===html)return; // 내용 그대로면 다시 안 그림(25초 자동새로고침마다 등장 애니메이션이 재생되며 깜빡이던 문제 방지). DOM 대신 시그니처로 비교해 재렌더 자체를 막음
-  const animate=!!_upSig; // 이미 카드가 떠있던 상태에서 내용이 바뀔 때만 등장 애니메이션. 최초 로드·검색 해제(빈 상태 → 카드)엔 애니메이션 없이 바로 표시
-  _upSig=html;
-  el.innerHTML=animate?html:html.replace('class="upnext','class="upnext no-anim');
+// 홈 뷰: 히어로 티켓 패스(가장 가까운 공연, 완전 양도 제외) + 나머지 다가오는 티켓 리스트
+function homeHTML(){
+  const today=ymd(new Date());
+  const fut=byDate(filtered()).filter(t=>t.date&&t.date>=today);
+  const heroT=fut.find(t=>!(t.transfer&&t.transfer.done)); // 히어로 = 완전 양도 아닌 가장 가까운 공연
+  const rest=fut.filter(t=>t!==heroT);
+  let hero;
+  if(heroT){
+    const dd=ddayInfo(heroT.date,today), c=colorFor(heroT.vendor), sl=seatLine(heroT);
+    hero=`<div class="pass" data-id="${heroT.id}" onclick="edit('${jsAttr(String(heroT.id))}')">
+      <div class="p-top">
+        <div class="p-row"><span class="vch"><i style="background:${c}"></i>${esc(heroT.vendor||'')}</span><span class="ddy">${dd.diff===1?'내일':dd.label}</span></div>
+        <div class="p-name">${esc(heroT.name||'(공연명 없음)')}</div>
+        <div class="p-meta">${esc(fmtDate(heroT.date,heroT.time))}</div>
+      </div>
+      <div class="p-perf"><i class="l"></i><i class="r"></i></div>
+      <div class="p-bot">
+        <div class="p-seat">${esc(sl||'좌석 미입력')}<small>${Number(heroT.qty)||0}매 · ₩${won(heroT.price)}</small></div>
+        <div class="p-code"><span class="bc"></span><small>NO. ${esc(String(heroT.date).replace(/-/g,'')+'-'+String(heroT.id).replace(/[^0-9a-zA-Z]/g,'').slice(-4).toUpperCase())}</small></div>
+      </div>
+    </div>`;
+  }else{
+    hero=`<div class="pass empty-pass"><div class="p-top"><div style="font-size:26px">🎫</div><div class="p-name" style="font-size:14px;margin-top:6px">다가오는 공연이 없어요</div><div class="p-meta" style="font-family:inherit">오른쪽 위 ＋ 로 티켓을 추가해 보세요</div></div></div>`;
+  }
+  const rows=rest.map(t=>{
+    const dd=ddayInfo(t.date,today), c=colorFor(t.vendor), sl=seatLine(t);
+    const p=t.date.split('-').map(Number), dt=new Date(p[0],p[1]-1,p[2]);
+    const xf=t.transfer&&t.transfer.done, pt=!xf&&hasSeatTransfer(t);
+    return `<div class="hrow${xf?' is-transfer':''}" data-id="${t.id}" onclick="edit('${jsAttr(String(t.id))}')">
+      <div class="h-d"><b>${p[1]}.${p[2]}</b><span>${WD[dt.getDay()]} ${dd.label}</span></div>
+      <div class="h-b"><div class="h-n"><i style="background:${c}"></i><span>${esc(t.name||'(공연명 없음)')}</span>${xf?'<span class="xtag">양도완료</span>':pt?'<span class="xtag partial">일부 양도</span>':''}</div>${sl?`<div class="h-s">${esc(sl)}</div>`:''}</div>
+      <div class="h-r"><b>₩${won(t.price)}</b><span>${Number(t.qty)||0}매</span></div>
+    </div>`;
+  }).join('');
+  return `<div class="home">
+    <div class="hsec">다음 공연</div>
+    ${hero}
+    <div class="hsec">다가오는 티켓 <em>${rest.length}건</em></div>
+    ${rest.length?`<div class="hlist">${rows}</div>`:`<div class="hnone">예정된 다른 티켓이 없어요</div>`}
+    <button class="hall" type="button" onclick="setView('tile')">지난 공연 포함 전체 ${tickets.length}건 보기 →</button>
+  </div>`;
 }
 function groupByMonth(arr){
   const groups=[], map={};
@@ -1384,7 +1413,7 @@ function resetVendorColor(){
 
 /* ===== 테마 / 설정 ===== */
 function resolveTheme(){ const s=localStorage.getItem('tm_theme')||'auto'; if(s==='dark')return 'dark'; if(s==='light')return 'light'; return matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'; }
-function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#111113':'#fafafa'; }
+function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#0d0e12':'#f4f4f6'; }
 function setTheme(s){ localStorage.setItem('tm_theme',s); applyTheme(); renderThemeSeg(); render(); }
 function renderThemeSeg(){ const s=localStorage.getItem('tm_theme')||'auto'; document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.th===s)); }
 function openSettings(){ renderThemeSeg(); openOv('settingsOverlay'); }
@@ -1590,18 +1619,17 @@ function toggleTransfer(){
 }
 
 /* ===== modal ===== */
-/* ===== 추가 스피드다이얼 ===== */
-function toggleAddMenu(){
-  const w=document.getElementById('fabWrap'), open=!w.classList.contains('open');
-  w.classList.toggle('open',open);
-  document.getElementById('fabScrim').classList.toggle('on',open);
+/* ===== 티켓 추가 시트 + 검색 토글 ===== */
+function openAdd(){ openOv('addOverlay'); }
+function closeAdd(){ closeOv('addOverlay'); }
+function addManual(){ closeAdd(); openModal(); }
+function addPhoto(){ closeAdd(); document.getElementById('aiFile').click(); }
+function toggleSearch(){
+  const w=document.getElementById('searchWrap'), on=w.classList.toggle('on');
+  const i=document.getElementById('search');
+  if(on){ i.focus(); }
+  else if(i.value){ i.value=''; render(); } // 닫으면 검색 해제
 }
-function closeAddMenu(){
-  document.getElementById('fabWrap').classList.remove('open');
-  document.getElementById('fabScrim').classList.remove('on');
-}
-function fabManual(){ closeAddMenu(); openModal(); }
-function fabPhoto(){ closeAddMenu(); document.getElementById('aiFile').click(); }
 function openModal(){
   editingId=null; formVendor=''; formPlatform=''; editCanceled=[];
   document.getElementById('modalTitle').textContent='티켓 추가';
@@ -1981,7 +2009,7 @@ function initSheetDrag(){
 /* ===== long-press action menu ===== */
 let actionId=null, lpTimer=null, lpFired=false, lpX=0, lpY=0;
 let calSX=0, calSY=0, calSwiped=false, calTrack=false, swInGrid=false;
-const SWIPE_VIEWS=['calendar','tile','list']; // 좌우 스와이프로 순환할 뷰 순서(세그먼트 버튼 순서와 동일)
+const SWIPE_VIEWS=['home','calendar','tile','list']; // 좌우 스와이프로 순환할 뷰 순서(독 버튼 순서와 동일, 타일→리스트는 전체 탭 내 전환)
 function swipeView(dir){ const i=SWIPE_VIEWS.indexOf(view), n=i+dir; if(i<0||n<0||n>=SWIPE_VIEWS.length)return; setView(SWIPE_VIEWS[n]); } // dir +1=다음(왼쪽 스와이프)·-1=이전. 양끝에선 무시(순환 안 함)
 function openActions(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
@@ -2022,7 +2050,7 @@ function initLongPress(){
 // 손가락을 따라 화면이 실시간으로 움직이는 인터랙티브 뷰 전환(아이폰 페이지 전환처럼).
 // - 캘린더 그리드 안: 좌우 드래그로 월 이동(손가락 따라 살짝 이동 후 릴리즈 시 확정)
 // - 그 외 영역·타일·리스트: 인입 뷰를 실제로 렌더해 손가락 따라 슬라이드(임계 넘으면 전환, 아니면 되돌림)
-// - #upnext는 #viewRoot 밖이라 여기 안 잡힘 → 다가오는 공연 가로 스크롤 유지
+// - 헤더·검색창은 #viewRoot 밖이라 여기 안 잡힘
 function initCalSwipe(){
   const root=document.getElementById('viewRoot');
   let sx=0, sy=0, active=false, decided=false, kind=null, dir=0, W=0, pane=null, commit=null, settleEase='', settleMs=200, passRatio=0.22;
@@ -2063,7 +2091,7 @@ function initCalSwipe(){
         const ni=SWIPE_VIEWS.indexOf(view)+dir;
         if(ni<0||ni>=SWIPE_VIEWS.length){ kind='edge'; } // 양끝 → 고무줄
         else{ kind='pane'; makePane(viewHTML(SWIPE_VIEWS[ni]));
-          commit=()=>{ view=SWIPE_VIEWS[ni]; localStorage.setItem(LS_VIEW,JSON.stringify(view)); if(view==='calendar'){selectMode=false;selectedIds.clear();} }; }
+          commit=()=>{ view=SWIPE_VIEWS[ni]; localStorage.setItem(LS_VIEW,JSON.stringify(view)); if(view==='calendar'||view==='home'){selectMode=false;selectedIds.clear();} }; }
       }
     }
     if(kind==='pane'){
