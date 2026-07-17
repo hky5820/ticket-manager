@@ -1212,8 +1212,10 @@ async function bulkDelete(){
     render(); toast(`${ids.length}개 삭제되었어요`);
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
 }
+function hap(n){ if(navigator.vibrate)navigator.vibrate(n||5); } // 햅틱 틱(미지원 브라우저 무시)
 function setView(v){
   if(v===view)return; // 같은 뷰면 무시
+  hap(8); // 뷰 전환 햅틱(독 탭·스와이프 공용)
   const dir=SWIPE_VIEWS.indexOf(v)>SWIPE_VIEWS.indexOf(view)?1:-1; // 오른쪽 뷰=+1(왼쪽으로 밀림)
   view=v;localStorage.setItem(LS_VIEW,JSON.stringify(v));if(v==='calendar'||v==='home'){selectMode=false;selectedIds.clear();}
   animateViewSwitch(dir);
@@ -1479,7 +1481,7 @@ function initWalletDrum(){
   scroll.addEventListener('scroll',()=>{
     requestAnimationFrame(wUpdate);
     const idx=Math.round(scroll.scrollTop/W_ITEM);
-    if(idx!==wIdx){ wIdx=idx; if(navigator.vibrate)navigator.vibrate(5); } // 피커처럼 칸 넘어갈 때마다 햅틱 틱
+    if(idx!==wIdx){ wIdx=idx; hap(5); } // 피커처럼 칸 넘어갈 때마다 햅틱 틱
     clearTimeout(snapT); // 관성 멈추면 가장 가까운 칸에 스냅(피커처럼 착)
     snapT=setTimeout(()=>{ const t=Math.max(0,Math.min(wlist.length-1,Math.round(scroll.scrollTop/W_ITEM)))*W_ITEM;
       if(Math.abs(scroll.scrollTop-t)>1)scroll.scrollTo({top:t,behavior:'smooth'}); },130);
@@ -1491,6 +1493,16 @@ function initWalletDrum(){
     if(Math.abs(dy)<86){ openDetail(wlist[cur].id); } // 센터 티켓 탭 → 상세
     else{ const n=Math.max(0,Math.min(wlist.length-1,cur+(dy>0?1:-1))); scroll.scrollTo({top:n*W_ITEM,behavior:'smooth'}); } // 위/아래 탭 → 한 칸 굴림
   });
+}
+// 홈 캐러셀 좌우 스냅 햅틱 — 캐러셀은 렌더마다 새로 생기므로 viewRoot에 캡처 위임(scroll은 버블 안 됨)
+function initDeckTick(){
+  document.getElementById('viewRoot').addEventListener('scroll',e=>{
+    const d=e.target; if(!d.classList||!d.classList.contains('pdeck'))return;
+    const c=d.firstElementChild; if(!c||!c.offsetWidth)return;
+    const i=Math.round(d.scrollLeft/(c.offsetWidth+10)); // 10 = .pdeck gap
+    if(i!==(d._ci||0))hap(5); // 덱은 렌더마다 scrollLeft 0에서 시작 → 기준 0
+    d._ci=i;
+  },{capture:true,passive:true});
 }
 // 홈 캐러셀을 아래로 쓸어내리면 스택 열기 — 만진 카드 한 장만 손가락 따라 고무줄처럼 늘어나다(쫀득) 임계 넘으면 오픈
 function initWalletPull(){
@@ -1504,7 +1516,7 @@ function initWalletPull(){
     if(dy>8&&dy>dx){
       e.preventDefault(); // 페이지 스크롤·당겨서-새로고침에 안 넘김
       card.style.transform=`translateY(${Math.min(dy*.38,64)}px)`; // 저항 있는 고무줄
-      if(dy>120&&dx<70){ fired=true; if(navigator.vibrate)navigator.vibrate(10); openWallet(); spring(); }
+      if(dy>120&&dx<70){ fired=true; hap(10); openWallet(); spring(); }
     }
   },{passive:false});
   const end=()=>{ if(card&&!fired)spring(); card=null; };
@@ -1666,7 +1678,7 @@ function resolveTheme(){ const s=localStorage.getItem('tm_theme')||'light'; if(s
 function applyTheme(){ const eff=resolveTheme(); document.documentElement.setAttribute('data-theme',eff); const m=document.getElementById('metaTheme'); if(m)m.content=eff==='dark'?'#0d0e12':'#f4f4f6'; const cs=document.getElementById('metaScheme'); if(cs)cs.content=eff==='dark'?'dark':'only light'; }
 function setTheme(s){ localStorage.setItem('tm_theme',s); applyTheme(); renderThemeSeg(); render(); }
 function renderThemeSeg(){ const s=localStorage.getItem('tm_theme')||'light'; document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.th===s)); }
-function openSettings(){ renderThemeSeg(); openOv('settingsOverlay'); }
+function openSettings(){ hap(8); renderThemeSeg(); openOv('settingsOverlay'); }
 function closeSettings(){ closeOv('settingsOverlay'); }
 /* 예매처 색 관리(전용 진입점) */
 function vcmVendors(){ const set=new Set([...vendors, ...Object.keys(VENDOR_COLORS)]); tickets.forEach(t=>{if(t.vendor)set.add(t.vendor);}); return [...set]; }
@@ -2360,7 +2372,7 @@ function openActions(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return;
   actionId=id; document.getElementById('actTitle').textContent=t.name||'티켓';
   openOv('actionOverlay');
-  if(navigator.vibrate)navigator.vibrate(15);
+  hap(15);
 }
 function closeActions(){ closeOv('actionOverlay'); }
 function actEdit(){ const id=actionId; closeActions(); edit(id); }
@@ -2437,7 +2449,7 @@ function initCalSwipe(){
         const ni=SWIPE_VIEWS.indexOf(view)+dir;
         if(ni<0||ni>=SWIPE_VIEWS.length){ kind='edge'; } // 양끝 → 고무줄
         else{ kind='pane'; makePane(viewHTML(SWIPE_VIEWS[ni]));
-          commit=()=>{ view=SWIPE_VIEWS[ni]; localStorage.setItem(LS_VIEW,JSON.stringify(view)); if(view==='calendar'||view==='home'){selectMode=false;selectedIds.clear();} }; }
+          commit=()=>{ hap(8); view=SWIPE_VIEWS[ni]; localStorage.setItem(LS_VIEW,JSON.stringify(view)); if(view==='calendar'||view==='home'){selectMode=false;selectedIds.clear();} }; }
       }
     }
     if(kind==='pane'){
@@ -2468,6 +2480,7 @@ function initCalSwipe(){
 boot();
 initLongPress();
 initCalSwipe();
+initDeckTick();
 initWalletPull();
 initWalletDrum();
 initSheetDrag();
