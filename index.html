@@ -242,9 +242,10 @@
   .hall{width:100%;border:none;background:transparent;color:var(--ink-faint);font-size:12.5px;font-weight:700;font-family:inherit;padding:14px 0 2px;cursor:pointer}
   .hall:active{color:var(--ink)}
   /* 홈 히어로 캐러셀: 옆으로 넘기면 다음 공연 패스 */
-  .pdeck{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px;padding:2px 12px 8px;touch-action:pan-x;scrollbar-width:none} /* 세로 제스처는 월렛 열기용으로 JS가 처리 */
+  /* 아래 여유 padding(-margin으로 상쇄) = 풀다운 시 카드가 잘리지 않을 공간(overflow-x:auto라 세로도 clip됨) */
+  .pdeck{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -12px -64px;padding:2px 12px 72px;scrollbar-width:none}
   .pdeck::-webkit-scrollbar{display:none}
-  .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always} /* 플릭해도 한 장씩만 */
+  .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always;touch-action:pan-x} /* 플릭해도 한 장씩만 · 세로 제스처는 월렛 열기용으로 JS가 처리 */
   .pdeck .pass:only-child{flex-basis:100%}
   /* ===== 애플월렛식 티켓 스택 ===== */
   #walletOverlay{background:#0e0f13;align-items:stretch}
@@ -263,6 +264,7 @@
   .wstage{position:absolute;inset:0;pointer-events:none;transform-style:preserve-3d}
   .wstage .pass{position:absolute;top:calc(50% - 36px);left:50%;width:min(88%,330px);transform:translate(-50%,-50%);transition:none;
     backface-visibility:hidden;will-change:transform,filter;box-shadow:0 18px 40px -18px rgba(0,0,0,.8);cursor:default}
+  #walletOverlay .p-perf i{background:#0e0f13} /* 노치는 항상 월렛 배경색(테마 --page 아님) */
   .wscroll{position:absolute;inset:0;overflow-y:auto;z-index:5;scrollbar-width:none;touch-action:pan-y;overscroll-behavior:contain}
   .wscroll::-webkit-scrollbar{display:none}
   .wempty{position:absolute;top:42%;left:0;right:0}
@@ -1434,7 +1436,7 @@ function calMove(n){calM+=n;if(calM<0){calM=11;calY--;}if(calM>11){calM=0;calY++
 function calHTMLFor(y,m){ const oy=calY,om=calM; calY=y;calM=m; const h=renderCalendar(); calY=oy;calM=om; return h; }
 /* ===== 티켓 드럼(원통 피커): 네이티브 스크롤을 회전각으로 변환 ===== */
 const W_ITEM=120, W_ANG=20, W_R=330; // 스크롤 1칸(px) · 칸당 궤적각 · 원통 반지름(작을수록 상하 폭 좁음)
-let wlist=[];
+let wlist=[], wIdx=0; // wIdx = 현재 센터 칸(햅틱 틱 기준)
 function openWallet(){ openOv('walletOverlay'); renderWallet(); } // 열고 나서 렌더(닫힌 상태에선 높이 측정이 0)
 function closeWallet(){ closeOv('walletOverlay'); }
 function renderWallet(){
@@ -1449,7 +1451,7 @@ function renderWallet(){
     ? wlist.map(t=>{ const html=passHTML(t,today); return (t.transfer&&t.transfer.done)?html.replace('class="pass"','class="pass is-x"'):html; }).join('')
     : '<div class="wempty">다가오는 티켓이 없어요</div>';
   document.getElementById('wspacer').style.height=(scroll.clientHeight+Math.max(0,wlist.length-1)*W_ITEM)+'px';
-  scroll.scrollTop=0;
+  scroll.scrollTop=0; wIdx=0;
   wUpdate();
 }
 // 스크롤 위치 → 각 카드를 원통 표면에 배치
@@ -1476,6 +1478,8 @@ function initWalletDrum(){
   let snapT=null;
   scroll.addEventListener('scroll',()=>{
     requestAnimationFrame(wUpdate);
+    const idx=Math.round(scroll.scrollTop/W_ITEM);
+    if(idx!==wIdx){ wIdx=idx; if(navigator.vibrate)navigator.vibrate(5); } // 피커처럼 칸 넘어갈 때마다 햅틱 틱
     clearTimeout(snapT); // 관성 멈추면 가장 가까운 칸에 스냅(피커처럼 착)
     snapT=setTimeout(()=>{ const t=Math.max(0,Math.min(wlist.length-1,Math.round(scroll.scrollTop/W_ITEM)))*W_ITEM;
       if(Math.abs(scroll.scrollTop-t)>1)scroll.scrollTo({top:t,behavior:'smooth'}); },130);
@@ -1488,22 +1492,22 @@ function initWalletDrum(){
     else{ const n=Math.max(0,Math.min(wlist.length-1,cur+(dy>0?1:-1))); scroll.scrollTo({top:n*W_ITEM,behavior:'smooth'}); } // 위/아래 탭 → 한 칸 굴림
   });
 }
-// 홈 캐러셀을 아래로 쓸어내리면 스택 열기 — 손가락 따라 고무줄처럼 늘어나다(쫀득) 임계 넘으면 오픈
+// 홈 캐러셀을 아래로 쓸어내리면 스택 열기 — 만진 카드 한 장만 손가락 따라 고무줄처럼 늘어나다(쫀득) 임계 넘으면 오픈
 function initWalletPull(){
   const root=document.getElementById('viewRoot');
-  let sy=0,sx=0,deck=null,fired=false;
-  const spring=()=>{ if(!deck)return; const d=deck; d.style.transition='transform .32s cubic-bezier(.2,.8,.3,1.35)'; d.style.transform=''; setTimeout(()=>{ d.style.transition=''; },340); };
-  root.addEventListener('touchstart',e=>{ const t=e.touches[0]; deck=e.target.closest('.pdeck'); fired=false; sy=t.clientY; sx=t.clientX; if(deck)deck.style.transition=''; },{passive:true});
+  let sy=0,sx=0,card=null,fired=false;
+  const spring=()=>{ if(!card)return; const d=card; d.style.transition='transform .32s cubic-bezier(.2,.8,.3,1.35)'; d.style.transform=''; setTimeout(()=>{ d.style.transition=''; },340); };
+  root.addEventListener('touchstart',e=>{ const t=e.touches[0]; card=e.target.closest('.pdeck .pass'); fired=false; sy=t.clientY; sx=t.clientX; if(card)card.style.transition='none'; },{passive:true}); // none = .pass 기본 transition(.15s) 끄고 손가락 1:1
   root.addEventListener('touchmove',e=>{
-    if(!deck||fired)return;
+    if(!card||fired)return;
     const t=e.touches[0]; const dy=t.clientY-sy, dx=Math.abs(t.clientX-sx);
     if(dy>8&&dy>dx){
       e.preventDefault(); // 페이지 스크롤·당겨서-새로고침에 안 넘김
-      deck.style.transform=`translateY(${Math.min(dy*.38,64)}px)`; // 저항 있는 고무줄
+      card.style.transform=`translateY(${Math.min(dy*.38,64)}px)`; // 저항 있는 고무줄
       if(dy>120&&dx<70){ fired=true; if(navigator.vibrate)navigator.vibrate(10); openWallet(); spring(); }
     }
   },{passive:false});
-  const end=()=>{ if(deck&&!fired)spring(); deck=null; };
+  const end=()=>{ if(card&&!fired)spring(); card=null; };
   root.addEventListener('touchend',end); root.addEventListener('touchcancel',end);
 }
 
