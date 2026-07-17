@@ -199,7 +199,7 @@
   .hxf.on{color:var(--accent-ink);border-color:var(--accent-bd);background:var(--accent-soft)}
   .home>.hsec:first-child{margin-top:2px}
   /* 히어로 = 실물 티켓 패스(절취선·노치·바코드). 다크에서도 항상 흰 카드 */
-  .pass{position:relative;background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s}
+  .pass{position:relative;overflow:hidden;background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s} /* overflow:hidden = 노치 원의 카드 밖 반쪽 클립(캐러셀 틈에 원이 떠 보이는 것 방지) */
   .pass:active{transform:scale(.99)}
   :root[data-theme="dark"] .pass{border-color:transparent;box-shadow:0 12px 28px -12px rgba(0,0,0,.7)}
   .p-top{padding:13px 15px 12px}

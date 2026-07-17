@@ -1,5 +1,5 @@
 /* 티켓 보관함 서비스워커 — 앱 셸 캐시(오프라인 지원) */
-const CACHE='tm-shell-v6';
+const CACHE='tm-shell-v7';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png','./icon-maskable-512.png'];
 
 self.addEventListener('install',e=>{
