@@ -255,9 +255,11 @@
   .pdeck .pass::before{content:"";position:absolute;inset:-1px;z-index:-1;border:1px solid var(--line-soft);border-radius:16px;
     /* 구멍 둘레 1px 링(카드 테두리색) — 외곽선이 구멍을 따라 도는 것처럼. 다크는 테두리가 없으니 링도 투명.
        background-origin:border-box = mask(기본 border-box)와 좌표 기준 통일(안 맞추면 링이 구멍과 1px 어긋남) */
-    background:radial-gradient(circle at 0 var(--ny,-99px),rgba(0,0,0,0) 7.5px,var(--nring,var(--line-soft)) 8px 9px,rgba(0,0,0,0) 9.3px),
+    background:linear-gradient(90deg,#fff 2.5px,rgba(255,255,255,0) 6.5px) left/8px 100% no-repeat,
+               linear-gradient(270deg,#fff 2.5px,rgba(255,255,255,0) 6.5px) right/8px 100% no-repeat,
+               radial-gradient(circle at 0 var(--ny,-99px),rgba(0,0,0,0) 7.5px,var(--nring,var(--line-soft)) 8px 9px,rgba(0,0,0,0) 9.3px),
                radial-gradient(circle at 100% var(--ny,-99px),rgba(0,0,0,0) 7.5px,var(--nring,var(--line-soft)) 8px 9px,rgba(0,0,0,0) 9.3px),
-               #fff; /* 링은 8px(구멍 AA 시작점)~9px = 카드 테두리와 같은 1px 헤어라인(더 두꺼우면 색 띠처럼 보임) */
+               #fff; /* 링(1px 헤어라인) 위에 흰 페이드 스트립 — 링 원호가 절단면(카드 가장자리)에 닿기 전에 사라지게. 끝점 자국이 구멍-배경 경계처럼 보이는 것 방지. 구멍 안은 mask로 안 보임 */
     background-origin:border-box; /* background 축약이 origin을 초기화하므로 반드시 뒤에 */
     -webkit-mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
                  radial-gradient(circle at 100% var(--ny,-99px),transparent 8px,#000 8.5px) right/51% 100% no-repeat;
