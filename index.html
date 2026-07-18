@@ -200,7 +200,7 @@
   .home>.hsec:first-child{margin-top:2px}
   /* 히어로 = 실물 티켓 패스(절취선·노치·바코드). 다크에서도 항상 흰 카드 */
   /* overflow:clip+margin 1px = 노치 원을 카드 경계선(border)까지 덮게 클립 — 구멍 위로 테두리 선이 지나가면 부자연스러움 */
-  .pass{position:relative;overflow:clip;overflow-clip-margin:1px;background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 10px 26px -16px rgba(0,0,0,.4);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s}
+  .pass{position:relative;overflow:clip;overflow-clip-margin:1px;background:#fff;color:#191b23;border-radius:16px;border:1px solid var(--line-soft);box-shadow:0 18px 20px -18px rgba(0,0,0,.45);cursor:pointer;-webkit-touch-callout:none;user-select:none;transition:transform .15s} /* 그림자는 아래로만(blur≈|spread|) — 좌우로 번지면 노치 구멍 안(자기 그림자 안 드리움)과 틈의 밝기가 달라져 경계가 생김 */
   .pass:active{transform:scale(.99)}
   :root[data-theme="dark"] .pass{border-color:transparent;box-shadow:0 12px 28px -12px rgba(0,0,0,.7)}
   .p-top{padding:13px 15px 12px}
