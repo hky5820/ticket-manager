@@ -248,6 +248,17 @@
   .pdeck::-webkit-scrollbar{display:none}
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always;touch-action:pan-x} /* 플릭해도 한 장씩만 · 세로 제스처는 월렛 열기용으로 JS가 처리 */
   .pdeck .pass:only-child{flex-basis:100%}
+  /* 캐러셀 노치 = mask로 진짜 뚫린 구멍 — 페인트색으론 틈의 카드 그림자 그라데이션을 못 따라가서, 배경·그림자가 그대로 비치게 뚫는다.
+     흰 배경·테두리를 ::before로 내리고(그림자는 .pass에 남아 mask에 안 잘림) 절취선 양끝을 잘라냄. --ny(구멍 y)는 렌더 후 JS가 측정.
+     mask 두 레이어는 좌/우 반쪽씩(51%·겹침 1%)이라 composite 없이도 합쳐짐 */
+  .pdeck .pass{background:transparent;border-color:transparent;z-index:0}
+  .pdeck .pass::before{content:"";position:absolute;inset:-1px;z-index:-1;background:#fff;border:1px solid var(--line-soft);border-radius:16px;
+    -webkit-mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
+                 radial-gradient(circle at 100% var(--ny,-99px),transparent 8px,#000 8.5px) right/51% 100% no-repeat;
+    mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
+         radial-gradient(circle at 100% var(--ny,-99px),transparent 8px,#000 8.5px) right/51% 100% no-repeat}
+  :root[data-theme="dark"] .pdeck .pass::before{border-color:transparent}
+  .pdeck .p-perf i{display:none} /* 진짜 구멍이 있으니 가짜 노치 원은 캐러셀에선 제거 */
   /* ===== 애플월렛식 티켓 스택 ===== */
   #walletOverlay{background:#0e0f13;align-items:stretch}
   .wsheet{width:100%;max-width:420px;margin:0 auto;display:flex;flex-direction:column;min-height:0;padding:calc(12px + env(safe-area-inset-top)) 16px 0}
@@ -1248,6 +1259,12 @@ function filtered(){
 }
 function byDate(a){return a.slice().sort((x,y)=>{const dx=x.date||'9999',dy=y.date||'9999';if(dx!==dy)return dx<dy?-1:1;return (x.time||'')<(y.time||'')?-1:1;});}
 
+// 캐러셀 카드 노치 구멍(mask)의 y좌표 = 절취선 위치. 카드마다 공연명 줄수가 달라 렌더 후 실측해 주입
+function setNotchY(){
+  document.querySelectorAll('.pdeck .pass').forEach(c=>{
+    const p=c.querySelector('.p-perf'); if(p)c.style.setProperty('--ny',(p.offsetTop+2)+'px');
+  });
+}
 function render(){
   // dock 활성 표시('전체'는 타일·리스트 공용)
   document.querySelectorAll('#dock .dtab[data-v]').forEach(b=>{const v=b.dataset.v;b.classList.toggle('on',v===view||(v==='all'&&view==='list'));});
@@ -1266,7 +1283,7 @@ function render(){
   const root=document.getElementById('viewRoot');
   if(loading&&tickets.length===0){root.innerHTML=`<div class="empty"><div class="spinner"></div><p>불러오는 중…</p></div>`;_calSig=null;_homeSig=null;return;}
   // 홈·캘린더: 내용 그대로면 재렌더 안 함(25초 리셋 깜빡임 방지). root.innerHTML은 브라우저가 재직렬화해 원본과 안 맞으므로 시그니처로 비교
-  if(view==='home'){ const html=viewHTML('home'); if(_homeSig!==html){root.innerHTML=html;_homeSig=html;} _calSig=null; return; }
+  if(view==='home'){ const html=viewHTML('home'); if(_homeSig!==html){root.innerHTML=html;_homeSig=html;setNotchY();} _calSig=null; return; }
   _homeSig=null;
   if(view==='calendar'){ const html=viewHTML('calendar'); if(_calSig!==html){root.innerHTML=html;_calSig=html;} return; }
   _calSig=null; // 캘린더가 아닌 뷰 → 시그니처 리셋
@@ -2482,6 +2499,7 @@ boot();
 initLongPress();
 initCalSwipe();
 initDeckTick();
+window.addEventListener('resize',setNotchY); // 회전 등으로 공연명 줄바꿈이 바뀌면 구멍 y 재측정
 initWalletPull();
 initWalletDrum();
 initSheetDrag();
