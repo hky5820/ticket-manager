@@ -253,10 +253,12 @@
      mask 두 레이어는 좌/우 반쪽씩(51%·겹침 1%)이라 composite 없이도 합쳐짐 */
   .pdeck .pass{background:transparent;border-color:transparent;z-index:0}
   .pdeck .pass::before{content:"";position:absolute;inset:-1px;z-index:-1;border:1px solid var(--line-soft);border-radius:16px;
-    /* 구멍 둘레 1px 링(카드 테두리색) — 외곽선이 구멍을 따라 도는 것처럼. 다크는 테두리가 없으니 링도 투명 */
-    background:radial-gradient(circle at 0 var(--ny,-99px),rgba(0,0,0,0) 8px,var(--nring,var(--line-soft)) 8.5px 9.5px,rgba(0,0,0,0) 10px),
-               radial-gradient(circle at 100% var(--ny,-99px),rgba(0,0,0,0) 8px,var(--nring,var(--line-soft)) 8.5px 9.5px,rgba(0,0,0,0) 10px),
-               #fff;
+    /* 구멍 둘레 1px 링(카드 테두리색) — 외곽선이 구멍을 따라 도는 것처럼. 다크는 테두리가 없으니 링도 투명.
+       background-origin:border-box = mask(기본 border-box)와 좌표 기준 통일(안 맞추면 링이 구멍과 1px 어긋남) */
+    background:radial-gradient(circle at 0 var(--ny,-99px),rgba(0,0,0,0) 7.5px,var(--nring,var(--line-soft)) 8px 9.5px,rgba(0,0,0,0) 10px),
+               radial-gradient(circle at 100% var(--ny,-99px),rgba(0,0,0,0) 7.5px,var(--nring,var(--line-soft)) 8px 9.5px,rgba(0,0,0,0) 10px),
+               #fff; /* 링을 8px(구멍 마스크 페이드 시작점)부터 칠해 구멍 테두리의 흰 AA 틈 제거 */
+    background-origin:border-box; /* background 축약이 origin을 초기화하므로 반드시 뒤에 */
     -webkit-mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
                  radial-gradient(circle at 100% var(--ny,-99px),transparent 8px,#000 8.5px) right/51% 100% no-repeat;
     mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
@@ -1266,7 +1268,10 @@ function byDate(a){return a.slice().sort((x,y)=>{const dx=x.date||'9999',dy=y.da
 // 캐러셀 카드 노치 구멍(mask)의 y좌표 = 절취선 위치. 카드마다 공연명 줄수가 달라 렌더 후 실측해 주입
 function setNotchY(){
   document.querySelectorAll('.pdeck .pass').forEach(c=>{
-    const p=c.querySelector('.p-perf'); if(p)c.style.setProperty('--ny',(p.offsetTop+2)+'px');
+    const p=c.querySelector('.p-perf'); if(!p)return;
+    // 소수점까지 정확히(offsetTop은 반올림돼 링·구멍이 0.5px 어긋남). +1 = 절취선(2px) 중앙
+    const ny=p.getBoundingClientRect().top+1-c.getBoundingClientRect().top;
+    c.style.setProperty('--ny',ny.toFixed(2)+'px');
   });
 }
 function render(){
