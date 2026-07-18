@@ -252,12 +252,16 @@
      흰 배경·테두리를 ::before로 내리고(그림자는 .pass에 남아 mask에 안 잘림) 절취선 양끝을 잘라냄. --ny(구멍 y)는 렌더 후 JS가 측정.
      mask 두 레이어는 좌/우 반쪽씩(51%·겹침 1%)이라 composite 없이도 합쳐짐 */
   .pdeck .pass{background:transparent;border-color:transparent;z-index:0}
-  .pdeck .pass::before{content:"";position:absolute;inset:-1px;z-index:-1;background:#fff;border:1px solid var(--line-soft);border-radius:16px;
+  .pdeck .pass::before{content:"";position:absolute;inset:-1px;z-index:-1;border:1px solid var(--line-soft);border-radius:16px;
+    /* 구멍 둘레 1px 링(카드 테두리색) — 외곽선이 구멍을 따라 도는 것처럼. 다크는 테두리가 없으니 링도 투명 */
+    background:radial-gradient(circle at 0 var(--ny,-99px),rgba(0,0,0,0) 8px,var(--nring,var(--line-soft)) 8.5px 9.5px,rgba(0,0,0,0) 10px),
+               radial-gradient(circle at 100% var(--ny,-99px),rgba(0,0,0,0) 8px,var(--nring,var(--line-soft)) 8.5px 9.5px,rgba(0,0,0,0) 10px),
+               #fff;
     -webkit-mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
                  radial-gradient(circle at 100% var(--ny,-99px),transparent 8px,#000 8.5px) right/51% 100% no-repeat;
     mask:radial-gradient(circle at 0 var(--ny,-99px),transparent 8px,#000 8.5px) left/51% 100% no-repeat,
          radial-gradient(circle at 100% var(--ny,-99px),transparent 8px,#000 8.5px) right/51% 100% no-repeat}
-  :root[data-theme="dark"] .pdeck .pass::before{border-color:transparent}
+  :root[data-theme="dark"] .pdeck .pass::before{border-color:transparent;--nring:rgba(0,0,0,0)}
   .pdeck .p-perf i{display:none} /* 진짜 구멍이 있으니 가짜 노치 원은 캐러셀에선 제거 */
   /* ===== 애플월렛식 티켓 스택 ===== */
   #walletOverlay{background:#0e0f13;align-items:stretch}
