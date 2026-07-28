@@ -269,7 +269,7 @@
   /* ===== 티켓 상세: 영수증처럼 상하좌우 여백이 일정 비율로 작게만 남는 큰 팝업(내용 길이와 무관하게 항상 이 비율 고정) ===== */
   #detailOverlay{padding:0}
   #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:none;max-height:none;overflow:visible}
-  #detailBody{position:relative}
+  #detailBody{position:relative;width:fit-content;margin:0 auto} /* .tkt 실제 폭에 맞춰 수축 — 안 그러면 offsetWidth가 뷰포트 전체 폭이 돼 스와이프 이동 거리 계산이 틀어짐 */
   /* .tkt 자체가 고정 크기(90vw x 90vh)의 카드 — 스와이프 때 이 박스 통째로 움직여야 옆 카드가 딤 배경 위로 보임(내부 콘텐츠만 스크롤되면 안 됨) */
   .tkt{position:relative;display:flex;flex-direction:column;width:90vw;height:90vh;max-width:460px;margin:0 auto;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(0,0,0,.5)}
   /* 상단 고정 영역: 예매처/버튼 + 제목 + 날짜(내용 길이와 무관하게 일정 영역만) */
