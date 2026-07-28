@@ -246,7 +246,7 @@
   .pdeck .pass{flex:0 0 calc(100% - 30px);scroll-snap-align:center;scroll-snap-stop:always;touch-action:pan-x} /* 플릭해도 한 장씩만 · 세로 제스처는 월렛 열기용으로 JS가 처리 */
   .pdeck .pass:only-child{flex-basis:100%}
   /* ===== 애플월렛식 티켓 스택 ===== */
-  #walletOverlay{background:#0e0f13;align-items:stretch}
+  #walletOverlay{background:rgba(10,11,16,.6);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);align-items:stretch} /* 뒤 배경은 블러로 비치게(완전 암전 대신) */
   .wsheet{width:100%;max-width:420px;margin:0 auto;display:flex;flex-direction:column;min-height:0;padding:calc(12px + env(safe-area-inset-top)) 16px 0}
   .whead{flex:none;display:flex;align-items:center;justify-content:space-between;color:#f2f2f4;padding:4px 2px 16px}
   .whead .wt{font-size:16px;font-weight:800}
@@ -267,8 +267,9 @@
   .wempty{position:absolute;top:42%;left:0;right:0}
   .wempty{color:#8e9096;text-align:center;padding:70px 0;font-size:13px}
   /* ===== 티켓 상세: 세로 종이 티켓(보딩패스)이 그대로 팝업 ===== */
+  #detailOverlay{padding:10px}
   .overlay.centered .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:420px;overflow-y:auto}
-  .tkt{position:relative;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:0;max-width:330px;margin:0 auto;overflow:hidden;box-shadow:0 30px 70px -18px rgba(0,0,0,.8)}
+  .tkt{position:relative;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:0;max-width:420px;margin:0 auto;overflow:hidden;box-shadow:0 30px 70px -18px rgba(0,0,0,.8)}
   /* 상단 = 예매처 색 스트립(각진 티켓 머리) */
   .tkt-band{height:6px}
   .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.22;word-break:keep-all;padding:16px 18px 0}
@@ -310,8 +311,7 @@
     --danger:#c13515;--danger-ink:#b32505;--danger-soft:#fbeceb;--danger-bd:#f3ccc4;
     --warn:#a0761f;--warn-strong:#2E63F0;--warn-soft:#fbf3e0;--warn-bd:#ecdcb4;--warn-ink:#7a5a12;
     --card-bd:#ebebee;--card-sh:none;--shadow:none;--shadow-sm:none}
-  /* 티켓 팝업 형태: 각진 종이 + 예매처 스트립, 바텀시트보다 살짝 좁게. 주변은 상세와 동일한 검은 배경 */
-  .overlay.centered#overlay{align-items:center;background:#0e0f13}
+  /* 티켓 팝업 형태: 각진 종이 + 예매처 스트립, 바텀시트보다 살짝 좁게 */
   #overlay .sheet{max-width:352px;border-radius:0;max-height:88vh;padding:0 18px 0;box-shadow:0 30px 70px -18px rgba(0,0,0,.7)}
   #overlay .tkt-band{margin:0 -18px 12px;height:6px}
   #overlay .sheet h2{font-size:19px;margin-top:2px}
@@ -2313,7 +2313,7 @@ function toast(m){const el=document.getElementById('toast');el.textContent=m;el.
    뒤로가기 때 조용히 소비한다 → 뒤로가기는 항상 [팝업 닫기 → 고아 소비 → 앱 종료] 순서로만 동작. */
 let _ovStack=[], _orphan=0;
 // edge-to-edge: 어두운 전면 오버레이가 열리면 시스템 상태바 색도 함께 어둡게
-const DARK_OVS=['walletOverlay','overlay','imgViewOverlay'];
+const DARK_OVS=['walletOverlay','imgViewOverlay'];
 function syncBarColor(){
   const m=document.getElementById('metaTheme'); if(!m)return;
   if(_ovStack.some(id=>DARK_OVS.includes(id)))m.content='#0e0f13';
