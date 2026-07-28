@@ -9,3 +9,6 @@ ticket-*.json
 *-b64.txt
 scratch*tmp/
 *.jpg
+
+# vendored skill-repo payloads (backs hooks; skills/commands live in .claude/skills & .claude/commands)
+.claude/plugins/
