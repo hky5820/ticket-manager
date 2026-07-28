@@ -266,10 +266,10 @@
   .wscroll::-webkit-scrollbar{display:none}
   .wempty{position:absolute;top:42%;left:0;right:0}
   .wempty{color:#8e9096;text-align:center;padding:70px 0;font-size:13px}
-  /* ===== 티켓 상세: 화면 높이 전체를 채우는 풀스크린 시트(영수증처럼 — 내용 짧아도 빈 여백 없이 꽉 참) ===== */
-  #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:480px;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;overflow-y:auto}
-  #detailBody{height:100%}
-  .tkt{position:relative;min-height:100%;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:22px 22px 0 0;overflow:hidden}
+  /* ===== 티켓 상세: 큼직한 중앙 팝업(영수증처럼 — 배경이 살짝 비치는 카드, 화면 꽉 채우는 시트 아님) ===== */
+  #detailOverlay{padding:10px}
+  #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:480px;max-height:96vh;overflow-y:auto}
+  .tkt{position:relative;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(0,0,0,.5)}
   /* 상단 = 예매처 색 스트립(각진 티켓 머리) */
   .tkt-band{height:6px}
   .tkt-name{font-size:22px;font-weight:800;letter-spacing:-.4px;line-height:1.3;word-break:keep-all;padding:26px 24px 0}
@@ -912,8 +912,8 @@
   </div>
 </div>
 
-<!-- Ticket detail (화면 꽉 채우는 바텀시트) -->
-<div class="overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+<!-- Ticket detail (큼직한 중앙 팝업 — 배경 살짝 비치는 카드) -->
+<div class="overlay centered" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
   <div class="sheet detail-sheet">
     <div id="detailBody"></div>
   </div>
