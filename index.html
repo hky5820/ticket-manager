@@ -268,14 +268,12 @@
   .wempty{color:#8e9096;text-align:center;padding:70px 0;font-size:13px}
   /* ===== 티켓 상세: 영수증처럼 상하좌우 여백이 일정 비율로 작게만 남는 큰 팝업(내용 길이와 무관하게 항상 이 비율 고정) ===== */
   #detailOverlay{padding:0}
-  #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;width:90vw;height:90vh;max-width:460px;overflow-y:auto}
-  #detailBody{height:100%}
+  #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;width:90vw;height:90vh;max-width:460px;overflow:hidden auto}
+  #detailBody{position:relative;height:100%}
   .tkt{position:relative;min-height:100%;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(0,0,0,.5)}
-  /* 상단 = 예매처 색 스트립(각진 티켓 머리) */
-  .tkt-band{height:6px}
-  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.25;word-break:keep-all;padding:17px 20px 0}
-  /* 하단 푸터: 좌측 예매처(스와치+이름) · 우측 잉크 블랙 액션 버튼 */
-  .tkt-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:3px 16px 15px 20px}
+  .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.25;word-break:keep-all;padding:6px 20px 0}
+  /* 상단 푸터: 좌측 예매처(스와치+이름) · 우측 잉크 블랙 액션 버튼(원래 하단 색띠 자리) */
+  .tkt-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:20px 16px 6px 20px}
   .tkt-foot .vch{font-size:11.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tkt-ics{display:flex;gap:6px;flex:none}
   .tkt-ic{border:none;background:#191b23;color:#fff;width:32px;height:32px;border-radius:10px;display:grid;place-items:center;cursor:pointer;font-family:inherit;padding:0}
@@ -1533,6 +1531,77 @@ function detailImg(){
     openImgView(data.img);
   });
 }
+// 상세 팝업 좌우 스와이프 대상 목록(양도표 표시/숨김 기준 — 다가오는 티켓·월렛과 동일 필터)
+function detailNavList(){
+  let list=byDate(tickets);
+  if(hideXfer)list=list.filter(t=>!(t.transfer&&t.transfer.done));
+  return list;
+}
+// 손가락을 따라 실시간으로 카드가 슬라이드되는 상세↔상세 전환(뷰 전환 스와이프와 동일한 방식)
+function initDetailSwipe(){
+  const body=document.getElementById('detailBody');
+  let sx=0,sy=0,dir=0,active=false,decided=false,W=0,pane=null,kind=null,nextT=null,curEl=null;
+  const EASE='transform .22s cubic-bezier(.2,.8,.2,1)';
+  function clearPane(){ if(pane){ pane.remove(); pane=null; } }
+  function endSwipe(){ document.body.classList.remove('swiping'); }
+  body.addEventListener('touchstart',e=>{
+    if(e.touches.length>1)return;
+    const t=e.touches[0]; sx=t.clientX; sy=t.clientY; active=true; decided=false; dir=0; kind=null; nextT=null;
+    curEl=body.querySelector('.tkt'); W=body.offsetWidth||320;
+  },{passive:true});
+  body.addEventListener('touchmove',e=>{
+    if(!active||!curEl)return;
+    const t=e.touches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+    if(!decided){
+      if(Math.abs(dx)<10&&Math.abs(dy)<10)return;
+      if(Math.abs(dy)>=Math.abs(dx)){ active=false; return; } // 세로는 시트 스크롤에 양보
+      decided=true; dir=dx<0?1:-1;
+      const list=detailNavList(), idx=list.findIndex(x=>String(x.id)===String(detailId)), ni=idx+dir;
+      if(idx===-1||ni<0||ni>=list.length){ kind='edge'; }
+      else{
+        kind='pane'; nextT=list[ni];
+        pane=document.createElement('div'); pane.className='view-pane'; pane.style.position='absolute'; pane.style.inset='0';
+        pane.innerHTML=detailHTML(nextT);
+        body.appendChild(pane);
+        pane.style.transition='none';
+        pane.style.transform='translate3d('+(dir>0?W:-W)+'px,0,0)';
+      }
+      document.body.classList.add('swiping');
+      curEl.style.transition='none';
+    }
+    e.preventDefault();
+    if(kind==='pane'){
+      const dxc=dir>0?Math.max(-W,Math.min(0,dx)):Math.min(W,Math.max(0,dx));
+      curEl.style.transform='translate3d('+dxc+'px,0,0)';
+      pane.style.transform='translate3d('+((dir>0?W:-W)+dxc)+'px,0,0)';
+    }else if(kind==='edge'){
+      curEl.style.transform='translate3d('+(dx*0.28)+'px,0,0)';
+    }
+  },{passive:false});
+  body.addEventListener('touchend',e=>{
+    if(!active)return; active=false; if(!decided||!curEl)return;
+    const dx=e.changedTouches[0].clientX-sx, pass=Math.abs(dx)>W*0.22;
+    if(kind==='pane'){
+      curEl.style.transition=EASE; pane.style.transition=EASE;
+      if(pass){
+        curEl.style.transform='translate3d('+(dir>0?-W:W)+'px,0,0)'; pane.style.transform='translate3d(0,0,0)';
+        setTimeout(()=>{ hap(8); detailId=nextT.id; body.innerHTML=detailHTML(nextT); endSwipe(); },220);
+      }else{
+        curEl.style.transform='translate3d(0,0,0)'; pane.style.transform='translate3d('+(dir>0?W:-W)+'px,0,0)';
+        setTimeout(()=>{ clearPane(); endSwipe(); },230);
+      }
+    }else if(kind==='edge'){
+      curEl.style.transition=EASE; curEl.style.transform='translate3d(0,0,0)';
+      setTimeout(()=>{ if(curEl)curEl.style.transition=''; endSwipe(); },230);
+    }
+  });
+  body.addEventListener('touchcancel',()=>{
+    if(!active)return; active=false; if(!decided||!curEl)return;
+    curEl.style.transition=EASE; curEl.style.transform='translate3d(0,0,0)';
+    if(kind==='pane'){ setTimeout(()=>{ clearPane(); endSwipe(); },230); }
+    else{ setTimeout(()=>{ if(curEl)curEl.style.transition=''; endSwipe(); },230); }
+  });
+}
 function detailHTML(t){
   const today=ymd(new Date());
   const c=colorFor(t.vendor), a=ticketAcct(t);
@@ -1555,7 +1624,14 @@ function detailHTML(t){
   const xinfo=xf?[t.transfer.to,t.transfer.platform].filter(Boolean).join(' · '):'';
   return `<div class="tkt">
     ${xf?'<span class="dt-stamp">양도완료</span>':''}
-    <div class="tkt-band" style="background:${c}"></div>
+    <div class="tkt-foot">
+      <span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'예매처 미정')}</span>
+      <span class="tkt-ics">
+        <button class="tkt-ic" onclick="detailEdit()" title="수정"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+        <button class="tkt-ic" onclick="detailShare()" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 13v6h14v-6"/></svg></button>
+        ${t.hasImg?'<button class="tkt-ic" onclick="detailImg()" title="예매내역 사진"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>':''}
+      </span>
+    </div>
     <div class="tkt-name">${esc(t.name||'(공연명 없음)')}</div>
     <div class="tkt-when">
       <div><small>날짜</small><b>${esc(dateB)}</b><span>${esc(wdB||'날짜 미정')}</span></div>
@@ -1571,14 +1647,6 @@ function detailHTML(t){
       <small>메모</small>
       <div class="tm-tx${t.memo?'':' none'}">${t.memo?esc(t.memo):'메모가 없어요'}</div>
       <div class="tkt-no">${esc(ticketNo(t))}</div>
-    </div>
-    <div class="tkt-foot">
-      <span class="vch"><i style="background:${c}"></i>${esc(t.vendor||'예매처 미정')}</span>
-      <span class="tkt-ics">
-        <button class="tkt-ic" onclick="detailEdit()" title="수정"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-        <button class="tkt-ic" onclick="detailShare()" title="공유"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3"/><path d="M8 7l4-4 4 4"/><path d="M5 13v6h14v-6"/></svg></button>
-        ${t.hasImg?'<button class="tkt-ic" onclick="detailImg()" title="예매내역 사진"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m21 15-4.5-4.5L6 21"/></svg></button>':''}
-      </span>
     </div>
   </div>`;
 }
@@ -2475,6 +2543,7 @@ initWalletPull();
 initWalletDrum();
 initSheetDrag();
 initImgZoom();
+initDetailSwipe();
 /* 처리 현황·새 티켓 자동 갱신(팝업 열려있을 땐 건너뜀) */
 setInterval(()=>{ if(mode==='cloud'&&sb&&!document.querySelector('.overlay.on')&&!document.hidden)refresh(); }, 25000);
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
