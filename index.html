@@ -266,10 +266,11 @@
   .wscroll::-webkit-scrollbar{display:none}
   .wempty{position:absolute;top:42%;left:0;right:0}
   .wempty{color:#8e9096;text-align:center;padding:70px 0;font-size:13px}
-  /* ===== 티켓 상세: 큼직한 중앙 팝업(영수증처럼 — 배경이 살짝 비치는 카드, 화면 꽉 채우는 시트 아님) ===== */
-  #detailOverlay{padding:16px}
-  #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;max-width:440px;max-height:92vh;overflow-y:auto}
-  .tkt{position:relative;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(0,0,0,.5)}
+  /* ===== 티켓 상세: 영수증처럼 상하좌우 여백이 일정 비율로 작게만 남는 큰 팝업(내용 길이와 무관하게 항상 이 비율 고정) ===== */
+  #detailOverlay{padding:0}
+  #detailOverlay .detail-sheet{background:transparent;border:none;box-shadow:none;padding:0;width:90vw;height:90vh;max-width:460px;overflow-y:auto}
+  #detailBody{height:100%}
+  .tkt{position:relative;min-height:100%;background:linear-gradient(168deg,#ffffff,#fbfbfc 55%,#f4f5f8);color:#191b23;border-radius:22px;overflow:hidden;box-shadow:0 24px 60px -16px rgba(0,0,0,.5)}
   /* 상단 = 예매처 색 스트립(각진 티켓 머리) */
   .tkt-band{height:6px}
   .tkt-name{font-size:21px;font-weight:800;letter-spacing:-.4px;line-height:1.25;word-break:keep-all;padding:17px 20px 0}
