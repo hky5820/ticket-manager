@@ -1545,6 +1545,7 @@ function detailNavList(){
 // 손가락을 따라 실시간으로 카드가 슬라이드되는 상세↔상세 전환(뷰 전환 스와이프와 동일한 방식)
 function initDetailSwipe(){
   const body=document.getElementById('detailBody');
+  const GAP=24; // 카드 사이 여백 — 다음 카드가 딱 붙지 않고 틈을 두고 따라오게
   let sx=0,sy=0,dir=0,active=false,decided=false,W=0,pane=null,kind=null,nextT=null,curEl=null;
   const EASE='transform .22s cubic-bezier(.2,.8,.2,1)';
   function clearPane(){ if(pane){ pane.remove(); pane=null; } }
@@ -1569,16 +1570,16 @@ function initDetailSwipe(){
         pane.innerHTML=detailHTML(nextT);
         body.appendChild(pane);
         pane.style.transition='none';
-        pane.style.transform='translate3d('+(dir>0?W:-W)+'px,0,0)';
+        pane.style.transform='translate3d('+(dir>0?W+GAP:-(W+GAP))+'px,0,0)';
       }
       document.body.classList.add('swiping');
       curEl.style.transition='none';
     }
     e.preventDefault();
     if(kind==='pane'){
-      const dxc=dir>0?Math.max(-W,Math.min(0,dx)):Math.min(W,Math.max(0,dx));
+      const dxc=dir>0?Math.max(-(W+GAP),Math.min(0,dx)):Math.min(W+GAP,Math.max(0,dx));
       curEl.style.transform='translate3d('+dxc+'px,0,0)';
-      pane.style.transform='translate3d('+((dir>0?W:-W)+dxc)+'px,0,0)';
+      pane.style.transform='translate3d('+((dir>0?W+GAP:-(W+GAP))+dxc)+'px,0,0)';
     }else if(kind==='edge'){
       curEl.style.transform='translate3d('+(dx*0.28)+'px,0,0)';
     }
@@ -1589,10 +1590,10 @@ function initDetailSwipe(){
     if(kind==='pane'){
       curEl.style.transition=EASE; pane.style.transition=EASE;
       if(pass){
-        curEl.style.transform='translate3d('+(dir>0?-W:W)+'px,0,0)'; pane.style.transform='translate3d(0,0,0)';
+        curEl.style.transform='translate3d('+(dir>0?-(W+GAP):(W+GAP))+'px,0,0)'; pane.style.transform='translate3d(0,0,0)';
         setTimeout(()=>{ hap(8); detailId=nextT.id; body.innerHTML=detailHTML(nextT); endSwipe(); },220);
       }else{
-        curEl.style.transform='translate3d(0,0,0)'; pane.style.transform='translate3d('+(dir>0?W:-W)+'px,0,0)';
+        curEl.style.transform='translate3d(0,0,0)'; pane.style.transform='translate3d('+(dir>0?W+GAP:-(W+GAP))+'px,0,0)';
         setTimeout(()=>{ clearPane(); endSwipe(); },230);
       }
     }else if(kind==='edge'){
