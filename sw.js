@@ -1,5 +1,5 @@
 /* 티켓 보관함 서비스워커 — 앱 셸 캐시(오프라인 지원) */
-const CACHE='tm-shell-v16';
+const CACHE='tm-shell-v17';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png','./icon-maskable-512.png'];
 
 self.addEventListener('install',e=>{
@@ -14,8 +14,10 @@ self.addEventListener('fetch',e=>{
   const url=new URL(req.url);
   if(url.origin!==location.origin) return;        // Supabase API / CDN 은 캐시하지 않음
   // 같은 출처(앱 셸): 네트워크 우선, 실패 시 캐시 (오프라인)
+  // cache:'no-store' 필수 — 없으면 GitHub Pages의 Cache-Control(max-age=600) 때문에
+  // 배포 직후에도 브라우저 HTTP 캐시가 최대 10분간 옛 버전을 돌려줌(디버깅 대혼란의 원인이었음)
   e.respondWith(
-    fetch(req).then(res=>{
+    fetch(req,{cache:'no-store'}).then(res=>{
       const copy=res.clone();
       caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{});
       return res;
