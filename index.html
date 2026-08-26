@@ -987,6 +987,7 @@ const ICON_SEAT='<svg class="ic-seat" width="12" height="12" viewBox="0 0 24 24"
 // 예매처 브랜드 색(파비콘에서 영감). 사용자가 컬러 피커로 덮어쓸 수 있음.
 const VENDOR_COLORS={'티켓링크':'#E03E3E','멜론티켓':'#00A33F','세종문화회관':'#F9A825','YES24':'#3B82F6','샤롯데씨어터':'#E0457A','클립서비스':'#22C3E6','NOL 인터파크':'#2E63F0','LG아트센터':'#B00046'};
 const LS_VCOLORS='tm_vcolors_v1';
+const LS_DIRTY='tm_dirty_v1'; // 오프라인 중 변경된 티켓 id 목록 {up:[],del:[]} — 서버 복귀 시 밀어올림
 const PICK_PALETTE=['#E03E3E','#FF6B6B','#FF4D8D','#F0629E','#B00046','#F9A825','#FF8C42','#FFC24B','#00A33F','#2FBF71','#12B886','#35C0F0','#38BDF8','#1565D8','#4B79FF','#5B6EF5','#8B5CF6','#E0457A','#7c8598','#495a70'];
 const WD=['일','월','화','수','목','금','토'];
 const BUILTIN_CFG={url:'https://ydqabdlwzseommowiupw.supabase.co',key:'sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'};
@@ -1047,11 +1048,51 @@ function ticketToDB(t){return {vendor:t.vendor,name:t.name,show_date:t.date||nul
   seats:{seats:t.seats||[],time:t.time||'',transfer:t.transfer||{done:false},hasImg:!!t.hasImg}};}
 
 /* ===== backend ===== */
+// 네트워크 장애(서버 다운·DNS 소실·기기 오프라인)만 로컬 폴백 대상.
+// RLS 거부·제약 위반 같은 서버가 응답한 에러는 폴백하면 안 됨 — 그대로 실패시켜 사용자에게 알린다.
+function isNetErr(e){
+  if(!navigator.onLine)return true;
+  const m=String((e&&e.message)||e||'');
+  return /failed to fetch|networkerror|load failed|fetch failed|network request failed|err_name_not_resolved/i.test(m);
+}
+// 클라우드 → 오프라인 전환. 현재 목록을 로컬에 스냅샷으로 남겨 이후 편집의 기준으로 삼는다.
+function goOffline(){
+  if(mode!=='cloud')return;
+  mode='local'; saveLocal(); updateSyncPill();
+  toast('서버에 연결할 수 없어 이 기기에 임시 저장해요');
+}
+const isLocalId=id=>String(id).startsWith('t'); // 오프라인에서 만든 티켓 id는 't'+timestamp
+function markDirty(id,del){
+  id=String(id);
+  const d=load(LS_DIRTY,{up:[],del:[]});
+  d.up=d.up.filter(x=>x!==id);
+  d.del=d.del.filter(x=>x!==id);
+  if(del){ if(!isLocalId(id))d.del.push(id); } // 로컬 전용 티켓은 서버에 없으니 삭제 전송 불필요
+  else d.up.push(id);
+  localStorage.setItem(LS_DIRTY,JSON.stringify(d));
+}
+// 서버 복귀 시 오프라인 변경분을 밀어올린다. 반드시 refresh() 전에 — refresh가 로컬 목록을 서버 스냅샷으로 덮어쓰기 때문.
+async function flushDirty(){
+  if(!(mode==='cloud'&&sb))return;
+  const d=load(LS_DIRTY,{up:[],del:[]});
+  if(!d.up.length&&!d.del.length)return;
+  if(d.del.length){ const {error}=await sb.from('tickets').delete().in('id',d.del); if(error)throw error; }
+  for(const id of d.up){
+    const t=tickets.find(x=>String(x.id)===String(id)); if(!t)continue;
+    // 서버 id면 upsert — 오프라인 중 백업 import로 들어온 "서버에 없는 서버 id" 행도 함께 살린다
+    const {error}=isLocalId(id)
+      ? await sb.from('tickets').insert(ticketToDB(t))
+      : await sb.from('tickets').upsert({id,...ticketToDB(t)});
+    if(error)throw error;
+  }
+  localStorage.removeItem(LS_DIRTY);
+  toast(`오프라인 변경 ${d.up.length+d.del.length}건 동기화됨`);
+}
 async function boot(){
   render();
   const cfg=getCfg();
   if(cfg.url&&cfg.key&&window.supabase){
-    try{ sb=window.supabase.createClient(cfg.url,cfg.key); mode='cloud'; await refresh(); }
+    try{ sb=window.supabase.createClient(cfg.url,cfg.key); mode='cloud'; await flushDirty(); await refresh(); }
     catch(e){ console.error(e); mode='local'; tickets=load(LS_TICKETS,[]); render(); }
   }
   updateSyncPill();
@@ -1062,7 +1103,7 @@ async function refresh(){
   const ver=dataVer; // 조회 시작 시점의 데이터 버전
   const {data,error}=await sb.from('tickets').select('id,vendor,name,show_date,qty,price,memo,seats,created_at').order('created_at',{ascending:true});
   loading=false;
-  if(error){ toast('불러오기 실패: '+error.message); render(); return; }
+  if(error){ if(isNetErr(error)){ goOffline(); render(); return; } toast('불러오기 실패: '+error.message); render(); return; }
   if(ver!==dataVer){ render(); return; } // 조회 도중 로컬에서 저장/삭제가 일어남 → 최신 로컬 상태를 오래된 스냅샷으로 되돌리지 않도록 적용 스킵
   tickets=(data||[]).map(rowToTicket);
   try{ const {data:pd}=await sb.from('pending_uploads').select('id,status,result').neq('status','done').order('created_at',{ascending:false}); pendings=pd||[]; }catch(e){}
@@ -1199,9 +1240,12 @@ async function bulkDelete(){
   const ids=[...selectedIds];
   if(!confirm(`선택한 ${ids.length}개 티켓을 삭제할까요?`))return;
   try{
-    if(mode==='cloud'&&sb){ const {error}=await sb.from('tickets').delete().in('id',ids); if(error)throw error; }
+    if(mode==='cloud'&&sb){
+      try{ const {error}=await sb.from('tickets').delete().in('id',ids); if(error)throw error; }
+      catch(e){ if(!isNetErr(e))throw e; goOffline(); }
+    }
     tickets=tickets.filter(t=>!selectedIds.has(String(t.id))); dataVer++;
-    if(mode!=='cloud')saveLocal();
+    if(mode!=='cloud'){ ids.forEach(i=>markDirty(i,true)); saveLocal(); }
     selectMode=false; selectedIds.clear();
     render(); toast(`${ids.length}개 삭제되었어요`);
   }catch(e){ toast('삭제 실패: '+(e.message||e)); }
@@ -2121,18 +2165,24 @@ async function save(){
   };
   const btn=document.getElementById('saveBtn'); btn.disabled=true;
   try{
+    let done=false;
     if(mode==='cloud'&&sb){
-      if(editingId){
-        const {data:row,error}=await sb.from('tickets').update(ticketToDB(data)).eq('id',editingId).select().single();
-        if(error)throw error; const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]=rowToTicket(row); toast('수정되었어요');
-      }else{
-        const {data:row,error}=await sb.from('tickets').insert(ticketToDB(data)).select().single();
-        if(error)throw error; tickets.push(rowToTicket(row)); toast('추가되었어요 🎉');
-      }
-    }else{
+      try{
+        if(editingId){
+          const {data:row,error}=await sb.from('tickets').update(ticketToDB(data)).eq('id',editingId).select().single();
+          if(error)throw error; const i=tickets.findIndex(x=>x.id===editingId); if(i>-1)tickets[i]=rowToTicket(row); toast('수정되었어요');
+        }else{
+          const {data:row,error}=await sb.from('tickets').insert(ticketToDB(data)).select().single();
+          if(error)throw error; tickets.push(rowToTicket(row)); toast('추가되었어요 🎉');
+        }
+        done=true;
+      }catch(e){ if(!isNetErr(e))throw e; goOffline(); } // 서버 불통 → 아래 로컬 저장으로 폴백
+    }
+    if(!done){
+      let id=editingId;
       if(editingId){const i=tickets.findIndex(x=>x.id===editingId);if(i>-1)tickets[i]={...tickets[i],...data};toast('수정되었어요');}
-      else{tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...data});toast('추가되었어요 🎉');}
-      saveLocal();
+      else{id='t'+Date.now()+Math.floor(Math.random()*1000);tickets.push({id,...data});toast('추가되었어요 🎉');}
+      saveLocal(); markDirty(id);
     }
     dataVer++; // 로컬 상태 변경됨 → 진행 중인 새로고침이 이 저장을 덮어쓰지 않게
     if(data.date){const p=data.date.split('-').map(Number);calY=p[0];calM=p[1]-1;selDay=data.date;}
@@ -2147,9 +2197,12 @@ async function del(id){
   const t=tickets.find(x=>String(x.id)===String(id));
   if(!confirm(`"${t?t.name:'이 티켓'}"을(를) 삭제할까요?`))return;
   try{
-    if(mode==='cloud'&&sb){const {error}=await sb.from('tickets').delete().eq('id',id);if(error)throw error;}
+    if(mode==='cloud'&&sb){
+      try{ const {error}=await sb.from('tickets').delete().eq('id',id); if(error)throw error; }
+      catch(e){ if(!isNetErr(e))throw e; goOffline(); }
+    }
     tickets=tickets.filter(x=>String(x.id)!==String(id)); dataVer++;
-    if(mode!=='cloud')saveLocal();
+    if(mode!=='cloud'){ markDirty(id,true); saveLocal(); }
     render(); closeModal();
     const dOv2=document.getElementById('detailOverlay'); if(dOv2&&dOv2.classList.contains('on'))closeDetail(); // 상세 위에서 삭제 → 상세도 닫기
     toast('삭제되었어요');
@@ -2170,7 +2223,9 @@ function renderSync(){
       <button class="btn-ghost" onclick="refresh().then(()=>toast('새로고침됨'))">🔄 지금 새로고침</button>
       <button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }else{
-    box.innerHTML=`<h2>동기화 상태</h2><div class="statusbox warn">⚠️ 지금은 오프라인이라 이 기기에 임시 저장돼요. 인터넷 연결 후 새로고침하면 다시 동기화됩니다.</div>
+    const d=load(LS_DIRTY,{up:[],del:[]}), n=d.up.length+d.del.length;
+    box.innerHTML=`<h2>동기화 상태</h2><div class="statusbox warn">⚠️ 서버에 연결할 수 없어 이 기기에 임시 저장 중이에요. 그대로 계속 쓰셔도 됩니다 — 서버가 돌아오면 자동으로 다시 연결하고 변경분을 올려요.</div>
+      ${n?`<div class="statusbox warn">📤 아직 서버에 못 올린 변경 <b>${n}건</b>. 올라가기 전까지 이 기기에만 있어요 — 걱정되면 백업(내보내기)을 받아두세요.</div>`:''}
       <button class="btn-primary" onclick="location.reload()">새로고침</button><button class="btn-ghost" onclick="closeSync()">닫기</button>`;
   }
 }
@@ -2188,8 +2243,12 @@ async function importData(e){
     if(Array.isArray(d.vendors))d.vendors.forEach(v=>{if(!vendors.includes(v))vendors.push(v);});
     const have=new Set(tickets.map(t=>String(t.id)));
     const fresh=d.tickets.filter(t=>!have.has(String(t.id))); // 이미 있는 id는 건너뜀(로컬/클라우드 공통 dedup) → 같은 백업 재import 시 중복 방지
-    if(mode==='cloud'&&sb){ if(fresh.length){const {error}=await sb.from('tickets').insert(fresh.map(ticketToDB));if(error)throw error;} await refresh(); }
-    else{ fresh.forEach(t=>tickets.push(t)); dataVer++; saveLocal(); render(); }
+    let done=false;
+    if(mode==='cloud'&&sb){
+      try{ if(fresh.length){const {error}=await sb.from('tickets').insert(fresh.map(ticketToDB));if(error)throw error;} await refresh(); done=true; }
+      catch(err2){ if(!isNetErr(err2))throw err2; goOffline(); }
+    }
+    if(!done){ fresh.forEach(t=>{tickets.push(t); markDirty(t.id);}); dataVer++; saveLocal(); render(); }
     toast('불러오기 완료');
   }catch(err){toast('올바른 백업 파일이 아니에요');}};
   r.readAsText(f);e.target.value='';
@@ -2452,8 +2511,12 @@ async function duplicateTicket(id){
   const copy={vendor:t.vendor,name:t.name,date:t.date,time:t.time,qty:t.qty,price:t.price,memo:t.memo,
     seats:(t.seats||[]).map(s=>({...s})), transfer:{...(t.transfer||{done:false})}};
   try{
-    if(mode==='cloud'&&sb){ const {data:row,error}=await sb.from('tickets').insert(ticketToDB(copy)).select().single(); if(error)throw error; tickets.push(rowToTicket(row)); }
-    else{ tickets.push({id:'t'+Date.now()+Math.floor(Math.random()*1000),...copy}); saveLocal(); }
+    let done=false;
+    if(mode==='cloud'&&sb){
+      try{ const {data:row,error}=await sb.from('tickets').insert(ticketToDB(copy)).select().single(); if(error)throw error; tickets.push(rowToTicket(row)); done=true; }
+      catch(e){ if(!isNetErr(e))throw e; goOffline(); }
+    }
+    if(!done){ const id='t'+Date.now()+Math.floor(Math.random()*1000); tickets.push({id,...copy}); saveLocal(); markDirty(id); }
     dataVer++;
     render(); toast('복제되었어요 📋');
   }catch(e){ toast('복제 실패: '+(e.message||e)); }
@@ -2555,7 +2618,18 @@ initSheetDrag();
 initImgZoom();
 initDetailSwipe();
 /* 처리 현황·새 티켓 자동 갱신(팝업 열려있을 땐 건너뜀) */
-setInterval(()=>{ if(mode==='cloud'&&sb&&!document.querySelector('.overlay.on')&&!document.hidden)refresh(); }, 25000);
+setInterval(async()=>{
+  if(!sb||document.querySelector('.overlay.on')||document.hidden)return;
+  if(mode==='cloud'){ refresh(); return; }
+  if(!navigator.onLine)return;
+  // 오프라인 폴백 상태 — 서버가 살아났는지 가볍게 확인하고, 살아났으면 오프라인 변경분부터 밀어올린다
+  const {error}=await sb.from('tickets').select('id').limit(1);
+  if(error)return;
+  mode='cloud'; updateSyncPill();
+  try{ await flushDirty(); }
+  catch(e){ if(isNetErr(e)){ goOffline(); return; } toast('동기화 실패: '+(e.message||e)); }
+  refresh();
+}, 25000);
 if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));}
 </script>
 </body>
