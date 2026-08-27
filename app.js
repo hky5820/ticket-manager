@@ -49,10 +49,10 @@ const monthOf=i=>{ for(let k=i;k>=0;k--) if(ITEMS[k]&&ITEMS[k].gate==='month') r
 /* ===== 화면 전환 ===== */
 let screen='home';
 function showScreen(k){ screen=k; closeDetail(); ['home','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
-  if(k==='vault'){ requestAnimationFrame(()=>{ pos=Math.round(Math.max(0,Math.min(N()-1,pos))); target=null; vel=0; tilt=0; render(); }); }
+  if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); render(); }); }
   if(k==='home')renderHome(); if(k==='money')renderMoney(); if(k==='set')renderSet(); }
 $('nav').addEventListener('click',e=>{ const d=e.target.closest('[data-scr]'); if(d){ hap(8); showScreen(d.dataset.scr); } });
-function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); pos=i; render(); }
+function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; render(); }
 
 /* ===== 홈 ===== */
 function applyHomeAmb(v){ homeAmb=v; localStorage.setItem('tm_homeamb',v?'1':'0'); app.classList.toggle('home-amb',v); $('homeBgBtn').classList.toggle('on',v); const nx=UP[0]; const ha=$('homeamb'); if(ha&&nx) ha.style.background=`radial-gradient(80% 60% at 50% 30%, ${colorFor(nx.vendor)} 0%, ${colorFor(nx.vendor)}00 100%)`; }
@@ -100,7 +100,7 @@ function renderHome(){
 $('homeBody').addEventListener('click',e=>{ const hv=e.target.closest('[data-hv]'); if(hv){ setHomeView(hv.dataset.hv); return; } const it=e.target.closest('[data-id]'); if(it){ const i=ITEMS.findIndex(x=>String(x.id)===String(it.dataset.id)); if(i>=0)openDetail(i); } });
 
 /* ===== 보관함: 카드 스택 ===== */
-let els=[], mode='flow', pos=0, vel=0, target=null, dragging=false, lastY=0, lastT=0, raf, moved=0, ovScroll=0, ovVel=0, tilt=0, tiltV=0;
+let els=[], mode='flow', pos=0, vel=0, target=null, dragging=false, lastY=0, lastT=0, raf, moved=0, ovScroll=0, ovVel=0, tilt=0;
 const N=()=>ITEMS.length;
 let _vaultSig=null;
 function buildVault(){
@@ -157,9 +157,9 @@ function buildDock(){
 const fracOf=q=>{ const n=N(); if(n<2)return 0; const i=Math.floor(q), f=q-i; const a=W[Math.max(0,Math.min(n,i))], b=W[Math.max(0,Math.min(n,i+1))]; return (a+(b-a)*f)/(W[n-1]||1); };
 const posOf=fr=>{ const n=N(); const x=fr*(W[n-1]||0); for(let i=0;i<n-1;i++){ if(x<=W[i+1]) return i+(x-W[i])/((W[i+1]-W[i])||1); } return n-1; };
 let scrub=null;
-progEl.addEventListener('pointerdown',e=>{ progEl.setPointerCapture(e.pointerId); scrub=true; target=null; vel=0; scrubTo(e); });
+progEl.addEventListener('pointerdown',e=>{ progEl.setPointerCapture(e.pointerId); scrub=true; anim=null; target=null; vel=0; scrubTo(e); });
 progEl.addEventListener('pointermove',e=>{ if(scrub)scrubTo(e); });
-progEl.addEventListener('pointerup',()=>{ scrub=null; target=Math.round(pos); kick(); });
+progEl.addEventListener('pointerup',()=>{ scrub=null; glide(Math.round(pos),0); });
 function scrubTo(e){ const r=progEl.getBoundingClientRect(); const fr=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); pos=posOf(fr); render(); }
 function renderDock(){
   const cur=Math.max(0,Math.min(N()-1,Math.round(pos)));
@@ -195,13 +195,17 @@ function renderShows(){
     return `<div class="sg" data-i="${ITEMS.indexOf(f)}"><div class="st">${g.length>2?'<div class="b2"></div>':''}${g.length>1?'<div class="b1"></div>':''}${posterImg(f)}<div class="n">${g.length}</div></div><div><h3>${esc(short(name))}</h3><div class="m">${esc(f.venue||f.vendor||'')}</div><div class="ds">${g.map(t=>`<span class="${(ddayN(t.date)!==null&&ddayN(t.date)<=9)?'soon':''}">${t.date?(+t.date.slice(5,7))+'.'+(+t.date.slice(8,10)):'미정'}</span>`).join('')}</div><div class="sum">${g.length}장 · ${q}매 · ${won(sum)}${pastN.length?` · 지난 ${pastN.length}건 <b>${signMoney(profit)}</b>`:''}</div></div></div>`; }).join(''):`<div class="empty"><b>다가오는 티켓이 없어요</b></div>`;
 }
 $('shows').addEventListener('click',e=>{ const g=e.target.closest('.sg'); if(!g)return; setMode('flow'); snapTo(+g.dataset.i); });
-function setMode(m){ mode=m; app.classList.remove('m-grid','m-shows'); if(m!=='flow')app.classList.add('m-'+m); stage.classList.add('anim'); setTimeout(()=>stage.classList.remove('anim'),600); if(m==='grid'){ buildOv(); const i=Math.round(pos); ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),(ovPos[i]||{y:0}).y-80)); ovVel=0; } if(m==='shows')renderShows(); renderBar(); target=null; vel=0; kick(); }
+function setMode(m){ mode=m; app.classList.remove('m-grid','m-shows'); if(m!=='flow')app.classList.add('m-'+m); stage.classList.add('anim'); setTimeout(()=>stage.classList.remove('anim'),600); if(m==='grid'){ buildOv(); const i=Math.round(pos); ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),(ovPos[i]||{y:0}).y-80)); ovVel=0; } if(m==='shows')renderShows(); renderBar(); anim=null; target=null; vel=0; kick(); }
 
-/* 물리 */
-let lastIdx=-1;
+/* 물리 — 손을 뗀 뒤엔 "어디에 얼마 만에 멈출지"를 먼저 정하고 감속 곡선(에르미트) 하나로 간다.
+   스프링으로 목표를 끌어당기던 방식은 손 뗀 직후 오히려 빨라져서 부자연스러웠다. */
+const PITCH=140, FLING=20;            /* 손 뗀 속도 × FLING = 그대로 굴러갈 거리(카드 수) */
+const clampI=i=>Math.max(0,Math.min(N()-1,i));
+let anim=null, lastIdx=-1, lastMoveAt=0, wasMoving=false;
+
 function render(){
-  tilt+=(tiltV-tilt)*0.18; tiltV*=0.9;
-  if(mode!=='grid'){ const ci=Math.round(Math.max(0,Math.min(N()-1,pos))); if(ci!==lastIdx){ if(lastIdx>=0)hap(7); lastIdx=ci; } }
+  tilt+=(Math.max(-5,Math.min(5,-vel*24))-tilt)*0.22;
+  if(mode!=='grid'){ const ci=clampI(Math.round(pos)); if(ci!==lastIdx){ if(lastIdx>=0)hap(7); lastIdx=ci; } }
   const H=stage.clientHeight, n=N();
   for(let i=0;i<n;i++){
     const d=i-pos, el=els[i], it=ITEMS[i], a=Math.abs(d); if(!el)continue;
@@ -210,7 +214,9 @@ function render(){
     el.style.display='';
     let z,y,op,dim,blur;
     if(d>=0){ const S=34*(1-Math.pow(0.78,d))/(1-0.78); z=-d*70; y=-S; op=Math.max(0,1-d*0.28); dim=Math.min(.7,d*0.3); blur=Math.max(0,Math.min(1.2,(d-1)*0.6)); el.style.zIndex=String(1000-Math.round(d*10)); }
-    else{ const q=-d; z=q*30; y=q*300; op=Math.max(0,1-q*1.5); dim=0; blur=0; el.style.zIndex='1200'; }
+    /* 앞으로 빠지는 카드: 정면(d=0)에서 뒤 스택과 기울기를 맞춘 뒤 가속해 떨어진다.
+       예전엔 y=q*300이라 정면을 지나는 순간 속도가 8배로 튀어 뚝 끊겨 보였다. */
+    else{ const q=-d; z=q*30; y=38*q+262*q*q; op=Math.max(0,1-(0.28*q+0.85*q*q)); dim=0; blur=0; el.style.zIndex='1200'; }
     el.classList.toggle('front',a<0.5);
     el.style.setProperty('--glow', d>=0&&d<1.6 ? (d<1 ? (1-d*0.45).toFixed(2) : (0.55*(1.6-d)/0.6).toFixed(2)) : 0);
     const tl=it.gate?0:tilt*(1-Math.min(1,a*0.6));
@@ -219,40 +225,62 @@ function render(){
     if(!it.gate){ el.querySelector('.dim').style.opacity=dim; el.querySelector('.sheen').style.opacity=Math.max(0,1-a*2)*0.9; }
   }
   if(mode!=='grid')renderDock();
-  const cur=Math.max(0,Math.min(n-1,Math.round(pos))); const t=ITEMS[cur]; if(t&&!t.gate&&imm==='ambient'){ $('ambient').style.backgroundImage=`radial-gradient(90% 55% at 50% 22%, ${colorFor(t.vendor)} 0%, ${colorFor(t.vendor)}00 100%)`; }
+  const cur=clampI(Math.round(pos)); const t=ITEMS[cur]; if(t&&!t.gate&&imm==='ambient'){ $('ambient').style.backgroundImage=`radial-gradient(90% 55% at 50% 22%, ${colorFor(t.vendor)} 0%, ${colorFor(t.vendor)}00 100%)`; }
 }
+/* to번 카드까지 감속 곡선으로 이동. v0(카드/프레임)를 이어받아 시작하므로 손을 뗀 순간 속도가 끊기지 않는다.
+   T=1.5·거리/속도 로 잡으면 속도가 v0·(1−s²)로 단조 감소한다 — 중간에 빨라지는 구간이 없다. */
+function glide(to,v0){
+  to=clampI(to); anim=null; const d=to-pos;
+  if(Math.abs(d)<0.0005){ pos=to; vel=0; tilt=0; target=null; render(); return; }
+  const v=(v0&&Math.sign(d)===Math.sign(v0))?v0:0;
+  const T=Math.max(11,Math.min(42, v?Math.min(1.5*Math.abs(d)/Math.abs(v),14+Math.abs(d)*8):14+Math.abs(d)*3));   /* 살짝 밀고 뗀 경우엔 늘어지지 않게 상한 */
+  anim={p0:pos,d,v0:v,T,t:0}; target=to; kick();
+}
+const snapTo=i=>glide(i,0);
 function tick(){
-  const n=N();
-  if(!dragging){
-    if(mode==='grid'){ ovScroll+=ovVel; ovVel*=0.93; const max=Math.max(0,OV.total-380); if(ovScroll<0)ovScroll+=(0-ovScroll)*0.25; if(ovScroll>max)ovScroll+=(max-ovScroll)*0.25; if(Math.abs(ovVel)<0.05&&ovScroll>=0&&ovScroll<=max){ render(); return; } }
-    else{ if(target==null)target=Math.round(Math.max(0,Math.min(n-1,pos)));
-      /* 임계감쇠 스프링: 현재 속도를 이어받아 목표 카드까지 한 곡선으로 감속 */
-      const diff=target-pos; vel+=diff*0.022-vel*0.3; pos+=vel; tiltV=Math.max(-4,Math.min(4,-vel*22));
-      if(Math.abs(diff)<0.002&&Math.abs(vel)<0.002&&Math.abs(tilt)<0.05){ pos=target; target=null; vel=0; tilt=0; render(); return; } }
-  }
+  if(dragging)return;                 /* 드래그 중엔 pointermove가 직접 그린다 */
+  if(mode==='grid'){
+    ovScroll+=ovVel; ovVel*=0.93; const max=Math.max(0,OV.total-380);
+    if(ovScroll<0)ovScroll+=(0-ovScroll)*0.25; if(ovScroll>max)ovScroll+=(max-ovScroll)*0.25;
+    if(Math.abs(ovVel)<0.05&&ovScroll>=0&&ovScroll<=max){ render(); return; }
+  } else if(anim){
+    const a=anim, s=Math.min(1,++a.t/a.T), s2=s*s, s3=s2*s;
+    pos=a.p0+a.d*(3*s2-2*s3)+a.v0*a.T*(s-2*s2+s3);
+    vel=(a.d*(6*s-6*s2)+a.v0*a.T*(1-4*s+3*s2))/a.T;
+    if(s>=1){ pos=a.p0+a.d; vel=0; anim=null; target=null; tilt=0; render(); return; }
+  } else { vel=0; render(); return; }
   render(); raf=requestAnimationFrame(tick);
 }
 function kick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(tick); }
-const PITCH=140; let base=0;
-const clampI=i=>Math.max(0,Math.min(N()-1,i));
-function snapTo(i){ target=clampI(i); vel=0; kick(); }
-stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return; dragging=true; base=clampI(Math.round(target!=null?target:pos)); target=null; vel=0; ovVel=0; lastY=e.clientY; lastT=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
+stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return;
+  wasMoving=!!anim; anim=null; target=null; dragging=true; vel=0; ovVel=0;
+  lastY=e.clientY; lastT=lastMoveAt=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
 stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.clientY-lastY, now=performance.now(), dt=Math.max(1,now-lastT);
   if(mode==='grid'){ ovScroll-=dy; ovVel=-dy*(16/dt); }
-  else { let step=dy/PITCH; /* 아래로 끌면 다음 카드 */ if(pos<0||pos>N()-1)step*=0.35; pos+=step; vel=(dy/PITCH)*(16/dt); tiltV=Math.max(-5,Math.min(5,-vel*28)); }
-  lastY=e.clientY; lastT=now; moved+=Math.abs(dy); render(); });
+  else { let step=dy/PITCH;                                          /* 아래로 끌면 다음 카드 */
+    const over=pos<0?-pos:(pos>N()-1?pos-(N()-1):0); if(over>0)step/=1+over*6;   /* 가장자리로 갈수록 고무줄 저항 */
+    pos+=step;
+    const v=(dy/PITCH)*(16/dt); vel=vel*0.55+v*0.45;                 /* 마지막 이벤트 하나만 쓰면 뗄 때 값이 널뛴다 */
+  }
+  lastY=e.clientY; lastT=lastMoveAt=now; moved+=Math.abs(dy); render(); });
 stage.addEventListener('pointerup',e=>{ dragging=false;
-  if(moved<6){ const hit=document.elementFromPoint(e.clientX,e.clientY); const c=hit&&hit.closest('.card,.gate'); const onAsk=hit&&hit.closest('.ask span');
+  if(moved<6){
+    if(wasMoving&&mode!=='grid'){ glide(Math.round(pos),0); return; }   /* 굴러가는 중 탭 = 그 자리에서 멈추기 */
+    const hit=document.elementFromPoint(e.clientX,e.clientY); const c=hit&&hit.closest('.card,.gate'); const onAsk=hit&&hit.closest('.ask span');
     if(c){ const i=+c.dataset.i; if(mode==='grid'){ setMode('flow'); pos=i; render(); return; }
-      if(i===Math.round(pos)){ if(!ITEMS[i].gate){ const wasAsk=c.classList.contains('ask'); els.forEach(x=>x.classList.remove('ask')); if(wasAsk||onAsk)openDetail(i); else { c.classList.add('ask'); c._askT=performance.now(); } } } else { els.forEach(x=>x.classList.remove('ask')); snapTo(i); } }
-    else { target=base; kick(); }
+      if(i===Math.round(pos)){ if(!ITEMS[i].gate){ const wasAsk=c.classList.contains('ask'); els.forEach(x=>x.classList.remove('ask')); if(wasAsk||onAsk)openDetail(i); else { c.classList.add('ask'); c._askT=performance.now(); } } }
+      else { els.forEach(x=>x.classList.remove('ask')); glide(i,0); } }
+    else if(mode!=='grid')glide(Math.round(pos),0);
     return; }
   if(mode==='grid'){ ovVel=Math.max(-40,Math.min(40,ovVel)); kick(); return; }
-  vel=Math.max(-0.45,Math.min(0.45,vel)); const proj=pos+vel*14; /* 관성 투영: 손 뗀 속도로 어디까지 갈지 */ target=clampI(Math.round(Math.abs(proj-pos)<0.18?pos:proj)); kick(); });
-stage.addEventListener('pointercancel',()=>{ dragging=false; target=clampI(Math.round(pos)); kick(); });
-let wheelAcc=0, wheelAt=0;
-stage.addEventListener('wheel',e=>{ e.preventDefault(); if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
-  wheelAcc+=e.deltaY; const now=performance.now(); if(Math.abs(wheelAcc)>50&&now-wheelAt>200){ snapTo((target!=null?target:Math.round(pos))+Math.sign(wheelAcc)); tiltV=Math.max(-5,Math.min(5,-wheelAcc/40)); wheelAcc=0; wheelAt=now; } },{passive:false});
+  if(performance.now()-lastMoveAt>90)vel=0;                          /* 떼기 전에 손가락이 멈췄으면 관성 없음 */
+  vel=Math.max(-0.6,Math.min(0.6,vel));
+  glide(Math.round(pos+vel*FLING),vel); });
+stage.addEventListener('pointercancel',()=>{ dragging=false; if(mode!=='grid')glide(Math.round(pos),0); });
+stage.addEventListener('wheel',e=>{ e.preventDefault();
+  if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
+  const v=Math.max(-0.6,Math.min(0.6,(anim?vel:0)+e.deltaY/PITCH*0.08));
+  glide(Math.round(pos+v*FLING),v); },{passive:false});
 
 /* ===== 결산 ===== */
 let moneyTab='xfer';
