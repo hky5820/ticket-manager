@@ -198,13 +198,14 @@ $('shows').addEventListener('click',e=>{ const g=e.target.closest('.sg'); if(!g)
 function setMode(m){ mode=m; app.classList.remove('m-grid','m-shows'); if(m!=='flow')app.classList.add('m-'+m); stage.classList.add('anim'); setTimeout(()=>stage.classList.remove('anim'),600); if(m==='grid'){ buildOv(); const i=Math.round(pos); ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),(ovPos[i]||{y:0}).y-80)); ovVel=0; } if(m==='shows')renderShows(); renderBar(); anim=null; target=null; vel=0; kick(); }
 
 /* 물리 — 손을 뗀 뒤엔 "어디에 얼마 만에 멈출지"를 먼저 정하고 감속 곡선(에르미트) 하나로 간다.
-   스프링으로 목표를 끌어당기던 방식은 손 뗀 직후 오히려 빨라져서 부자연스러웠다. */
-const PITCH=140, FLING=20;            /* 손 뗀 속도 × FLING = 그대로 굴러갈 거리(카드 수) */
+   스프링으로 목표를 끌어당기던 방식은 손 뗀 직후 오히려 빨라져서 부자연스러웠다.
+   PITCH(카드 한 장 = 손가락 이동 px)는 앞으로 빠지는 카드의 이동 거리와 맞춰 둔다 — 어긋나면 천천히 끌어도 카드만 확 내려간다. */
+const PITCH=185, FLING=20;            /* 손 뗀 속도 × FLING = 그대로 굴러갈 거리(카드 수) */
 const clampI=i=>Math.max(0,Math.min(N()-1,i));
 let anim=null, lastIdx=-1, lastMoveAt=0, wasMoving=false;
 
 function render(){
-  tilt+=(Math.max(-5,Math.min(5,-vel*24))-tilt)*0.22;
+  tilt+=(Math.max(-5,Math.min(5,-vel*32))-tilt)*0.22;
   if(mode!=='grid'){ const ci=clampI(Math.round(pos)); if(ci!==lastIdx){ if(lastIdx>=0)hap(7); lastIdx=ci; } }
   const H=stage.clientHeight, n=N();
   for(let i=0;i<n;i++){
@@ -216,7 +217,7 @@ function render(){
     if(d>=0){ const S=34*(1-Math.pow(0.78,d))/(1-0.78); z=-d*70; y=-S; op=Math.max(0,1-d*0.28); dim=Math.min(.7,d*0.3); blur=Math.max(0,Math.min(1.2,(d-1)*0.6)); el.style.zIndex=String(1000-Math.round(d*10)); }
     /* 앞으로 빠지는 카드: 정면(d=0)에서 뒤 스택과 기울기를 맞춘 뒤 가속해 떨어진다.
        예전엔 y=q*300이라 정면을 지나는 순간 속도가 8배로 튀어 뚝 끊겨 보였다. */
-    else{ const q=-d; z=q*30; y=38*q+262*q*q; op=Math.max(0,1-(0.28*q+0.85*q*q)); dim=0; blur=0; el.style.zIndex='1200'; }
+    else{ const q=-d; z=q*30; y=38*q+165*Math.pow(q,1.5); op=Math.max(0,1-(0.28*q+0.72*q*q)); dim=0; blur=0; el.style.zIndex='1200'; }
     el.classList.toggle('front',a<0.5);
     el.style.setProperty('--glow', d>=0&&d<1.6 ? (d<1 ? (1-d*0.45).toFixed(2) : (0.55*(1.6-d)/0.6).toFixed(2)) : 0);
     const tl=it.gate?0:tilt*(1-Math.min(1,a*0.6));

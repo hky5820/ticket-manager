@@ -445,7 +445,7 @@
   /* 홈 상단 포스터 배경 (토글) */
   #scr-home{position:relative}
   .scroll{position:relative}
-  .homeamb{position:absolute;left:-18px;right:-18px;top:0;height:330px;opacity:0;transition:opacity .5s,background .5s;pointer-events:none;z-index:0;filter:blur(30px) saturate(1.15)}
+  .homeamb{position:absolute;left:0;right:0;top:0;height:330px;opacity:0;transition:opacity .5s,background .5s;pointer-events:none;z-index:0;filter:blur(30px) saturate(1.15)}
   .app.home-amb .homeamb{opacity:.38}
   #scr-home .scroll>*:not(.homeamb){position:relative;z-index:1}
   .app.home-amb #scr-home .tb .pill{color:var(--ink-2)}
@@ -685,3 +685,5 @@
   *{-webkit-tap-highlight-color:transparent}
   .photo .th{overflow:hidden} .photo .th img{width:100%;height:100%;object-fit:cover;display:block}
   .dfoot{display:none}
+  /* 홈 배경 글로우가 패딩 밖으로 삐져나와 스크롤 영역에 가로 18px가 생겨 화면이 좌우로 밀리던 것 */
+  .scroll{overflow-x:hidden!important;overscroll-behavior-x:none;touch-action:pan-y}
