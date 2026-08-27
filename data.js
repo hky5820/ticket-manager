@@ -76,15 +76,15 @@ export function seatLine(t){
 export function normGrade(g){ g=(g||'').trim(); if(/^OP석?$/i.test(g)||/오피/.test(g))return 'OP'; return g.replace(/석$/,'')||g; }
 
 /* ===== DB blob 매핑 (seats jsonb 하나에 전부 패킹 — 컬럼 추가 없음) =====
-   seats = { seats:[{grade,floor,zone,row,no,x?,t?,tp?,tto?,tvia?,pp?}], time, transfer:{done,price,to,platform}, hasImg, poster?, venue?, perSeat? } */
+   seats = { seats:[{grade,floor,zone,row,no,x?,t?,tp?,tto?,tvia?,pp?}], time, transfer:{done,price,to,platform}, hasImg, poster?, venue?, perSeat?, tone?(포스터 대표색 hex, tools/posters.py 가 계산) } */
 export function parseBlob(raw){
   if(Array.isArray(raw)) return {seats:raw,time:'',transfer:{done:false}};
   raw=(raw&&typeof raw==='object')?raw:{};
-  return {seats:Array.isArray(raw.seats)?raw.seats:[], time:raw.time||'', transfer:raw.transfer||{done:false}, hasImg:!!raw.hasImg, poster:raw.poster||'', venue:raw.venue||'', perSeat:!!raw.perSeat};
+  return {seats:Array.isArray(raw.seats)?raw.seats:[], time:raw.time||'', transfer:raw.transfer||{done:false}, hasImg:!!raw.hasImg, poster:raw.poster||'', tone:raw.tone||'', venue:raw.venue||'', perSeat:!!raw.perSeat};
 }
-export function rowToTicket(r){const b=parseBlob(r.seats);return {id:r.id,vendor:r.vendor,name:r.name,date:r.show_date||'',time:b.time,qty:r.qty,price:r.price,memo:r.memo,seats:b.seats,transfer:b.transfer,hasImg:b.hasImg,poster:b.poster,venue:b.venue,perSeat:b.perSeat,created:r.created_at};}
+export function rowToTicket(r){const b=parseBlob(r.seats);return {id:r.id,vendor:r.vendor,name:r.name,date:r.show_date||'',time:b.time,qty:r.qty,price:r.price,memo:r.memo,seats:b.seats,transfer:b.transfer,hasImg:b.hasImg,poster:b.poster,tone:b.tone,venue:b.venue,perSeat:b.perSeat,created:r.created_at};}
 export function ticketToDB(t){return {vendor:t.vendor,name:t.name,show_date:t.date||null,qty:numOrNull(t.qty),price:numOrNull(t.price),memo:t.memo||null,
-  seats:{seats:t.seats||[],time:t.time||'',transfer:t.transfer||{done:false},hasImg:!!t.hasImg,poster:t.poster||'',venue:t.venue||'',perSeat:!!t.perSeat}};}
+  seats:{seats:t.seats||[],time:t.time||'',transfer:t.transfer||{done:false},hasImg:!!t.hasImg,poster:t.poster||'',tone:t.tone||'',venue:t.venue||'',perSeat:!!t.perSeat}};}
 
 /* ===== 오프라인 폴백 ===== */
 export function isNetErr(e){

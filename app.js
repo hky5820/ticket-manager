@@ -3,13 +3,17 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v38 · 2026-08-27';
+const BUILD='v39 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
 /* ===== 테마 · 설정값 ===== */
-let dark=localStorage.getItem('tm_theme')==='dark';
-function applyDark(v){ dark=v; localStorage.setItem('tm_theme',v?'dark':'light'); app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#000000':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
+let themePref=localStorage.getItem('tm_theme')||'system';   /* 'system' | 'light' | 'dark' */
+const sysDark=matchMedia('(prefers-color-scheme: dark)');
+let dark=false;
+function applyTheme(pref){ themePref=pref; localStorage.setItem('tm_theme',pref); applyDark(pref==='dark'||(pref==='system'&&sysDark.matches)); }
+sysDark.addEventListener('change',()=>{ if(themePref==='system'){ applyTheme('system'); if(screen==='set')renderSet(); } });
+function applyDark(v){ dark=v; app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#000000':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
 let imm=localStorage.getItem('tm_imm')||'vignette';
 function applyImm(v){ imm=v; localStorage.setItem('tm_imm',v); app.classList.remove('imm-dark','imm-ambient','imm-vignette'); if(v!=='off')app.classList.add('imm-'+v); $('bgBtn').classList.toggle('on',v==='ambient'); }
 let homeAmb=localStorage.getItem('tm_homeamb')==='1';
@@ -26,6 +30,7 @@ function itemProfit(t){ const a=ticketAcct(t); return a.hasXfer?Math.round(a.pro
 const profitTxt=t=>{ const pr=itemProfit(t); return pr===null?'':`<span class="ptxt${pr<0?' neg':''}">${pr>=0?'+':'−'}${won(Math.abs(pr))}</span>`; };
 function soldCost(t){ const a=ticketAcct(t); return Math.round(a.recv-a.profit); }
 function ddCls(t){ const d=ddayN(t.date); return isSold(t)?'ok':(d!==null&&d<=9)?'soon':'dday'; }
+const toneOf=t=>t.tone||colorFor(t.vendor);   /* 포스터 대표색(서버에서 계산해 둔 것) → 없으면 예매처 색 */
 function posterStyle(t){ return t.poster?'':`background:linear-gradient(160deg,${colorFor(t.vendor)}66,#111 90%)`; }
 function posterImg(t,cls){ return t.poster?`<img class="${cls||''}" src="${esc(t.poster)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:`<div class="${cls||''} noposter" style="${posterStyle(t)}"><span>${esc(short(t.name).slice(0,12))}</span></div>`; }
 
@@ -72,7 +77,7 @@ $('nav').addEventListener('click',e=>{ const d=e.target.closest('[data-scr]'); i
 function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; pv=pvb=i; render(); }
 
 /* ===== 홈 ===== */
-function applyHomeAmb(v){ homeAmb=v; localStorage.setItem('tm_homeamb',v?'1':'0'); app.classList.toggle('home-amb',v); $('homeBgBtn').classList.toggle('on',v); const nx=UP[0]; const ha=$('homeamb'); if(ha&&nx) ha.style.background=`radial-gradient(80% 60% at 50% 30%, ${colorFor(nx.vendor)} 0%, ${colorFor(nx.vendor)}00 100%)`; }
+function applyHomeAmb(v){ homeAmb=v; localStorage.setItem('tm_homeamb',v?'1':'0'); app.classList.toggle('home-amb',v); $('homeBgBtn').classList.toggle('on',v); const nx=UP[0]; const ha=$('homeamb'); if(ha&&nx) ha.style.background=`radial-gradient(80% 60% at 50% 30%, ${toneOf(nx)} 0%, ${toneOf(nx)}00 100%)`; }
 $('homeBgBtn').addEventListener('click',()=>applyHomeAmb(!homeAmb));
 function setHomeView(v){ homeView=v; localStorage.setItem('tm_homeview',v); renderHome(); enter($('homeBody'),true); }
 function renderPendBanner(){
@@ -121,7 +126,7 @@ let els=[], mode='flow', pos=0, vel=0, target=null, dragging=false, lastY=0, las
 const N=()=>ITEMS.length;
 let _vaultSig=null;
 function buildVault(){
-  const sig=JSON.stringify(ITEMS.map(it=>it.gate?it.gate+(it.ym||''):[it.id,it.name,it.date,it.time,it.price,it.qty,it.poster,it.vendor,JSON.stringify(it.seats),JSON.stringify(it.transfer)]));
+  const sig=JSON.stringify(ITEMS.map(it=>it.gate?it.gate+(it.ym||''):[it.id,it.name,it.date,it.time,it.price,it.qty,it.poster,it.tone,it.vendor,JSON.stringify(it.seats),JSON.stringify(it.transfer)]));
   if(sig===_vaultSig)return; _vaultSig=sig;
   const curId=ITEMS[Math.round(pos)]&&ITEMS[Math.round(pos)].id;
   stage.innerHTML=''; els=ITEMS.map((it,i)=>{
@@ -133,7 +138,7 @@ function buildVault(){
       else { el.innerHTML=`<b>지난 ${it.n}건</b><span>양도차익 <i style="font-style:normal;color:var(--good)">${signMoney(it.profit)}</i></span>`; }
     }else{
       const t=it, dd=dday(t.date), past=isPast(t), soon=(ddayN(t.date)!==null&&ddayN(t.date)<=9&&ddayN(t.date)>=0);
-      el.className='card mid'+(past?' isPast':''); el.style.setProperty('--tone',colorFor(t.vendor));
+      el.className='card mid'+(past?' isPast':''); el.style.setProperty('--tone',toneOf(t));
       const chip = isSold(t) ? `<span class="chip xf">양도</span>` : past ? `<span class="chip past">관람</span>` : `<span class="chip ${soon?'dd':''}">${dd}</span>`;
       const hi=holdInfo(t);
       el.innerHTML = `${t.n>1?'<div class="fan f2"></div><div class="fan f1"></div>':''}
@@ -205,7 +210,8 @@ function renderBar(){ $('modeLbl').textContent=MODE_LABEL[mode]; }
 $('modeBtn').addEventListener('click',()=>setMode(MODES[(MODES.indexOf(mode)+1)%MODES.length]));
 $('bgBtn').addEventListener('click',()=>applyImm(imm==='ambient'?'vignette':'ambient'));
 const OV={s:.44, pitch:150, colX:[-62,62], labelH:60}; let ovPos=[];
-function buildOv(){ ovPos=[]; let y=0, col=0; ITEMS.forEach((it,i)=>{ if(it.gate){ if(col===1){ y+=OV.pitch; col=0; } ovPos[i]={x:0,y,label:true}; y+=OV.labelH; } else { ovPos[i]={x:OV.colX[col],y}; col=(col+1)%2; if(col===0)y+=OV.pitch; } }); if(col===1)y+=OV.pitch; OV.total=y; }
+function ovOrder(){ /* 최신이 위, 옛날이 아래: 월 묶음을 뒤집고 묶음 안도 뒤집되 라벨(게이트)은 묶음 맨 위에 */ const groups=[]; let cur=null; ITEMS.forEach((it,i)=>{ if(it.gate){ cur={gate:i,items:[]}; groups.push(cur); } else if(cur)cur.items.push(i); }); const out=[]; for(const g of groups.slice().reverse()){ out.push(g.gate); out.push(...g.items.slice().reverse()); } return out; }
+function buildOv(){ ovPos=[]; let y=0, col=0; ovOrder().forEach(i=>{ const it=ITEMS[i]; if(it.gate){ if(col===1){ y+=OV.pitch; col=0; } ovPos[i]={x:0,y,label:true}; y+=OV.labelH; } else { ovPos[i]={x:OV.colX[col],y}; col=(col+1)%2; if(col===0)y+=OV.pitch; } }); if(col===1)y+=OV.pitch; OV.total=y; }
 function renderShows(){
   const gs=Object.entries(showGroups).sort((a,b)=>(a[1][0].date||'')<(b[1][0].date||'')?-1:1);
   $('shows').innerHTML=gs.length?gs.map(([name,g])=>{ const f=g[0],q=g.reduce((a,t)=>a+ticketAcct(t).held,0),sum=g.reduce((a,t)=>a+(Number(t.price)||0),0); const pastN=T.filter(t=>t.name===name&&isPast(t)), profit=pastN.reduce((a,t)=>a+(itemProfit(t)||0),0);
@@ -248,7 +254,7 @@ function render(){
     if(!it.gate){ el.querySelector('.dim').style.opacity=dim; el.querySelector('.sheen').style.opacity=Math.max(0,1-a*2)*0.9; }
   }
   if(mode!=='grid')renderDock();
-  const cur=clampI(Math.round(pos)); const t=ITEMS[cur]; if(t&&!t.gate&&imm==='ambient'){ $('ambient').style.backgroundImage=`radial-gradient(90% 55% at 50% 22%, ${colorFor(t.vendor)} 0%, ${colorFor(t.vendor)}00 100%)`; }
+  const cur=clampI(Math.round(pos)); const t=ITEMS[cur]; if(t&&!t.gate&&imm==='ambient'){ $('ambient').style.backgroundImage=`radial-gradient(90% 55% at 50% 22%, ${toneOf(t)} 0%, ${toneOf(t)}00 100%)`; }
 }
 /* to번 카드까지 감속 곡선으로 이동. v0(카드/프레임)를 이어받아 시작하므로 손을 뗀 순간 속도가 끊기지 않는다.
    T=1.5·거리/속도 로 잡으면 속도가 v0·(1−s²)로 단조 감소한다 — 중간에 빨라지는 구간이 없다. */
@@ -333,7 +339,7 @@ function renderSet(){
     <div class="hsec"><h2>보관함 배경</h2><small>포스터 뒤</small></div>
     <div class="immseg">${[['vignette','비네트'],['ambient','포스터 색'],['off','없음'],['dark','어둡게']].map(([k,n])=>`<div data-imm="${k}" class="${k===imm?'on':''}">${n}</div>`).join('')}</div>
     <div class="tile" style="padding:2px 14px">
-      <div class="srow" id="darkRow"><div><b>다크 모드</b><small>전체 화면 어둡게</small></div><div class="sw ${dark?'':'off'}"></div></div>
+      <div class="srow" style="display:block"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>테마</b><small>시스템: 폰 다크모드를 따라감 (내비 바 색과 맞춤)</small></div></div><div class="immseg" id="themeSeg" style="margin:10px 0 4px">${[['system','시스템'],['light','라이트'],['dark','다크']].map(([k,n])=>`<div data-theme="${k}" class="${k===themePref?'on':''}">${n}</div>`).join('')}</div></div>
       <div class="srow" data-set="vcolor"><div><b>예매처 색 관리</b><small>${D.allVendors().slice(0,5).map(esc).join(' · ')}</small></div><span class="v">${D.allVendors().length} ›</span></div>
       <div class="srow" data-set="pend"><div><b>AI 캡처 대기열</b><small>인식 대기 중인 캡처</small></div><span class="v">${st.pendings.length}장 ›</span></div>
       <div class="srow" data-set="sync"><div><b>동기화</b><small>${st.mode==='cloud'?'Supabase · 25초마다 자동':'오프라인 · 이 기기에 임시 저장'}${dirty?` · 미전송 ${dirty}건`:''}</small></div><span class="v" style="color:${st.mode==='cloud'?'var(--good)':'#e5484d'}">● ${st.mode==='cloud'?'연결됨':'끊김'}</span></div>
@@ -342,7 +348,7 @@ function renderSet(){
       <div class="srow" data-set="bulk"><div><b>여러 장 삭제</b><small>홈 목록에서 선택</small></div><span class="v">›</span></div>
       <div class="srow" data-set="update"><div><b>버전</b><small>새 버전 확인 · 탭하면 지금 가져옴</small></div><span class="v">${BUILD}${navigator.serviceWorker&&navigator.serviceWorker.controller?'':' · sw 없음'} ›</span></div>
     </div>`;
-  $('darkRow').addEventListener('click',()=>{ applyDark(!dark); renderSet(); });
+  $('themeSeg').querySelectorAll('[data-theme]').forEach(el=>el.addEventListener('click',()=>{ applyTheme(el.dataset.theme); renderSet(); }));
   $('setBody').querySelectorAll('[data-imm]').forEach(el=>el.addEventListener('click',()=>{ applyImm(el.dataset.imm); renderSet(); }));
   $('setBody').querySelectorAll('[data-set]').forEach(el=>el.addEventListener('click',()=>{ const k=el.dataset.set;
     if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
@@ -451,7 +457,7 @@ async function saveForm(){
   const partial=seats.some(x=>x.t); const done=!partial&&!!f.xferAll;
   const price=f.perSeat?seats.reduce((s,x)=>s+(Number(x.pp)||0),0):(Number(f.price)||0);
   const t=curTicket();
-  const data={vendor:f.vendor||'기타',name:f.name.trim(),date:f.date,time:f.time,qty:seats.length||Number(f.qty)||0,price,memo:(f.memo||'').trim(),venue:(f.venue||'').trim(),poster:(f.poster||'').trim(),perSeat:!!f.perSeat,seats,transfer:done?{done:true,price:Number(f.xferAll.price)||0,to:f.xferAll.to||'',platform:f.xferAll.via||''}:{done:false},hasImg:dIdx>=0?!!t.hasImg:false};
+  const data={vendor:f.vendor||'기타',name:f.name.trim(),date:f.date,time:f.time,qty:seats.length||Number(f.qty)||0,price,memo:(f.memo||'').trim(),venue:(f.venue||'').trim(),poster:(f.poster||'').trim(),perSeat:!!f.perSeat,tone:(f.poster||'').trim()===(t.poster||'')?(t.tone||''):'',seats,transfer:done?{done:true,price:Number(f.xferAll.price)||0,to:f.xferAll.to||'',platform:f.xferAll.via||''}:{done:false},hasImg:dIdx>=0?!!t.hasImg:false};
   try{ const saved=await D.saveTicket(data,dIdx>=0?t.id:null); toast(dIdx>=0?'수정되었어요':'추가되었어요'); dEdit=false; form=null; rebuildAll(); const i=ITEMS.findIndex(x=>String(x.id)===String(saved.id)); if(i>=0){ dIdx=i; dTicket=null; renderDetail(); } else closeDetail(); }
   catch(err){ toast('저장 실패: '+(err.message||err)); }
 }
@@ -518,7 +524,7 @@ D.onChange((type,payload)=>{
 });
 
 /* ===== 부팅 ===== */
-applyDark(dark); applyImm(imm);
+applyTheme(themePref); applyImm(imm);
 rebuildData(); buildVault(); pos=HOME; showScreen('home');
 D.init().then(()=>{ pos=HOME; render(); });
 D.startSync({paused:()=>isSheetOpen()||dragging});

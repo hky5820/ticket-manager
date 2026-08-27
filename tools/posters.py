@@ -3,6 +3,7 @@
       python tools/posters.py --all      (전부 다시 찾기; 못 찾으면 비움)
       python tools/posters.py --dry      (쓰지 않고 매칭 결과만)
       python tools/posters.py --dry --name "뮤지컬 베토벤"   (이름 하나 테스트)
+      python tools/posters.py --tone [--all]  포스터 대표색(tone)만 계산해 채움 — 보관함 배경 글로우·카드 광택 색
 
 소스 순서 (앞에서 찾으면 끝):
   1. NOL 인터파크 검색 페이지(서버 렌더링, 판매 중인 공연) — 상품명·공연장 매칭
@@ -100,6 +101,22 @@ def naver_image(t):
         if c in norm(title) and (not g or g in title) and portrait(u): return u, '네이버 이미지: '+title[:40], ''
     return None
 
+def tone_of(url):
+    """포스터 대표색: 48×48 로 줄여 16색 양자화 → 채도 높고 너무 어둡/밝지 않은 색을 면적 가중으로 고름. 배경 글로우용이라 채도 살짝 올림"""
+    from PIL import Image
+    import colorsys
+    im=Image.open(io.BytesIO(get(url,raw=True))).convert('RGB').resize((48,48))
+    q=im.quantize(16); pal=q.getpalette(); counts=sorted(q.getcolors(), reverse=True)
+    best=None
+    for n,idx in counts:
+        r,g,b=pal[idx*3:idx*3+3]; h,sat,v=colorsys.rgb_to_hsv(r/255,g/255,b/255)
+        if v<0.12 or (v>0.93 and sat<0.15): continue
+        score=n*(0.15+sat)**1.4*(1-abs(v-0.5)*0.8)
+        if best is None or score>best[0]: best=(score,h,sat,v)
+    if not best: return ''
+    _,h,sat,v=best; sat=min(1,sat*1.25+0.05); v=min(1,max(v,0.5))
+    r,g,b=colorsys.hsv_to_rgb(h,sat,v); return '#%02x%02x%02x'%(int(r*255),int(g*255),int(b*255))
+
 def blob(r):
     b=r['seats']
     if isinstance(b,str):
@@ -121,6 +138,18 @@ if ONE:
     r=find({'name':ONE,'venue':''}); print(ONE,'→',r); sys.exit()
 
 rows=json.loads(get(BASE+'/tickets?select=id,name,vendor,memo,seats&order=show_date.asc',H))
+if '--tone' in sys.argv:
+    n=0
+    for r in rows:
+        b=blob(r)
+        if not b.get('poster') or (b.get('tone') and not ALL): continue
+        try: b['tone']=tone_of(b['poster'])
+        except Exception as e: print('  !',r['name'][:30],str(e)[:50]); continue
+        print(f"{r['name'][:36]:38} → {b['tone']}")
+        if DRY: continue
+        req=urllib.request.Request(f"{BASE}/tickets?id=eq.{r['id']}",data=json.dumps({'seats':b},ensure_ascii=False).encode(),headers={**H,'Prefer':'return=minimal'},method='PATCH')
+        urllib.request.urlopen(req,timeout=25); n+=1
+    print(f"tone 업데이트 {n}건"); sys.exit()
 cache={}; done=0
 for r in rows:
     b=blob(r)
@@ -131,6 +160,7 @@ for r in rows:
     print(f"{r['name'][:36]:38} → {hit[1] if hit else '없음'}")
     if DRY or (not hit and not b.get('poster')): continue
     b['poster']=hit[0] if hit else ''
+    b['tone']=(tone_of(hit[0]) if hit else '')
     if hit and hit[2] and not b.get('venue'): b['venue']=hit[2]
     req=urllib.request.Request(f"{BASE}/tickets?id=eq.{r['id']}",data=json.dumps({'seats':b},ensure_ascii=False).encode(),headers={**H,'Prefer':'return=minimal'},method='PATCH')
     urllib.request.urlopen(req,timeout=25); done+=1
