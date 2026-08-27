@@ -26,7 +26,10 @@ Fields (use only what is literally shown in THIS image; never guess a title):
   · Cancelled seats stay in the list with "x":true.
   · grade: strip a trailing "석" (VIP석→"VIP", R석→"R"); keep "지정석 P", "스탠딩SR" as is.
   · OP (오피/오케스트라피트): grade "OP" and zone "OP".
-  · Split row and number: "7열 15번" → row "7", no "15". floor digits only, zone name only ("B","가","OP"), row only, no only. Never include the units 층/구역/열/번.
+  · Split row and number: "7열 15번" → row "7", no "15". The token before 층 is floor, before 구역 is zone, before 열 is row, before 번 is no. Never put the unit words 층/구역/열/번 themselves into a field.
+    e.g. "VIP석 1층 B구역 7열 15번" → {"grade":"VIP","floor":"1","zone":"B","row":"7","no":"15"}
+    e.g. "들꽃석 FLOOR층 F8구역 15열 26번" → {"grade":"들꽃","floor":"FLOOR","zone":"F8","row":"15","no":"26"}
+    e.g. "R석 2층 12열 3번" (no zone) → {"grade":"R","floor":"2","zone":"","row":"12","no":"3"}
   · Standing with entry number only: row "", no "입장번호 333".
 Example output: {"vendor":"멜론티켓","name":"뮤지컬 〈엘리자벳〉","date":"2026-09-06","time":"15:00","qty":2,"price":364000,"venue":"블루스퀘어 신한카드홀","memo":"예매번호 T1234","seats":[{"grade":"VIP","floor":"1","zone":"","row":"3","no":"16"},{"grade":"VIP","floor":"1","zone":"","row":"3","no":"17"}]}`;
 
@@ -96,7 +99,8 @@ async function processOne(id: string) {
   try { p = await recognize(b64); }
   catch (e) { await rest(`/pending_uploads?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "error", result: "인식 실패: " + String(e).slice(0, 120) }) }); return { id, error: String(e) }; }
   if (!p.name) { await rest(`/pending_uploads?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "error", result: "not a readable ticket" }) }); return { id, error: "no name" }; }
-  const seats = (p.seats ?? []).map((s) => { const o: Seat = { grade: normGrade(s.grade ?? ""), floor: s.floor ?? "", zone: s.zone ?? "", row: s.row ?? "", no: s.no ?? "" }; if (s.x) o.x = true; return o; });
+  const unit = /^(층|구역|열|번)$/;   // 모델이 단위어만 넣은 칸은 비움
+  const seats = (p.seats ?? []).map((s) => { const o: Seat = { grade: normGrade(s.grade ?? ""), floor: (s.floor ?? "").replace(/층$/, ""), zone: (s.zone ?? "").replace(/구역$/, ""), row: (s.row ?? "").replace(/열$/, ""), no: (s.no ?? "").replace(/번$/, "") }; for (const k of ["floor", "zone", "row", "no"] as const) if (unit.test(o[k] ?? "")) o[k] = ""; if (s.x) o.x = true; return o; });
   const venue = p.venue ?? "";
   const pst = await poster(p.name, venue);
   const ticket = {
