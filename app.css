@@ -1,7 +1,7 @@
 /* 티켓 보관함 — 뷰 스타일 (design/mockup-2026-08/drum.html 프로토타입에서 이식, Sniper 톤 기본) */
 
   :root{
-    --bg:#101114; --sur:#17181c; --line:rgba(255,255,255,.08);
+    --bg:#000000; --sur:#141418; --line:rgba(255,255,255,.08);
     --ink:#f2f3f5; --ink-2:rgba(242,243,245,.68); --ink-3:rgba(242,243,245,.42);
     --accent:#ff6a3d; --good:#3ddc84; --card-w:252px; --card-h:326px;
     --r:16px; --r-s:6px; --fd:inherit; --fn:inherit; --badge-bg:#fff; --badge-ink:#0b0b0e; --card-shadow:0 20px 40px -18px rgba(0,0,0,.8);
@@ -157,14 +157,14 @@
   /* ── 시안 R · TICKET RUN — CGV Seat Run 느낌. 징크 다크, 모노 라벨, 격자 배경, 빨강 D-day ── */
 
   /* ── 시안 S · SNIPER — 캐치테이블 스나이퍼 느낌. 연회색 바탕, 흰 카드, 검정 강조, 둥근 20 ── */
-  :root{--bg:#f7f7f8;--sur:#fff;--line:#ececef;--ink:#16161a;--ink-2:#5b5b66;--ink-3:#8b8b95;--accent:#ff5a1f;--good:#12b76a;--r:20px;--r-s:8px;--badge-bg:#16161a;--badge-ink:#fff;--card-shadow:0 1px 2px rgba(22,22,26,.04),0 18px 40px -22px rgba(22,22,26,.25)}
+  :root{--bg:#ffffff;--sur:#fff;--line:#ececef;--ink:#16161a;--ink-2:#5b5b66;--ink-3:#8b8b95;--accent:#ff5a1f;--good:#12b76a;--r:20px;--r-s:8px;--badge-bg:#16161a;--badge-ink:#fff;--card-shadow:0 1px 2px rgba(22,22,26,.04),0 18px 40px -22px rgba(22,22,26,.25)}
   .hd .n{font-size:22px;font-weight:900;letter-spacing:-.04em}
   .hd .n small{font-weight:600;color:#8b8b95}
   .hd .s{font-weight:600}
   .ib{background:#fff;border:1px solid #ececef;border-radius:14px} .ib.on{background:#16161a;border-color:#16161a}
   .art{border:1px solid #ececef}
   .art .fx{background:linear-gradient(180deg,rgba(0,0,0,.66) 0%,rgba(0,0,0,.3) 34%,rgba(0,0,0,0) 56%,rgba(0,0,0,0) 78%,rgba(0,0,0,.62) 100%)}
-  .art .dim{background:#f7f7f8}
+  .art .dim{background:#fff}
   .fan{background:#ededf0;border:1px solid #ececef}
   .info .ttl{font-weight:800}
   .info .when{font-weight:900;letter-spacing:-.04em}
@@ -289,7 +289,7 @@
   .hero .dd small{font-family:inherit;letter-spacing:0;font-size:12px;font-weight:600;color:#ff5a1f}
   .kv div{background:#f4f4f6}
   .kv small{font-family:inherit;letter-spacing:0;font-size:10.5px;font-weight:700;text-transform:none}
-  .chain>div{background:#f7f7f8}
+  .chain>div{background:#f3f3f5}
   .chain .no{background:#ececef;font-family:inherit}
   .chain>div:first-child .no{background:#16161a}
   .chain em{font-family:inherit}
@@ -308,7 +308,7 @@
   .prog .trk{height:3px;top:7.5px;border-radius:2px;background:#e4e4e8;overflow:visible}
   .prog .seg,.prog .seg.alt,.prog .tk{display:none}
   .prog .fill{height:3px;top:7.5px;border-radius:2px;background:#16161a}
-  .prog .mk{width:12px;height:12px;top:3px;margin-left:-6px;background:#16161a;box-shadow:0 0 0 3px #f7f7f8}
+  .prog .mk{width:12px;height:12px;top:3px;margin-left:-6px;background:#16161a;box-shadow:0 0 0 3px #fff}
   .msum{min-height:28px}
   .msum b{font-size:14px;font-weight:800}
   .msum .r{font-size:11.5px;font-weight:600;color:#8b8b95}
@@ -322,20 +322,20 @@
 
   /* ── 몰입 모드 (라이트 테마에서 보관함만 분위기 전환) ── */
   /* A. 보관함만 다크: 극장 조명 꺼지듯 */
-  .app.imm-dark #scr-vault{--bg:#101114;--sur:#17181c;--line:rgba(255,255,255,.08);--ink:#f2f3f5;--ink-2:rgba(242,243,245,.68);--ink-3:rgba(242,243,245,.42);background:#101114;color:#f2f3f5}
-  .app.imm-dark #scr-vault .art .dim{background:#101114}
+  .app.imm-dark #scr-vault{--bg:#000000;--sur:#141418;--line:rgba(255,255,255,.08);--ink:#f2f3f5;--ink-2:rgba(242,243,245,.68);--ink-3:rgba(242,243,245,.42);background:#000;color:#f2f3f5}
+  .app.imm-dark #scr-vault .art .dim{background:#000}
   .app.imm-dark #scr-vault .fan{background:#1d1e23}
-  .app.imm-dark #scr-vault .vmode{background:#17181c;border-color:rgba(255,255,255,.1);color:#f2f3f5}
-  .app.imm-dark #scr-vault .gate{background:#17181c;border-color:rgba(255,255,255,.1)} .app.imm-dark #scr-vault .gate b{color:#f2f3f5} .app.imm-dark #scr-vault .gate span{color:rgba(242,243,245,.6)}
+  .app.imm-dark #scr-vault .vmode{background:#141418;border-color:rgba(255,255,255,.1);color:#f2f3f5}
+  .app.imm-dark #scr-vault .gate{background:#141418;border-color:rgba(255,255,255,.1)} .app.imm-dark #scr-vault .gate b{color:#f2f3f5} .app.imm-dark #scr-vault .gate span{color:rgba(242,243,245,.6)}
   .app.imm-dark #scr-vault .gate.today{background:#fff;border-color:#fff} .app.imm-dark #scr-vault .gate.today b,.app.imm-dark #scr-vault .gate.today span{color:#101114}
   .app.imm-dark #scr-vault .grp .th{box-shadow:0 0 0 1px rgba(255,255,255,.12)} .app.imm-dark #scr-vault .grp .th.on{box-shadow:0 0 0 2px #fff}
   .app.imm-dark #scr-vault .grp .n{background:#fff;color:#101114}
   .app.imm-dark #scr-vault .grp small{color:rgba(242,243,245,.45)} .app.imm-dark #scr-vault .grp.exp small{color:#fff}
-  .app.imm-dark #scr-vault .prog .trk{background:rgba(255,255,255,.14)} .app.imm-dark #scr-vault .prog .fill{background:#fff} .app.imm-dark #scr-vault .prog .mk{background:#fff;box-shadow:0 0 0 3px #101114}
+  .app.imm-dark #scr-vault .prog .trk{background:rgba(255,255,255,.14)} .app.imm-dark #scr-vault .prog .fill{background:#fff} .app.imm-dark #scr-vault .prog .mk{background:#fff;box-shadow:0 0 0 3px #000}
   .app.imm-dark #scr-vault .msum b{color:#f2f3f5} .app.imm-dark #scr-vault .msum .r{color:rgba(242,243,245,.6)} .app.imm-dark #scr-vault .msum .r em{color:#fff}
   .app.imm-dark #scr-vault .shows{color:#f2f3f5}
-  .app.imm-dark.on-vault .nav{background:#101114;border-color:rgba(255,255,255,.08);box-shadow:none} .app.imm-dark.on-vault .nav div{color:rgba(242,243,245,.45)} .app.imm-dark.on-vault .nav div.on{background:#1d1e23;color:#fff}
-  .app.imm-dark #scr-vault .sheet{background:#17181c;color:#f2f3f5}
+  .app.imm-dark.on-vault .nav{background:#000;border-color:rgba(255,255,255,.08);box-shadow:none} .app.imm-dark.on-vault .nav div{color:rgba(242,243,245,.45)} .app.imm-dark.on-vault .nav div.on{background:#1d1e23;color:#fff}
+  .app.imm-dark #scr-vault .sheet{background:#141418;color:#f2f3f5}
   /* B. 포스터 앰비언트: 현재 포스터 색이 보관함 배경에 번짐 (흰 톤 유지) */
   .app.imm-ambient.on-vault .ambient{opacity:.42;filter:blur(40px) saturate(1.2)}
   .app.imm-ambient #scr-vault .vmode{background:rgba(255,255,255,.7);backdrop-filter:blur(10px)}
@@ -410,13 +410,13 @@
   .card .art{box-shadow:0 30px 60px -26px rgba(0,0,0,.5),0 0 calc(64px * var(--glow,0)) calc(-8px + 8px * var(--glow,0)) color-mix(in srgb,var(--tone,#888) 60%,transparent),0 0 0 1px var(--line) inset}
   /* 1. Soft = Sniper 구조 + Candy 부드러움 */
   /* 7. 전체 다크 모드 (라이트 테마 위에 덮어쓰기) */
-  .app.dark{--bg:#111114;--sur:#1a1a1f;--line:rgba(255,255,255,.09);--ink:#f2f2f4;--ink-2:rgba(242,242,244,.66);--ink-3:rgba(242,242,244,.42);--badge-bg:#f2f2f4;--badge-ink:#111114;background:#111114!important}
+  .app.dark{--bg:#000000;--sur:#141418;--line:rgba(255,255,255,.09);--ink:#f2f2f4;--ink-2:rgba(242,242,244,.66);--ink-3:rgba(242,242,244,.42);--badge-bg:#f2f2f4;--badge-ink:#111114;background:#000!important}
   .app.dark .tile,.app.dark .ib,.app.dark .vmode,.app.dark .gate,.app.dark .nav,.app.dark .sheet,.app.dark .mo,.app.dark .btns2 div{background:var(--sur);border-color:var(--line);box-shadow:none}
   .app.dark .ib.on,.app.dark .gate.today,.app.dark .mo.on{background:#f2f2f4;border-color:#f2f2f4;color:#111114} .app.dark .ib.on svg{stroke:#111114} .app.dark .gate.today b,.app.dark .gate.today span{color:#111114}
-  .app.dark .art .dim{background:#111114!important} .app.dark .fan{background:#22222a!important;box-shadow:none}
+  .app.dark .art .dim{background:#000!important} .app.dark .fan{background:#22222a!important;box-shadow:none}
   .app.dark .bdg.dday{background:#f2f2f4;color:#111114} .app.dark .kv div,.app.dark .pills span,.app.dark .chain>div{background:rgba(255,255,255,.06)}
   .app.dark .grp .th{box-shadow:0 0 0 1px rgba(255,255,255,.14)} .app.dark .grp .th.on{box-shadow:0 0 0 2px #fff} .app.dark .grp .n{background:#fff;color:#111114}
-  .app.dark .prog .trk{background:rgba(255,255,255,.14)} .app.dark .prog .fill{background:#fff} .app.dark .prog .mk{background:#fff;border-color:#fff;box-shadow:0 0 0 3px #111114}
+  .app.dark .prog .trk{background:rgba(255,255,255,.14)} .app.dark .prog .fill{background:#fff} .app.dark .prog .mk{background:#fff;border-color:#fff;box-shadow:0 0 0 3px #000}
   .app.dark .runbox{background:#f2f2f4;color:#111114} .app.dark .seg2,.app.dark .tabs3,.app.dark .immseg,.app.dark .hsec .vt{background:rgba(255,255,255,.08)} .app.dark .seg2 div.on,.app.dark .tabs3 div.on,.app.dark .immseg div.on,.app.dark .hsec .vt div.on{background:#2a2a31;color:#fff}
   .app.dark .stat3{background:var(--line)} .app.dark .stat3 div{background:var(--sur)} .app.dark .btns2 .pri{background:#f2f2f4;color:#111114}
   .app.dark .srow .sw.off{background:rgba(255,255,255,.2)}
@@ -454,7 +454,7 @@
   .scr{position:relative}
   .tb{position:absolute;left:0;right:0;top:0;z-index:6;border-bottom:0!important;padding-bottom:18px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 62%,transparent 100%);mask-image:linear-gradient(180deg,#000 0,#000 62%,transparent 100%)}
   .scroll{padding-top:72px!important}
-  .app.dark .tb{background:color-mix(in srgb,#111114 72%,transparent)}
+  .app.dark .tb{background:color-mix(in srgb,#000 72%,transparent)}
 
   /* 결산 chunk 정렬 규격화 */
   .bigs .tile{padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-height:108px;justify-content:center}
@@ -699,8 +699,5 @@
   .res:active,.sg:active,.pg:active,.srow:active,.hero2:active,.menu div:active,.sub .foot div:active{transform:scale(.985)}
   .nav div:active{transform:scale(.9)} .vbg:active,.vmode:active,.pill:active,.act span:active,.stbtn:active,.dtbtn:active{transform:scale(.93)} .grp:active{transform:scale(.95)} .addbtn:active{transform:scale(.98)}
   @media (prefers-reduced-motion:reduce){.scroll.enter>*,.stage.enter,.dock.enter{animation:none} .scroll{will-change:auto}}
-  /* 하단: 시스템 내비게이션 바(흰색/검정)와 이어지도록 바닥을 그 색으로 페이드. 플로팅 탭 그림자 제거 */
-  :root{--sysbar:#ffffff} .app.dark,.app.imm-dark.on-vault{--sysbar:#000000}
-  .app::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(env(safe-area-inset-bottom,0px) + 96px);background:linear-gradient(180deg,transparent 0%,var(--sysbar) 100%);pointer-events:none;z-index:4}
   .nav{box-shadow:none!important}
   .res.isnext .nm::after{content:"다음";font-size:9.5px;font-weight:800;color:var(--accent);margin-left:6px;vertical-align:2px;letter-spacing:0}

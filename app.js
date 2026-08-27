@@ -8,7 +8,7 @@ const app=$('app'), stage=$('stage');
 
 /* ===== 테마 · 설정값 ===== */
 let dark=localStorage.getItem('tm_theme')==='dark';
-function applyDark(v){ dark=v; localStorage.setItem('tm_theme',v?'dark':'light'); app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#111114':'#f7f7f8'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
+function applyDark(v){ dark=v; localStorage.setItem('tm_theme',v?'dark':'light'); app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#000000':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
 let imm=localStorage.getItem('tm_imm')||'vignette';
 function applyImm(v){ imm=v; localStorage.setItem('tm_imm',v); app.classList.remove('imm-dark','imm-ambient','imm-vignette'); if(v!=='off')app.classList.add('imm-'+v); $('bgBtn').classList.toggle('on',v==='ambient'); }
 let homeAmb=localStorage.getItem('tm_homeamb')==='1';
