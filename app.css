@@ -699,3 +699,8 @@
   .res:active,.sg:active,.pg:active,.srow:active,.hero2:active,.menu div:active,.sub .foot div:active{transform:scale(.985)}
   .nav div:active{transform:scale(.9)} .vbg:active,.vmode:active,.pill:active,.act span:active,.stbtn:active,.dtbtn:active{transform:scale(.93)} .grp:active{transform:scale(.95)} .addbtn:active{transform:scale(.98)}
   @media (prefers-reduced-motion:reduce){.scroll.enter>*,.stage.enter,.dock.enter{animation:none} .scroll{will-change:auto}}
+  /* 하단: 시스템 내비게이션 바(흰색/검정)와 이어지도록 바닥을 그 색으로 페이드. 플로팅 탭 그림자 제거 */
+  :root{--sysbar:#ffffff} .app.dark,.app.imm-dark.on-vault{--sysbar:#000000}
+  .app::after{content:"";position:absolute;left:0;right:0;bottom:0;height:calc(env(safe-area-inset-bottom,0px) + 96px);background:linear-gradient(180deg,transparent 0%,var(--sysbar) 100%);pointer-events:none;z-index:4}
+  .nav{box-shadow:none!important}
+  .res.isnext .nm::after{content:"다음";font-size:9.5px;font-weight:800;color:var(--accent);margin-left:6px;vertical-align:2px;letter-spacing:0}

@@ -88,11 +88,11 @@ function renderHome(){
   const body=$('homeBody');
   if(!UP.length){ body.innerHTML=`<div class="homeamb" id="homeamb"></div><div class="empty"><b>아직 다가오는 티켓이 없어요</b><span>오른쪽 위 ＋ 로 캡처를 올리면 AI가 인식해서 채워줘요</span></div>`; _homeSig='empty'; return; }
   const nx=UP[0], nxI=ITEMS.indexOf(nx);
-  const rest=T.filter(t=>!isPast(t)&&t!==nx);
+  const rest=T.filter(t=>!isPast(t));   /* 다음 공연(히어로)도 목록에 그대로 — 빼면 같은 공연 다른 날짜가 '날짜 틀린 것'처럼 보인다 */
   const byM={}; rest.forEach(t=>{ const k=(t.date||'').slice(0,7)||'미정'; (byM[k]=byM[k]||[]).push(t); }); const mk=Object.keys(byM).sort();
   const row=t=>{ const h=holdInfo(t), pr=itemProfit(t);
     const l3 = isSold(t) ? `양도완료 · 구매 ${won(t.price)}${pr!==null?' '+profitTxt(t):''}` : h.partial ? `<em>${h.sold}/${h.total}매 양도</em> · 구매 ${won(soldCost(t))}${pr!==null?' '+profitTxt(t):''}` : `${h.total}매 · ${won(t.price)}`;
-    return `<div class="res ${isSold(t)?'sold':''}" data-id="${esc(t.id)}">${posterImg(t)}<div class="tx"><div class="r1"><div class="nm">${esc(short(t.name))}</div><span class="bdg ${ddCls(t)}">${isSold(t)?'양도':dday(t.date)}</span></div><div class="l2">${fmtDate(t.date,t.time)}${seatLine(t)?' · '+esc(seatLine(t)):''}</div><div class="l3">${l3}</div></div></div>`; };
+    return `<div class="res ${isSold(t)?'sold':''}${t===nx?' isnext':''}" data-id="${esc(t.id)}">${posterImg(t)}<div class="tx"><div class="r1"><div class="nm">${esc(short(t.name))}</div><span class="bdg ${ddCls(t)}">${isSold(t)?'양도':dday(t.date)}</span></div><div class="l2">${fmtDate(t.date,t.time)}${seatLine(t)?' · '+esc(seatLine(t)):''}</div><div class="l3">${l3}</div></div></div>`; };
   let list='';
   if(homeView==='list'){
     list=mk.map(k=>`<div class="hsec"><h2>${k==='미정'?'날짜 미정':(+k.slice(5))+'월'}${k!=='미정'&&k.slice(0,4)!==String(new Date().getFullYear())?` <small>${k.slice(0,4)}</small>`:''}</h2><small>${byM[k].filter(t=>!isSold(t)).length}장 · ${byM[k].reduce((a,t)=>a+(isSold(t)?0:ticketAcct(t).held),0)}매 · ${won(byM[k].reduce((a,t)=>a+(isSold(t)?0:Number(t.price)||0),0))}</small></div><div class="tile" style="padding:6px 14px">${byM[k].map(row).join('')}</div>`).join('');
