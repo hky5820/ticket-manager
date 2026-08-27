@@ -148,7 +148,7 @@ function buildDock(){
       const shown=g.key==='past'?g.items.slice(-3):g.items;
       el.innerHTML=`${g.year&&g.year!==new Date().getFullYear()?`<span class="yr">${g.year}</span>`:''}<div class="stk">${shown.map(t=>`<div class="th" data-i="${ITEMS.indexOf(t)}">${posterImg(t)}${isSold(t)?'<div class="x">양도</div>':''}</div>`).join('')}<span class="n">${g.items.length}</span></div><small>${g.label}</small>`;
       g.thumbs=[...el.querySelectorAll('.th')]; }
-    el.addEventListener('click',e=>{ if(mode!=='flow')setMode('flow'); const th=e.target.closest('.th'); target=(th&&g.el.classList.contains('exp'))?+th.dataset.i:(g.key==='today'?HOME:g.jump); kick(); });
+    el.addEventListener('click',e=>{ if(mode!=='flow')setMode('flow'); const th=e.target.closest('.th'); snapTo((th&&g.el.classList.contains('exp'))?+th.dataset.i:(g.key==='today'?HOME:g.jump)); });
     tl.appendChild(el); });
   W=[]; { let x=0; for(let i=0;i<N();i++){ W[i]=x; x+= i<TODAY_I?0.35:1; } W[N()]=x; }
   groups.forEach((g,k)=>{ if(g.key==='today')return; const sg=document.createElement('div'); sg.className='seg'+(k%2?' alt':''); sg.style.left=(fracOf(g.from)*100)+'%'; sg.style.width=((fracOf(g.to)-fracOf(g.from))*100)+'%'; trk.appendChild(sg); });
@@ -160,7 +160,7 @@ let scrub=null;
 progEl.addEventListener('pointerdown',e=>{ progEl.setPointerCapture(e.pointerId); scrub=true; target=null; vel=0; scrubTo(e); });
 progEl.addEventListener('pointermove',e=>{ if(scrub)scrubTo(e); });
 progEl.addEventListener('pointerup',()=>{ scrub=null; target=Math.round(pos); kick(); });
-function scrubTo(e){ const r=progEl.getBoundingClientRect(); const fr=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); pos=posOf(fr); render(); }
+let scrubIdx=-1; function scrubTo(e){ const r=progEl.getBoundingClientRect(); const fr=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); pos=posOf(fr); const i=Math.round(pos); if(i!==scrubIdx){ scrubIdx=i; hap(5); } render(); }
 function renderDock(){
   const cur=Math.max(0,Math.min(N()-1,Math.round(pos)));
   groups.forEach(g=>{
@@ -194,7 +194,7 @@ function renderShows(){
   $('shows').innerHTML=gs.length?gs.map(([name,g])=>{ const f=g[0],q=g.reduce((a,t)=>a+ticketAcct(t).held,0),sum=g.reduce((a,t)=>a+(Number(t.price)||0),0); const pastN=T.filter(t=>t.name===name&&isPast(t)), profit=pastN.reduce((a,t)=>a+(itemProfit(t)||0),0);
     return `<div class="sg" data-i="${ITEMS.indexOf(f)}"><div class="st">${g.length>2?'<div class="b2"></div>':''}${g.length>1?'<div class="b1"></div>':''}${posterImg(f)}<div class="n">${g.length}</div></div><div><h3>${esc(short(name))}</h3><div class="m">${esc(f.venue||f.vendor||'')}</div><div class="ds">${g.map(t=>`<span class="${(ddayN(t.date)!==null&&ddayN(t.date)<=9)?'soon':''}">${t.date?(+t.date.slice(5,7))+'.'+(+t.date.slice(8,10)):'미정'}</span>`).join('')}</div><div class="sum">${g.length}장 · ${q}매 · ${won(sum)}${pastN.length?` · 지난 ${pastN.length}건 <b>${signMoney(profit)}</b>`:''}</div></div></div>`; }).join(''):`<div class="empty"><b>다가오는 티켓이 없어요</b></div>`;
 }
-$('shows').addEventListener('click',e=>{ const g=e.target.closest('.sg'); if(!g)return; setMode('flow'); target=+g.dataset.i; kick(); });
+$('shows').addEventListener('click',e=>{ const g=e.target.closest('.sg'); if(!g)return; setMode('flow'); snapTo(+g.dataset.i); });
 function setMode(m){ mode=m; app.classList.remove('m-grid','m-shows'); if(m!=='flow')app.classList.add('m-'+m); stage.classList.add('anim'); setTimeout(()=>stage.classList.remove('anim'),600); if(m==='grid'){ buildOv(); const i=Math.round(pos); ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),(ovPos[i]||{y:0}).y-80)); ovVel=0; } if(m==='shows')renderShows(); renderBar(); target=null; vel=0; kick(); }
 
 /* 물리 */
@@ -229,19 +229,26 @@ function tick(){
   render(); raf=requestAnimationFrame(tick);
 }
 function kick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(tick); }
-const PITCH=140;
-stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return; dragging=true; target=null; vel=0; ovVel=0; lastY=e.clientY; lastT=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
+const PITCH=140; let base=0, dragAcc=0;
+const clampI=i=>Math.max(0,Math.min(N()-1,i));
+function snapTo(i){ i=clampI(i); const cur=target!=null?target:Math.round(pos); if(i!==cur)hap(8); target=i; vel=0; kick(); }
+stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return; dragging=true; base=clampI(Math.round(target!=null?target:pos)); target=null; vel=0; ovVel=0; dragAcc=0; lastY=e.clientY; lastT=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
 stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.clientY-lastY, now=performance.now(), dt=Math.max(1,now-lastT);
-  if(mode==='grid'){ ovScroll-=dy; ovVel=-dy*(16/dt); } else { let step=-dy/PITCH; if(pos<0||pos>N()-1)step*=0.35; pos+=step; vel=(-dy/PITCH)*(16/dt); tiltV=Math.max(-5,Math.min(5,-vel*28)); }
+  if(mode==='grid'){ ovScroll-=dy; ovVel=-dy*(16/dt); }
+  else { dragAcc+=dy; const raw=dragAcc/PITCH; /* 아래로 끌면 다음 카드. 한 제스처 = 한 장, 그 이상은 고무줄 */ const a=Math.abs(raw), r=a>1?1+(a-1)*0.22:a; let np=base+Math.sign(raw)*r; if(np<0)np*=0.35; if(np>N()-1)np=N()-1+(np-(N()-1))*0.35; pos=np; vel=(dy/PITCH)*(16/dt); tiltV=Math.max(-5,Math.min(5,-vel*28)); }
   lastY=e.clientY; lastT=now; moved+=Math.abs(dy); render(); });
 stage.addEventListener('pointerup',e=>{ dragging=false;
   if(moved<6){ const hit=document.elementFromPoint(e.clientX,e.clientY); const c=hit&&hit.closest('.card,.gate'); const onAsk=hit&&hit.closest('.ask span');
     if(c){ const i=+c.dataset.i; if(mode==='grid'){ setMode('flow'); pos=i; render(); return; }
-      if(i===Math.round(pos)){ if(!ITEMS[i].gate){ const wasAsk=c.classList.contains('ask'); els.forEach(x=>x.classList.remove('ask')); if(wasAsk||onAsk)openDetail(i); else { c.classList.add('ask'); c._askT=performance.now(); } } } else { els.forEach(x=>x.classList.remove('ask')); target=i; kick(); } }
+      if(i===Math.round(pos)){ if(!ITEMS[i].gate){ const wasAsk=c.classList.contains('ask'); els.forEach(x=>x.classList.remove('ask')); if(wasAsk||onAsk)openDetail(i); else { c.classList.add('ask'); c._askT=performance.now(); } } } else { els.forEach(x=>x.classList.remove('ask')); snapTo(i); } }
+    else { target=base; kick(); }
     return; }
-  if(mode==='grid')ovVel=Math.max(-40,Math.min(40,ovVel)); else vel=Math.max(-0.35,Math.min(0.35,vel)); kick(); });
-stage.addEventListener('pointercancel',()=>{ dragging=false; kick(); });
-let wheelT; stage.addEventListener('wheel',e=>{ e.preventDefault(); if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; } target=null; pos=Math.max(-0.4,Math.min(N()-0.6,pos+e.deltaY/400)); tiltV=Math.max(-5,Math.min(5,-e.deltaY/60)); render(); clearTimeout(wheelT); wheelT=setTimeout(()=>{vel=0;kick();},90); },{passive:false});
+  if(mode==='grid'){ ovVel=Math.max(-40,Math.min(40,ovVel)); kick(); return; }
+  const d=pos-base; let t2=base; if(d>0.22||vel>0.25)t2=base+1; else if(d<-0.22||vel<-0.25)t2=base-1; snapTo(t2); });
+stage.addEventListener('pointercancel',()=>{ dragging=false; target=base; kick(); });
+let wheelAcc=0, wheelAt=0;
+stage.addEventListener('wheel',e=>{ e.preventDefault(); if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
+  wheelAcc+=e.deltaY; const now=performance.now(); if(Math.abs(wheelAcc)>50&&now-wheelAt>200){ snapTo((target!=null?target:Math.round(pos))+Math.sign(wheelAcc)); tiltV=Math.max(-5,Math.min(5,-wheelAcc/40)); wheelAcc=0; wheelAt=now; } },{passive:false});
 
 /* ===== 결산 ===== */
 let moneyTab='xfer';
@@ -325,13 +332,14 @@ function renderView(t){
     <div class="dsec"><h3>금액</h3><div class="money2"><div><small>결제 (총액)</small><b>${won(t.price)}</b></div><div><small>${t.perSeat?'장당 평균':'장당'} (${t.qty||0}매)</small><b>${won(Math.round((Number(t.price)||0)/Math.max(1,Number(t.qty)||1)))}</b></div>${a.hasXfer?`<div><small>양도 수령</small><b>${won(a.recv)}</b></div><div><small>양도차익 (수령 − 원가)</small><b style="color:${a.profit>=0?'var(--good)':'#e5484d'}">${signMoney(a.profit)}</b></div>`:`<div><small>실지출 (관람 ${a.kept}석)</small><b>${won(Math.round(a.spend))}</b></div>`}</div></div>
     <div class="dsec"><h3>정보</h3><div class="dcard"><div class="drow"><span class="l">예매처</span><span class="v">${esc(t.vendor||'—')}</span></div><div class="drow"><span class="l">공연장</span><span class="v">${esc(t.venue||'—')}</span></div><div class="drow"><span class="l">매수</span><span class="v">${t.qty||0}매</span></div><div class="drow"><span class="l">메모</span><span class="v" style="font-weight:600;color:var(--ink-2)">${esc(t.memo||'—')}</span></div></div></div>
     <div class="dsec"><h3>예매내역 사진</h3><div class="dcard ph" style="padding:12px 14px"><div class="photo"><div class="th"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg></div><div><b style="font-size:13.5px">${t.hasImg?'캡처 1장':'사진 없음'}</b><small>${t.hasImg?'AI 인식 원본':'수정에서 등록'}</small></div></div>${t.hasImg?`<span class="zoom" data-a="zoom"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>`:''}</div></div>`;
-  dFoot.innerHTML=''; dFoot.style.display='none';
+  dFoot.innerHTML=''; dFoot.style.display='none'; loadThumb(t);
 }
+async function loadThumb(t){ if(!t||!t.hasImg||!t.id)return; try{ const b64=t._img||(t._img=await D.fetchTicketImage(t.id)); if(curTicket()!==t||!b64)return; dBody.querySelectorAll('.photo .th').forEach(th=>{ th.innerHTML=`<img src="data:image/jpeg;base64,${b64}" alt="">`; }); }catch(e){} }
 function formFrom(t){ return {name:t.name||'',vendor:t.vendor||'',date:t.date||'',time:t.time||'',qty:t.qty||'',price:t.price||'',perSeat:!!t.perSeat,memo:t.memo||'',venue:t.venue||'',poster:t.poster||'',seats:(t.seats||[]).map(x=>({...x})),xferAll:isSold(t)?{price:t.transfer.price||'',via:t.transfer.platform||'',to:t.transfer.to||''}:null,openSeg:-1,editSeat:-1,xOpen:-1}; }
 function formAcct(f){ return ticketAcct({qty:f.seats.length||Number(f.qty)||0,price:Number(f.price)||0,perSeat:f.perSeat,seats:f.seats,transfer:f.xferAll?{done:true,price:f.xferAll.price}:{done:false}}); }
 function renderEdit(t){
   form=form||formFrom(t); const f=form, seats=f.seats, a=formAcct(f), hasPartial=seats.some(x=>x.t), ft={qty:seats.length||Number(f.qty)||0,price:Number(f.price)||0,perSeat:f.perSeat,seats};
-  dAct.innerHTML=`<span class="pri" data-a="save">저장</span>`;
+  dAct.innerHTML=`${dIdx>=0?'<span class="ic ghost" data-a="menu">⋯</span>':''}<span class="pri" data-a="save">저장</span>`;
   const seatRow=(x,k)=>{ const unit=D.unitOf(ft,x); const chip = x.x?'<span class="st x stbtn">취소</span>':x.t?`<span class="st t stbtn">양도 ${signMoney((Number(x.tp)||0)-unit)}</span>`:f.xferAll?'<span class="st t">양도</span>':'<span class="st stbtn">보유</span>';
     const seg=`<span class="segin"><span data-v="k" class="${!x.x&&!x.t?'on':''}">보유</span><span data-v="x" class="${x.x?'on':''}">취소</span><span data-v="t" class="${x.t?'on':''}">양도</span></span>`;
     return `<div class="seat3" data-k="${k}"><div class="r1"><span class="nm ${x.x?'x':''}" data-act="editseat">${esc(seatLabel(x)||'좌석 입력')}</span>${f.openSeg===k?seg:chip}${f.openSeg===k?'<span class="del" data-act="delseat">삭제</span>':''}</div>
@@ -343,10 +351,10 @@ function renderEdit(t){
     <div class="dsec"><h3>좌석 ${seats.length} <span style="font-weight:700">보유 ${a.held} · 관람 ${a.kept}${a.xfer?` · 양도 ${a.xfer}`:''}</span></h3><div class="dcard">${seats.length?seats.map(seatRow).join(''):`<div class="seat"><span style="color:var(--ink-3);font-size:13px">좌석을 추가하면 매수가 좌석 수로 잡혀요</span></div>`}</div><div class="addbtn" data-act="addseat">＋ 좌석 추가</div></div>
     <div class="dsec"><h3>전체 양도 <span class="sw2 ${f.xferAll?'on':''}" data-act="xferall" style="${hasPartial?'opacity:.35;pointer-events:none':''}"></span></h3>${f.xferAll?`<div class="dcard" style="padding:10px 14px"><div class="xall" style="grid-template-columns:1.2fr 1fr"><div><small>수령액</small><input type="number" data-xa="price" value="${f.xferAll.price||''}"></div><div><small>대상</small><input data-xa="to" value="${esc(f.xferAll.to||'')}" placeholder="구매자"></div></div><div style="padding:4px 0 6px"><small style="display:block;font-size:10.5px;font-weight:700;color:var(--ink-3);margin-bottom:6px">경로</small>${pchips(f.xferAll.via,'pviaall')}</div></div>`:`<div class="hint2">${hasPartial?'좌석별 양도가 있어 잠김.':'표 전체를 넘겼을 때 켜기.'}</div>`}</div>
     <div class="dsec"><h3>금액</h3><div class="sw3" style="margin:-4px 0 8px"><div class="nudge" style="margin:0">좌석마다 가격이 다르면 켜기</div><span class="sw2 ${f.perSeat?'on':''}" data-act="perseat" style="transform:scale(.85)"></span></div><div class="money2" id="dMoney">${f.perSeat?`<div><small>결제 (합계)</small><b>${won(seats.reduce((s,x)=>s+(Number(x.pp)||0),0))}</b></div><div><small>장당 평균 (${seats.length}매)</small><b>${won(Math.round(seats.reduce((s,x)=>s+(Number(x.pp)||0),0)/Math.max(1,seats.length)))}</b></div>`:`<div><small>결제 (총액)</small><input type="number" class="inl num" data-f="price" value="${f.price}"></div><div><small>장당 (${seats.length||f.qty||0}매)</small><input type="number" class="inl num" data-f="unitp" value="${Math.round((Number(f.price)||0)/Math.max(1,seats.length||Number(f.qty)||1))}"></div>`}</div></div>
-    <div class="dsec"><h3>정보</h3><div class="dcard"><div class="drow"><span class="l">예매처</span><span class="v"><span class="vch">${D.allVendors().map(n=>`<span data-vendor="${esc(n)}" class="${f.vendor===n?'on':''}" style="--c:${colorFor(n)}"><i></i>${esc(vendorShort(n))}</span>`).join('')}<span data-vendor="+">＋</span></span></span></div>${seats.length?'':`<div class="drow"><span class="l">매수</span><span class="v"><input type="number" class="inl num" data-f="qty" value="${f.qty}" style="width:64px"> 매</span></div>`}<div class="drow"><span class="l">포스터</span><span class="v"><input class="inl" data-f="poster" value="${esc(f.poster)}" placeholder="이미지 주소 붙여넣기" style="width:100%;text-align:left"></span></div><div class="drow"><span class="l">메모</span><span class="v left"><textarea class="memo" data-f="memo" rows="2" placeholder="예매번호, 동행, 특이사항" style="background:rgba(127,127,127,.09);border-radius:9px;padding:8px 10px">${esc(f.memo)}</textarea></span></div></div><div class="hint2" style="margin-top:6px">포스터: NOL 상품 페이지의 이미지 주소(ticketimage.interpark.com/…_p.gif)를 붙여넣으면 카드에 표시돼요.</div></div>
+    <div class="dsec"><h3>정보</h3><div class="dcard"><div class="drow"><span class="l">예매처</span><span class="v"><span class="vch">${D.allVendors().map(n=>`<span data-vendor="${esc(n)}" class="${f.vendor===n?'on':''}" style="--c:${colorFor(n)}"><i></i>${esc(vendorShort(n))}</span>`).join('')}<span data-vendor="+">＋</span></span></span></div>${seats.length?'':`<div class="drow"><span class="l">매수</span><span class="v"><input type="number" class="inl num" data-f="qty" value="${f.qty}" style="width:64px"> 매</span></div>`}<div class="drow"><span class="l">포스터</span><span class="v"><input class="inl" data-f="poster" value="${esc(f.poster)}" placeholder="이미지 주소 붙여넣기" style="width:100%;text-align:left"></span></div><div class="drow"><span class="l">메모</span><span class="v left"><textarea class="memo" data-f="memo" rows="2" placeholder="예매번호, 동행, 특이사항" style="background:rgba(127,127,127,.09);border-radius:9px;padding:8px 10px">${esc(f.memo)}</textarea></span></div></div><div class="hint2" style="margin-top:6px">포스터: 비워두면 인식 루틴이 NOL(인터파크) 검색으로 자동으로 채워요. 직접 넣으려면 이미지 주소를 붙여넣기.</div></div>
     ${dIdx>=0?`<div class="dsec"><h3>예매내역 사진 <span data-act="photo" style="font-size:12px;font-weight:800;color:var(--ink-2);cursor:pointer">${t.hasImg?'교체 ›':'등록 ›'}</span></h3><div class="dcard ph" style="padding:12px 14px"><div class="photo"><div class="th"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-4 4 3 3-2 6 4"/></svg></div><div><b style="font-size:13.5px">${t.hasImg?'캡처 1장':'사진 없음'}</b><small>${t.hasImg?'교체 · 삭제':'등록'}</small></div></div>${t.hasImg?`<span class="zoom" data-a="zoom"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></span>`:''}</div></div>`:''}
     <div style="height:8px"></div></div>`;
-  dFoot.className='efoot'; dFoot.style.display=''; dFoot.innerHTML=`${dIdx>=0?'<div class="danger" data-a="del">삭제</div>':''}<div class="pri" data-a="save">저장하기</div>`;
+  dFoot.innerHTML=''; dFoot.style.display='none'; loadThumb(t);
 }
 function refreshEditMoney(){ const f=form; if(!f)return; const seats=f.seats, ft={qty:seats.length||Number(f.qty)||0,price:Number(f.price)||0,perSeat:f.perSeat,seats}; dBody.querySelectorAll('.seat3 .st.t').forEach(c=>{ const k=+c.closest('.seat3').dataset.k, x=seats[k]; if(x&&x.t)c.textContent='양도 '+signMoney((Number(x.tp)||0)-D.unitOf(ft,x)); }); const m=$('dMoney'); if(m&&f.perSeat){ const bs=m.querySelectorAll('b'); const sum=seats.reduce((s,x)=>s+(Number(x.pp)||0),0); if(bs[0])bs[0].textContent=won(sum); if(bs[1])bs[1].textContent=won(Math.round(sum/Math.max(1,seats.length))); } }
 dsheet.addEventListener('click',async e=>{
@@ -369,7 +377,7 @@ dsheet.addEventListener('click',async e=>{
   else if(act==='perseat'){ form.perSeat=!form.perSeat; if(form.perSeat){ const u=Math.round((Number(form.price)||0)/Math.max(1,form.seats.length)); form.seats.forEach(x=>{ if(x.pp===undefined||x.pp==='')x.pp=u; }); } else { form.price=form.seats.reduce((s,x)=>s+(Number(x.pp)||0),0)||form.price; } renderEdit(t); }
   else if(act==='menu')openSub('menu');
   else if(act==='photo')openSub('photo');
-  else if(act==='zoom')openViewer(t.id);
+  else if(act==='zoom')openViewer(t);
   else if(act==='pickdate')openPicker('date');
   else if(act==='picktime')openPicker('time');
 });
@@ -416,11 +424,11 @@ sub.addEventListener('click',async e=>{
   else if(act==='share-txt'||act==='share-img'||act==='share-copy'){ try{ if(act==='share-copy'){ await navigator.clipboard.writeText(D.ticketText(t)); toast('텍스트 복사됨'); return; } let img=null; if(act==='share-img'){ toast('사진 불러오는 중…'); img=await D.fetchTicketImage(t.id); } const r=await D.shareTicket(t,{wantTxt:true,wantImg:!!img,imgB64:img}); if(r==='copied')toast('공유 미지원 · 텍스트 복사했어요'); if(r==='downloaded')toast('사진 저장 + 텍스트 복사'); }catch(err){ if(err&&err.name!=='AbortError')toast('공유 실패: '+(err.message||err)); } }
   else if(act==='dup'){ try{ const s=await D.duplicateTicket(t.id); toast('복제됨 · 내용을 고쳐 저장하세요'); rebuildAll(); const i=ITEMS.findIndex(x=>String(x.id)===String(s.id)); closeDetail(); setTimeout(()=>openDetail(i,true),50); }catch(err){ toast('복제 실패: '+(err.message||err)); } }
   else if(act==='photo-pick'){ $('imgFile').click(); }
-  else if(act==='photo-del'){ if(confirm('예매내역 사진을 삭제할까요?')){ try{ await D.clearTicketImage(t.id); toast('사진이 삭제되었어요'); renderDetail(); }catch(err){ toast('삭제 실패: '+(err.message||err)); } } }
+  else if(act==='photo-del'){ if(confirm('예매내역 사진을 삭제할까요?')){ try{ await D.clearTicketImage(t.id); toast('사진이 삭제되었어요'); t.hasImg=false; t._img=null; renderDetail(); }catch(err){ toast('삭제 실패: '+(err.message||err)); } } }
   else if(act==='ai')$('aiFile').click();
   else if(act==='manual')openNew();
 });
-$('imgFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; const t=curTicket(); if(!f||!t||!t.id)return; try{ toast('사진 올리는 중…'); await D.setTicketImage(t.id,f); toast('예매내역 사진이 등록되었어요'); t.hasImg=true; renderDetail(); }catch(err){ toast('업로드 실패: '+(err.message||err)); } });
+$('imgFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; const t=curTicket(); if(!f||!t||!t.id)return; try{ toast('사진 올리는 중…'); await D.setTicketImage(t.id,f); toast('예매내역 사진이 등록되었어요'); t.hasImg=true; t._img=null; renderDetail(); }catch(err){ toast('업로드 실패: '+(err.message||err)); } });
 $('aiFile').addEventListener('change',async e=>{ const files=[...e.target.files]; e.target.value=''; if(!files.length)return; toast(`캡처 ${files.length}장 처리 중…`); try{ const r=await D.queueCaptures(files); toast(`${r.ok}장 접수됨${r.fail?` · ${r.fail}장 실패`:''} · AI가 곧 인식해요`); }catch(err){ toast(err.message||'업로드 실패'); } });
 $('addBtn').addEventListener('click',()=>openSub('add'));
 /* 피커 */
@@ -429,7 +437,10 @@ function openPicker(kind){ if(kind==='date'){ const d=form.date?new Date(form.da
 function renderCal(){ const first=new Date(pkY,pkM,1), off=first.getDay(), dim=new Date(pkY,pkM+1,0).getDate(), prevDim=new Date(pkY,pkM,0).getDate(); const today=D.ymd(new Date()); const cells=[]; for(let i=0;i<off;i++)cells.push(`<div class="d o">${prevDim-off+1+i}</div>`); for(let d=1;d<=dim;d++){ const ds=`${pkY}-${String(pkM+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; const has=T.some(x=>x.date===ds); cells.push(`<div class="d ${has?'has':''} ${ds===form.date?'sel':''} ${ds===today?'tod':''}" data-pick="${ds}">${d}</div>`); } subB.innerHTML=`<div class="pk"><div class="mh"><span data-cal="-1">‹</span><b>${pkY}년 ${pkM+1}월</b><span data-cal="1">›</span></div><div class="wk"><span>일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span>토</span></div><div class="days">${cells.join('')}</div></div>`; }
 function renderClock(){ const [h,m]=form.time.split(':'); subB.innerHTML=`<div class="pk"><input class="big" id="timeIn" value="${form.time}" inputmode="numeric" placeholder="HH:MM" style="background:transparent;border:0;width:100%;text-align:center;padding:0;font-size:34px;font-weight:900;color:var(--accent);letter-spacing:-.04em"><div class="pkl">시</div><div class="hrs" style="grid-template-columns:repeat(6,1fr)">${Array.from({length:24},(_,x)=>`<span data-h="${x}" class="${+h===x?'on':''}">${x}</span>`).join('')}</div><div class="pkl">분</div><div class="mins">${['00','05','10','15','20','25','30','35','40','45','50','55'].map(x=>`<span data-m="${x}" class="${m===x?'on':''}">${x}</span>`).join('')}</div></div>`; subB.querySelector('#timeIn').addEventListener('input',e=>{ const v=e.target.value.replace(/[^0-9]/g,'').slice(0,4); if(v.length===4){ const hh=Math.min(23,+v.slice(0,2)), mm=Math.min(59,+v.slice(2)); form.time=String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0'); subB.querySelectorAll('[data-h]').forEach(x=>x.classList.toggle('on',+x.dataset.h===hh)); subB.querySelectorAll('[data-m]').forEach(x=>x.classList.toggle('on',x.dataset.m===String(mm).padStart(2,'0'))); } }); }
 /* 이미지 뷰어 */
-async function openViewer(id){ const v=$('viewer'); v.classList.add('on'); v.querySelector('.img').innerHTML='<div class="spinner"></div>'; pushOv('viewer',()=>v.classList.remove('on')); try{ const b64=await D.fetchTicketImage(id); v.querySelector('.img').innerHTML=b64?`<img src="data:image/jpeg;base64,${b64}" alt="">`:'<div>사진을 불러올 수 없어요</div>'; }catch(e){ v.querySelector('.img').innerHTML='<div>불러오기 실패</div>'; } }
+async function openViewer(t){ const v=$('viewer'), box=v.querySelector('.img'); v.classList.add('on'); pushOv('viewer',()=>v.classList.remove('on'));
+  const show=b64=>{ box.innerHTML=b64?`<img src="data:image/jpeg;base64,${b64}" alt="">`:'<div>사진을 불러올 수 없어요</div>'; };
+  if(t._img){ show(t._img); return; } box.innerHTML='<div class="spinner"></div>';
+  try{ t._img=await D.fetchTicketImage(t.id); show(t._img); }catch(e){ box.innerHTML='<div>불러오기 실패</div>'; } }
 $('viewerX').addEventListener('click',()=>{ $('viewer').classList.remove('on'); popOv('viewer'); });
 
 /* ===== 예매처 색 관리 · AI 대기열 · 동기화 (설정 하위 시트) ===== */
