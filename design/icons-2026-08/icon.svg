@@ -1,37 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="티켓 보관함">
-  <!-- ticket-bots(KTX) 아이콘 결: 전면 그라데이션 바탕 + 큰 오브젝트 + 광택·그림자. 티켓은 온전한 한 장(절취선은 점선 구멍만).
-       뒤에 살구색 한 장 더 겹쳐 "보관함". 이 파일이 단일 원본 — tools/build-icons.mjs 가 512/192/180 + maskable 을 굽는다. -->
+  <!-- 흰 바탕(종이 그라데이션) 위에 오렌지 티켓 두 장. 절취선은 점선 구멍 + 좌우 노치, 뒤 장은 살구색.
+       이 파일이 단일 원본 — tools/build-icons.mjs 가 512/192/180 + maskable(글리프 0.78 축소) 을 굽는다. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a4a"/><stop offset=".55" stop-color="#ff5a1f"/><stop offset="1" stop-color="#f0300c"/></linearGradient>
-    <radialGradient id="glow" cx="22%" cy="14%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ececf2"/></linearGradient>
-    <linearGradient id="peach" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe3d4"/><stop offset="1" stop-color="#ffc9b0"/></linearGradient>
-    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".42" stop-color="#fff" stop-opacity=".6"/><stop offset=".58" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2622"/><stop offset="1" stop-color="#16161a"/></linearGradient>
+    <linearGradient id="bgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ebebf1"/></linearGradient>
+    <radialGradient id="glowW" cx="24%" cy="12%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a4a"/><stop offset=".55" stop-color="#ff5a1f"/><stop offset="1" stop-color="#f0300c"/></linearGradient>
+    <linearGradient id="peach" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9c6"/><stop offset="1" stop-color="#ffbfa3"/></linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".42" stop-color="#fff" stop-opacity=".5"/><stop offset=".58" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <filter id="sh" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
     <filter id="sh2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
     <mask id="tkH"><rect x="-150" y="-95" width="300" height="190" rx="28" fill="#fff"/><circle cx="-150" cy="0" r="20" fill="#000"/><circle cx="150" cy="0" r="20" fill="#000"/>
       <circle cx="-52" cy="-66" r="4.5" fill="#000"/><circle cx="-52" cy="-44" r="4.5" fill="#000"/><circle cx="-52" cy="-22" r="4.5" fill="#000"/><circle cx="-52" cy="0" r="4.5" fill="#000"/><circle cx="-52" cy="22" r="4.5" fill="#000"/><circle cx="-52" cy="44" r="4.5" fill="#000"/><circle cx="-52" cy="66" r="4.5" fill="#000"/></mask>
     <mask id="tkHb"><rect x="-150" y="-95" width="300" height="190" rx="28" fill="#fff"/><circle cx="-150" cy="0" r="20" fill="#000"/><circle cx="150" cy="0" r="20" fill="#000"/></mask>
   </defs>
-  <rect width="512" height="512" fill="url(#bg)"/>
-  <rect width="512" height="512" fill="url(#glow)"/>
+  <rect width="512" height="512" fill="url(#bgW)"/>
+  <rect width="512" height="512" fill="url(#glowW)"/>
   <g id="glyph" transform="translate(262 262) scale(.92)">
     <!-- 뒤 장 -->
     <g transform="translate(-14 -22) rotate(-22)">
-      <rect x="-150" y="-80" width="300" height="190" rx="28" fill="#7a1c05" opacity=".3" filter="url(#sh2)"/>
+      <rect x="-150" y="-80" width="300" height="190" rx="28" fill="#2a1a12" opacity=".16" filter="url(#sh2)"/>
       <g mask="url(#tkHb)"><rect x="-150" y="-95" width="300" height="190" fill="url(#peach)"/></g>
     </g>
     <!-- 앞 장 -->
     <g transform="rotate(-8)">
-      <rect x="-148" y="-72" width="300" height="190" rx="28" fill="#7a1c05" opacity=".42" filter="url(#sh)"/>
-      <g mask="url(#tkH)"><rect x="-150" y="-95" width="300" height="190" fill="url(#paper)"/><rect x="-150" y="-95" width="300" height="190" fill="url(#sheen)"/></g>
-      <circle cx="-101" cy="-28" r="17" fill="#ff5a1f"/>
-      <rect x="-124" y="8" width="46" height="11" rx="5.5" fill="#ff5a1f" opacity=".42"/><rect x="-124" y="30" width="30" height="11" rx="5.5" fill="#ff5a1f" opacity=".28"/>
-      <rect x="-24" y="-52" width="120" height="18" rx="9" fill="url(#ink)"/>
-      <rect x="-24" y="-16" width="150" height="15" rx="7.5" fill="#c9c9d4"/>
-      <rect x="-24" y="14" width="86" height="15" rx="7.5" fill="#c9c9d4"/>
-      <rect x="-24" y="48" width="56" height="22" rx="11" fill="#ff5a1f"/><rect x="40" y="48" width="22" height="22" rx="11" fill="#ffe0d1"/>
+      <rect x="-148" y="-70" width="300" height="190" rx="28" fill="#7a1c05" opacity=".34" filter="url(#sh)"/>
+      <g mask="url(#tkH)"><rect x="-150" y="-95" width="300" height="190" fill="url(#orange)"/><rect x="-150" y="-95" width="300" height="190" fill="url(#sheen)" opacity=".8"/></g>
+      <circle cx="-101" cy="-28" r="17" fill="#fff"/>
+      <rect x="-124" y="8" width="46" height="11" rx="5.5" fill="#fff" opacity=".6"/><rect x="-124" y="30" width="30" height="11" rx="5.5" fill="#fff" opacity=".4"/>
+      <rect x="-24" y="-52" width="120" height="18" rx="9" fill="#fff"/>
+      <rect x="-24" y="-16" width="150" height="15" rx="7.5" fill="#fff" opacity=".55"/>
+      <rect x="-24" y="14" width="86" height="15" rx="7.5" fill="#fff" opacity=".55"/>
+      <rect x="-24" y="48" width="56" height="22" rx="11" fill="#16161a"/><rect x="40" y="48" width="22" height="22" rx="11" fill="#fff" opacity=".7"/>
     </g>
   </g>
 </svg>
