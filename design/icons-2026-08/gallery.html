@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>티켓 보관함 아이콘 시안</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<style>
+  body{margin:0;background:#f7f7f8;color:#16161a;font-family:Pretendard,system-ui,sans-serif;padding:28px 22px 60px}
+  h1{font-size:18px;margin:0 0 4px;letter-spacing:-.02em} p.sub{margin:0 0 26px;color:#8b8b95;font-size:13px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+  .card{background:#fff;border:1px solid #ececef;border-radius:20px;padding:18px}
+  .card h2{font-size:14px;margin:0 0 2px;display:flex;align-items:center;gap:8px} .card h2 em{font-style:normal;font-size:10.5px;padding:2px 7px;border-radius:999px;background:#16161a;color:#fff;font-weight:800}
+  .card p{margin:0 0 14px;font-size:12px;color:#8b8b95;line-height:1.5}
+  .row{display:flex;align-items:flex-end;gap:18px}
+  .big{width:128px;height:128px;border-radius:29px;overflow:hidden;box-shadow:0 10px 24px -12px rgba(0,0,0,.35)} .big svg{width:100%;height:100%;display:block}
+  .phone{flex:1;background:linear-gradient(160deg,#1b1d2b,#3a3f5c);border-radius:16px;padding:14px 10px 10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;justify-items:center}
+  .ico{width:44px;height:44px;border-radius:11px;overflow:hidden} .ico svg{width:100%;height:100%;display:block} .ico.c{border-radius:50%}
+  .phone span{grid-column:1/-1;font-size:9px;color:rgba(255,255,255,.55);text-align:center}
+  .lbl{font-size:8.5px;color:#fff;text-align:center;margin-top:3px;width:44px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .dummy{background:rgba(255,255,255,.16)}
+</style></head><body>
+<h1>앱 아이콘 시안</h1><p class="sub">Sniper 톤(먹색·흰색·오렌지 #ff5a1f) 안에서. 모티프는 절취선이 있는 티켓 한 장. 홈 화면 미리보기는 안드로이드(둥근 사각) · 원형 마스크.</p>
+<div class="grid">
+
+<div class="card"><h2>A · 오렌지 위 티켓 <em>추천</em></h2><p>오렌지 바탕에 흰 티켓, 검정 스텁. 작아도 한눈에 티켓. 앱 안 강조색과 같은 색이라 아이콘 → 앱이 이어짐.</p>
+<div class="row"><div class="big"><svg id="A" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#ff5a1f"/>
+  <radialGradient id="ga" cx="30%" cy="22%" r="80%"><stop offset="0" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <rect width="512" height="512" fill="url(#ga)"/>
+  <g transform="translate(256 256) rotate(-10)">
+    <mask id="mA"><rect x="-176" y="-112" width="352" height="224" rx="32" fill="#fff"/><circle cx="-66" cy="-112" r="22" fill="#000"/><circle cx="-66" cy="112" r="22" fill="#000"/></mask>
+    <g mask="url(#mA)"><rect x="-176" y="-112" width="352" height="224" fill="#fff"/><rect x="-176" y="-112" width="110" height="224" fill="#16161a"/></g>
+    <line x1="-66" y1="-82" x2="-66" y2="82" stroke="#ff5a1f" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 19"/>
+    <rect x="-18" y="-50" width="120" height="19" rx="9.5" fill="#16161a"/><rect x="-18" y="-9" width="160" height="19" rx="9.5" fill="#dcdce2"/><rect x="-18" y="32" width="76" height="19" rx="9.5" fill="#dcdce2"/>
+  </g></svg></div>
+<div class="phone"><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><div><div class="ico"><svg viewBox="0 0 512 512"><use href="#A"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico c"><svg viewBox="0 0 512 512"><use href="#A"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><span>홈 화면 · 둥근 사각 / 원형</span></div></div></div>
+
+<div class="card"><h2>B · 먹색 위 티켓</h2><p>앱 다크모드·보관함 톤. 흰 티켓에 오렌지 스텁. 차분하고 고급스러움. 밝은 배경화면에서 잘 보임.</p>
+<div class="row"><div class="big"><svg id="B" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#16161a"/>
+  <radialGradient id="gb" cx="30%" cy="20%" r="85%"><stop offset="0" stop-color="#fff" stop-opacity=".10"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+  <rect width="512" height="512" fill="url(#gb)"/>
+  <g transform="translate(256 256) rotate(-10)">
+    <mask id="mB"><rect x="-176" y="-112" width="352" height="224" rx="32" fill="#fff"/><circle cx="-66" cy="-112" r="22" fill="#000"/><circle cx="-66" cy="112" r="22" fill="#000"/></mask>
+    <g mask="url(#mB)"><rect x="-176" y="-112" width="352" height="224" fill="#fff"/><rect x="-176" y="-112" width="110" height="224" fill="#ff5a1f"/></g>
+    <line x1="-66" y1="-82" x2="-66" y2="82" stroke="#16161a" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 19"/>
+    <rect x="-18" y="-50" width="120" height="19" rx="9.5" fill="#16161a"/><rect x="-18" y="-9" width="160" height="19" rx="9.5" fill="#dcdce2"/><rect x="-18" y="32" width="76" height="19" rx="9.5" fill="#dcdce2"/>
+  </g></svg></div>
+<div class="phone"><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><div><div class="ico"><svg viewBox="0 0 512 512"><use href="#B"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico c"><svg viewBox="0 0 512 512"><use href="#B"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><span>홈 화면 · 둥근 사각 / 원형</span></div></div></div>
+
+<div class="card"><h2>C · 흰 바탕</h2><p>앱 기본(라이트) 화면과 같은 흰 바탕에 먹색 티켓, 오렌지 스텁. 캐치테이블·토스 계열 흰 아이콘 느낌.</p>
+<div class="row"><div class="big"><svg id="C" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#fbfbfc"/>
+  <g transform="translate(256 256) rotate(-10)">
+    <mask id="mC"><rect x="-176" y="-112" width="352" height="224" rx="32" fill="#fff"/><circle cx="-66" cy="-112" r="22" fill="#000"/><circle cx="-66" cy="112" r="22" fill="#000"/></mask>
+    <g mask="url(#mC)"><rect x="-176" y="-112" width="352" height="224" fill="#16161a"/><rect x="-176" y="-112" width="110" height="224" fill="#ff5a1f"/></g>
+    <line x1="-66" y1="-82" x2="-66" y2="82" stroke="#fbfbfc" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 19"/>
+    <rect x="-18" y="-50" width="120" height="19" rx="9.5" fill="#fff"/><rect x="-18" y="-9" width="160" height="19" rx="9.5" fill="#5b5b66"/><rect x="-18" y="32" width="76" height="19" rx="9.5" fill="#5b5b66"/>
+  </g></svg></div>
+<div class="phone"><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><div><div class="ico"><svg viewBox="0 0 512 512"><use href="#C"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico c"><svg viewBox="0 0 512 512"><use href="#C"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><span>홈 화면 · 둥근 사각 / 원형</span></div></div></div>
+
+<div class="card"><h2>D · 오렌지 위 선 아이콘</h2><p>면 없이 굵은 선으로만 그린 티켓. 가장 미니멀. 대신 아주 작을 땐 A보다 덜 읽힘.</p>
+<div class="row"><div class="big"><svg id="D" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" fill="#ff5a1f"/>
+  <g transform="translate(256 256) rotate(-10)" fill="none" stroke="#fff" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M-140-96h280a24 24 0 0 1 24 24v36a36 36 0 0 0 0 72v36a24 24 0 0 1-24 24h-280a24 24 0 0 1-24-24v-36a36 36 0 0 0 0-72v-36a24 24 0 0 1 24-24z"/>
+    <path d="M-40-58v116" stroke-dasharray="1 30"/>
+    <path d="M14-26h96M14 26h56"/>
+  </g></svg></div>
+<div class="phone"><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><div><div class="ico"><svg viewBox="0 0 512 512"><use href="#D"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico c"><svg viewBox="0 0 512 512"><use href="#D"/></svg></div><div class="lbl">티켓</div></div><div><div class="ico dummy"></div><div class="lbl">&nbsp;</div></div><span>홈 화면 · 둥근 사각 / 원형</span></div></div></div>
+
+</div>
+<!-- 마스커블(원형 마스크 안전영역 80%용): 같은 그림을 0.78로 축소 -->
+<svg id="A-mask" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute"><rect width="512" height="512" fill="#ff5a1f"/><rect width="512" height="512" fill="url(#ga)"/><g transform="translate(256 256) scale(.8) translate(-256 -256)"><g transform="translate(256 256) rotate(-10)">
+    <mask id="mAm"><rect x="-176" y="-112" width="352" height="224" rx="32" fill="#fff"/><circle cx="-66" cy="-112" r="22" fill="#000"/><circle cx="-66" cy="112" r="22" fill="#000"/></mask>
+    <g mask="url(#mAm)"><rect x="-176" y="-112" width="352" height="224" fill="#fff"/><rect x="-176" y="-112" width="110" height="224" fill="#16161a"/></g>
+    <line x1="-66" y1="-82" x2="-66" y2="82" stroke="#ff5a1f" stroke-width="7" stroke-linecap="round" stroke-dasharray="1 19"/>
+    <rect x="-18" y="-50" width="120" height="19" rx="9.5" fill="#16161a"/><rect x="-18" y="-9" width="160" height="19" rx="9.5" fill="#dcdce2"/><rect x="-18" y="32" width="76" height="19" rx="9.5" fill="#dcdce2"/>
+  </g></g></svg>
+</body></html>
