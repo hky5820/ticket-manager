@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v40 · 2026-08-27';
+const BUILD='v41 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -11,7 +11,8 @@ const app=$('app'), stage=$('stage');
 let themePref=localStorage.getItem('tm_theme')||'system';   /* 'system' | 'light' | 'dark' */
 const sysDark=matchMedia('(prefers-color-scheme: dark)');
 let dark=false;
-function applyTheme(pref){ themePref=pref; localStorage.setItem('tm_theme',pref); applyDark(pref==='dark'||(pref==='system'&&sysDark.matches)); }
+/* 라이트 고정. 다크 코드는 남겨두되(applyDark·CSS .app.dark) 설정에서 뺐고 어떤 저장값이 있어도 라이트 */
+function applyTheme(pref){ themePref='light'; localStorage.setItem('tm_theme','light'); applyDark(false); }
 sysDark.addEventListener('change',()=>{ if(themePref==='system'){ applyTheme('system'); if(screen==='set')renderSet(); } });
 function applyDark(v){ dark=v; app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#17171a':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
 let imm=localStorage.getItem('tm_imm')||'vignette';
@@ -339,7 +340,7 @@ function renderSet(){
     <div class="hsec"><h2>보관함 배경</h2><small>포스터 뒤</small></div>
     <div class="immseg">${[['vignette','비네트'],['ambient','포스터 색'],['off','없음'],['dark','어둡게']].map(([k,n])=>`<div data-imm="${k}" class="${k===imm?'on':''}">${n}</div>`).join('')}</div>
     <div class="tile" style="padding:2px 14px">
-      <div class="srow" style="display:block"><div style="display:flex;justify-content:space-between;align-items:center"><div><b>테마</b><small>시스템: 폰 다크모드를 따라감 (내비 바 색과 맞춤)</small></div></div><div class="immseg" id="themeSeg" style="margin:10px 0 4px">${[['system','시스템'],['light','라이트'],['dark','다크']].map(([k,n])=>`<div data-theme="${k}" class="${k===themePref?'on':''}">${n}</div>`).join('')}</div></div>
+
       <div class="srow" data-set="vcolor"><div><b>예매처 색 관리</b><small>${D.allVendors().slice(0,5).map(esc).join(' · ')}</small></div><span class="v">${D.allVendors().length} ›</span></div>
       <div class="srow" data-set="pend"><div><b>AI 캡처 대기열</b><small>인식 대기 중인 캡처</small></div><span class="v">${st.pendings.length}장 ›</span></div>
       <div class="srow" data-set="sync"><div><b>동기화</b><small>${st.mode==='cloud'?'Supabase · 25초마다 자동':'오프라인 · 이 기기에 임시 저장'}${dirty?` · 미전송 ${dirty}건`:''}</small></div><span class="v" style="color:${st.mode==='cloud'?'var(--good)':'#e5484d'}">● ${st.mode==='cloud'?'연결됨':'끊김'}</span></div>
@@ -348,7 +349,7 @@ function renderSet(){
       <div class="srow" data-set="bulk"><div><b>여러 장 삭제</b><small>홈 목록에서 선택</small></div><span class="v">›</span></div>
       <div class="srow" data-set="update"><div><b>버전</b><small>새 버전 확인 · 탭하면 지금 가져옴</small></div><span class="v">${BUILD}${navigator.serviceWorker&&navigator.serviceWorker.controller?'':' · sw 없음'} ›</span></div>
     </div>`;
-  $('themeSeg').querySelectorAll('[data-theme]').forEach(el=>el.addEventListener('click',()=>{ applyTheme(el.dataset.theme); renderSet(); }));
+
   $('setBody').querySelectorAll('[data-imm]').forEach(el=>el.addEventListener('click',()=>{ applyImm(el.dataset.imm); renderSet(); }));
   $('setBody').querySelectorAll('[data-set]').forEach(el=>el.addEventListener('click',()=>{ const k=el.dataset.set;
     if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
