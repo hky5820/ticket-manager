@@ -225,8 +225,10 @@ function tick(){
   const n=N();
   if(!dragging){
     if(mode==='grid'){ ovScroll+=ovVel; ovVel*=0.93; const max=Math.max(0,OV.total-380); if(ovScroll<0)ovScroll+=(0-ovScroll)*0.25; if(ovScroll>max)ovScroll+=(max-ovScroll)*0.25; if(Math.abs(ovVel)<0.05&&ovScroll>=0&&ovScroll<=max){ render(); return; } }
-    else if(target==null){ pos+=vel; vel*=0.94; if(Math.abs(vel)<0.12){ pos+=(Math.round(pos)-pos)*0.08; } /* 디텐트: 느려지면 가까운 카드로 */ if(pos<0){ vel*=0.6; pos+=(0-pos)*0.25; } if(pos>n-1){ vel*=0.6; pos+=(n-1-pos)*0.25; } if(Math.abs(vel)<0.012)target=Math.round(Math.max(0,Math.min(n-1,pos))); }
-    else{ const diff=target-pos; pos+=diff*0.12; if(Math.abs(diff)<0.0005&&Math.abs(tilt)<0.05){ pos=target; target=null; vel=0; tilt=0; render(); return; } }
+    else{ if(target==null)target=Math.round(Math.max(0,Math.min(n-1,pos)));
+      /* 임계감쇠 스프링: 현재 속도를 이어받아 목표 카드까지 한 곡선으로 감속 */
+      const diff=target-pos; vel+=diff*0.022-vel*0.3; pos+=vel; tiltV=Math.max(-4,Math.min(4,-vel*22));
+      if(Math.abs(diff)<0.002&&Math.abs(vel)<0.002&&Math.abs(tilt)<0.05){ pos=target; target=null; vel=0; tilt=0; render(); return; } }
   }
   render(); raf=requestAnimationFrame(tick);
 }
@@ -246,7 +248,7 @@ stage.addEventListener('pointerup',e=>{ dragging=false;
     else { target=base; kick(); }
     return; }
   if(mode==='grid'){ ovVel=Math.max(-40,Math.min(40,ovVel)); kick(); return; }
-  vel=Math.max(-0.4,Math.min(0.4,vel)); if(Math.abs(vel)<0.03){ target=clampI(Math.round(pos)); vel=0; } kick(); });
+  vel=Math.max(-0.45,Math.min(0.45,vel)); const proj=pos+vel*14; /* 관성 투영: 손 뗀 속도로 어디까지 갈지 */ target=clampI(Math.round(Math.abs(proj-pos)<0.18?pos:proj)); kick(); });
 stage.addEventListener('pointercancel',()=>{ dragging=false; target=clampI(Math.round(pos)); kick(); });
 let wheelAcc=0, wheelAt=0;
 stage.addEventListener('wheel',e=>{ e.preventDefault(); if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
