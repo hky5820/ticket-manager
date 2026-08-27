@@ -707,3 +707,7 @@
   .sub,.dsheet{transition:transform .32s cubic-bezier(.32,.72,0,1),visibility 0s linear .36s}
   .sub.on,.dsheet.on{transition:transform .36s cubic-bezier(.32,.72,0,1),visibility 0s}
   .sub:not(.on),.dsheet:not(.on){box-shadow:none;visibility:hidden}
+  /* 보관함: 잡았을 때 앞 카드 그림자 깊어짐 (들린 느낌) */
+  .card .art{transition:box-shadow .22s ease}
+  .stage.grab .card.front .art{box-shadow:0 54px 90px -30px rgba(0,0,0,.62),0 0 0 1px var(--line) inset}
+  .app.imm-vignette #scr-vault .stage.grab .card.front .art{box-shadow:0 60px 100px -32px rgba(0,0,0,.66)}

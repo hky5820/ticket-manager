@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v36 · 2026-08-27';
+const BUILD='v37 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -50,7 +50,7 @@ const monthOf=i=>{ for(let k=i;k>=0;k--) if(ITEMS[k]&&ITEMS[k].gate==='month') r
 /* ===== 화면 전환 ===== */
 let screen='home';
 function showScreen(k){ screen=k; closeDetail(); ['home','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
-  if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); render(); }); enter(stage); enter(document.querySelector('.dock')); }
+  if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); pv=pvb=pos; grab=0; render(); }); enter(stage); enter(document.querySelector('.dock')); }
   if(k==='home')renderHome(); if(k==='money')renderMoney(); if(k==='set')renderSet();
   const sc=$('scr-'+k).querySelector('.scroll'); if(sc){ sc.scrollTop=0; enter(sc,true); } }
 /* 화면 진입 모션: 자식들을 순서대로 떠오르게(스태거). 25초 새로고침엔 안 걸리고 탭 전환·보기 전환에만 */
@@ -69,7 +69,7 @@ function elastic(el){ const MAX=20; let y0=0, pull=0, raf=0, on=false;
   el.addEventListener('touchend',settle,{passive:true}); el.addEventListener('touchcancel',settle,{passive:true}); }
 ['homeBody','moneyBody','setBody','dBody','shows'].forEach(id=>{ const el=$(id); if(el)elastic(el); });
 $('nav').addEventListener('click',e=>{ const d=e.target.closest('[data-scr]'); if(d){ hap(8); showScreen(d.dataset.scr); } });
-function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; render(); }
+function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; pv=pvb=i; render(); }
 
 /* ===== 홈 ===== */
 function applyHomeAmb(v){ homeAmb=v; localStorage.setItem('tm_homeamb',v?'1':'0'); app.classList.toggle('home-amb',v); $('homeBgBtn').classList.toggle('on',v); const nx=UP[0]; const ha=$('homeamb'); if(ha&&nx) ha.style.background=`radial-gradient(80% 60% at 50% 30%, ${colorFor(nx.vendor)} 0%, ${colorFor(nx.vendor)}00 100%)`; }
@@ -220,13 +220,17 @@ function setMode(m){ mode=m; app.classList.remove('m-grid','m-shows'); if(m!=='f
 const PITCH=185, FLING=20;            /* 손 뗀 속도 × FLING = 그대로 굴러갈 거리(카드 수) */
 const clampI=i=>Math.max(0,Math.min(N()-1,i));
 let anim=null, lastIdx=-1, lastMoveAt=0, wasMoving=false;
+let pv=0, pvb=0, grab=0; window.__vault=()=>({pos,pv,pvb,tilt,grab,dragging,anim:!!anim});   /* pv: 앞 카드가 실제로 보이는 위치(손가락을 살짝 늦게 따라옴), pvb: 뒤 스택(더 늦게) — 무게감. grab: 잡힘 0~1 */
 
 function render(){
-  tilt+=(Math.max(-5,Math.min(5,-vel*32))-tilt)*0.22;
+  tilt+=(Math.max(-14,Math.min(14,-vel*95))-tilt)*0.3;              /* 손가락 속도만큼 카드가 기운다 */
+  grab+=((dragging?1:0)-grab)*0.22;                                     /* 잡으면 살짝 들리고(스케일·그림자) 놓으면 내려앉음 */
+  pv+=(pos-pv)*(dragging?0.32:0.6); pvb+=(pos-pvb)*(dragging?0.17:0.45); /* 앞 장은 손가락을 바짝, 뒤 장들은 한 박자 늦게 */
   if(mode!=='grid'){ const ci=clampI(Math.round(pos)); if(ci!==lastIdx){ if(lastIdx>=0)hap(7); lastIdx=ci; } }
   const H=stage.clientHeight, n=N();
   for(let i=0;i<n;i++){
-    const d=i-pos, el=els[i], it=ITEMS[i], a=Math.abs(d); if(!el)continue;
+    const q=i-pv, qb=i-pvb, m=Math.max(0,Math.min(1,q/2)), d=q+(qb-q)*m*m*(3-2*m);   /* 앞은 pv, 깊어질수록 pvb */
+    const el=els[i], it=ITEMS[i], a=Math.abs(d); if(!el)continue;
     if(mode==='grid'){ const p=ovPos[i]||{x:0,y:0}, y=p.y-ovScroll; const natTop=H/2-(it.gate?24:163); const ty=(y+16)-natTop; el.style.display=(y<-360||y>H+60)?'none':''; el.style.transform=`translate3d(${p.x}px,${ty}px,-140px) rotateX(5deg) scale(${p.label?0.92:OV.s})`; el.style.opacity=1; el.style.filter=''; el.style.zIndex=String(it.gate?900:500+i); if(!it.gate){ el.querySelector('.dim').style.opacity=0; el.querySelector('.sheen').style.opacity=0; } continue; }
     if(d>3.4||d<-1.2){ el.style.display='none'; continue; }
     el.style.display='';
@@ -238,7 +242,8 @@ function render(){
     el.classList.toggle('front',a<0.5);
     el.style.setProperty('--glow', d>=0&&d<1.6 ? (d<1 ? (1-d*0.45).toFixed(2) : (0.55*(1.6-d)/0.6).toFixed(2)) : 0);
     const tl=it.gate?0:tilt*(1-Math.min(1,a*0.6));
-    el.style.transform=`translate3d(0,${y}px,${z}px) rotateX(${tl}deg)${d<0?` scale(${1+(-d)*0.04})`:''}`;
+    const lift=grab*0.035*(1-Math.min(1,a));
+    el.style.transform=`translate3d(0,${y}px,${z}px) rotateX(${tl}deg)${d<0?` scale(${1+(-d)*0.04})`:(lift>0.001?` scale(${(1+lift).toFixed(4)})`:'')}`;
     el.style.opacity=op; el.style.filter=blur>0.05?`blur(${blur}px)`:'';
     if(!it.gate){ el.querySelector('.dim').style.opacity=dim; el.querySelector('.sheen').style.opacity=Math.max(0,1-a*2)*0.9; }
   }
@@ -256,7 +261,7 @@ function glide(to,v0){
 }
 const snapTo=i=>glide(i,0);
 function tick(){
-  if(dragging)return;                 /* 드래그 중엔 pointermove가 직접 그린다 */
+  if(dragging){ render(); raf=requestAnimationFrame(tick); return; }   /* 드래그 중: 손가락은 pos 만 바꾸고, 그림은 여기서 따라간다 */
   if(mode==='grid'){
     ovScroll+=ovVel; ovVel*=0.93; const max=Math.max(0,OV.total-380);
     if(ovScroll<0)ovScroll+=(0-ovScroll)*0.25; if(ovScroll>max)ovScroll+=(max-ovScroll)*0.25;
@@ -265,14 +270,14 @@ function tick(){
     const a=anim, s=Math.min(1,++a.t/a.T), s2=s*s, s3=s2*s;
     pos=a.p0+a.d*(3*s2-2*s3)+a.v0*a.T*(s-2*s2+s3);
     vel=(a.d*(6*s-6*s2)+a.v0*a.T*(1-4*s+3*s2))/a.T;
-    if(s>=1){ pos=a.p0+a.d; vel=0; anim=null; target=null; tilt=0; render(); return; }
-  } else { vel=0; render(); return; }
+    if(s>=1){ pos=a.p0+a.d; vel=0; anim=null; target=null; }   /* 여기서 멈추지 않는다 — 뒤따라오는 pv/pvb/tilt 가 수렴할 때까지 다음 프레임(else 가지)이 돈다 */
+  } else { vel=0; if(Math.abs(pv-pos)<0.0015&&Math.abs(pvb-pos)<0.0015&&grab<0.01&&Math.abs(tilt)<0.05){ pv=pvb=pos; grab=0; tilt=0; render(); return; } }
   render(); raf=requestAnimationFrame(tick);
 }
 function kick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(tick); }
 stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return;
   wasMoving=!!anim; anim=null; target=null; dragging=true; vel=0; ovVel=0;
-  lastY=e.clientY; lastT=lastMoveAt=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
+  lastY=e.clientY; lastT=lastMoveAt=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; stage.classList.add('grab'); kick(); });
 stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.clientY-lastY, now=performance.now(), dt=Math.max(1,now-lastT);
   if(mode==='grid'){ ovScroll-=dy; ovVel=-dy*(16/dt); }
   else { let step=dy/PITCH;                                          /* 아래로 끌면 다음 카드 */
@@ -280,8 +285,8 @@ stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.client
     pos+=step;
     const v=(dy/PITCH)*(16/dt); vel=vel*0.55+v*0.45;                 /* 마지막 이벤트 하나만 쓰면 뗄 때 값이 널뛴다 */
   }
-  lastY=e.clientY; lastT=lastMoveAt=now; moved+=Math.abs(dy); render(); });
-stage.addEventListener('pointerup',e=>{ dragging=false;
+  lastY=e.clientY; lastT=lastMoveAt=now; moved+=Math.abs(dy); });
+stage.addEventListener('pointerup',e=>{ dragging=false; stage.classList.remove('grab');
   if(moved<6){
     if(wasMoving&&mode!=='grid'){ glide(Math.round(pos),0); return; }   /* 굴러가는 중 탭 = 그 자리에서 멈추기 */
     const hit=document.elementFromPoint(e.clientX,e.clientY); const c=hit&&hit.closest('.card,.gate'); const onAsk=hit&&hit.closest('.ask span');
@@ -289,12 +294,12 @@ stage.addEventListener('pointerup',e=>{ dragging=false;
       if(i===Math.round(pos)){ if(!ITEMS[i].gate){ const wasAsk=c.classList.contains('ask'); els.forEach(x=>x.classList.remove('ask')); if(wasAsk||onAsk)openDetail(i); else { c.classList.add('ask'); c._askT=performance.now(); } } }
       else { els.forEach(x=>x.classList.remove('ask')); glide(i,0); } }
     else if(mode!=='grid')glide(Math.round(pos),0);
-    return; }
+    kick(); return; }
   if(mode==='grid'){ ovVel=Math.max(-40,Math.min(40,ovVel)); kick(); return; }
   if(performance.now()-lastMoveAt>90)vel=0;                          /* 떼기 전에 손가락이 멈췄으면 관성 없음 */
   vel=Math.max(-0.6,Math.min(0.6,vel));
   glide(Math.round(pos+vel*FLING),vel); });
-stage.addEventListener('pointercancel',()=>{ dragging=false; if(mode!=='grid')glide(Math.round(pos),0); });
+stage.addEventListener('pointercancel',()=>{ dragging=false; stage.classList.remove('grab'); if(mode!=='grid')glide(Math.round(pos),0); });
 stage.addEventListener('wheel',e=>{ e.preventDefault();
   if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
   const v=Math.max(-0.6,Math.min(0.6,(anim?vel:0)+e.deltaY/PITCH*0.08));
