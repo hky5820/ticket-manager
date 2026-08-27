@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v37 · 2026-08-27';
+const BUILD='v38 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -277,7 +277,7 @@ function tick(){
 function kick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(tick); }
 stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return;
   wasMoving=!!anim; anim=null; target=null; dragging=true; vel=0; ovVel=0;
-  lastY=e.clientY; lastT=lastMoveAt=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; stage.classList.add('grab'); kick(); });
+  lastY=e.clientY; lastT=lastMoveAt=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; stage.classList.add('grabbing'); kick(); });
 stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.clientY-lastY, now=performance.now(), dt=Math.max(1,now-lastT);
   if(mode==='grid'){ ovScroll-=dy; ovVel=-dy*(16/dt); }
   else { let step=dy/PITCH;                                          /* 아래로 끌면 다음 카드 */
@@ -286,7 +286,7 @@ stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.client
     const v=(dy/PITCH)*(16/dt); vel=vel*0.55+v*0.45;                 /* 마지막 이벤트 하나만 쓰면 뗄 때 값이 널뛴다 */
   }
   lastY=e.clientY; lastT=lastMoveAt=now; moved+=Math.abs(dy); });
-stage.addEventListener('pointerup',e=>{ dragging=false; stage.classList.remove('grab');
+stage.addEventListener('pointerup',e=>{ dragging=false; stage.classList.remove('grabbing');
   if(moved<6){
     if(wasMoving&&mode!=='grid'){ glide(Math.round(pos),0); return; }   /* 굴러가는 중 탭 = 그 자리에서 멈추기 */
     const hit=document.elementFromPoint(e.clientX,e.clientY); const c=hit&&hit.closest('.card,.gate'); const onAsk=hit&&hit.closest('.ask span');
@@ -299,7 +299,7 @@ stage.addEventListener('pointerup',e=>{ dragging=false; stage.classList.remove('
   if(performance.now()-lastMoveAt>90)vel=0;                          /* 떼기 전에 손가락이 멈췄으면 관성 없음 */
   vel=Math.max(-0.6,Math.min(0.6,vel));
   glide(Math.round(pos+vel*FLING),vel); });
-stage.addEventListener('pointercancel',()=>{ dragging=false; stage.classList.remove('grab'); if(mode!=='grid')glide(Math.round(pos),0); });
+stage.addEventListener('pointercancel',()=>{ dragging=false; stage.classList.remove('grabbing'); if(mode!=='grid')glide(Math.round(pos),0); });
 stage.addEventListener('wheel',e=>{ e.preventDefault();
   if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
   const v=Math.max(-0.6,Math.min(0.6,(anim?vel:0)+e.deltaY/PITCH*0.08));
