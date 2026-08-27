@@ -49,15 +49,31 @@ const monthOf=i=>{ for(let k=i;k>=0;k--) if(ITEMS[k]&&ITEMS[k].gate==='month') r
 /* ===== 화면 전환 ===== */
 let screen='home';
 function showScreen(k){ screen=k; closeDetail(); ['home','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
-  if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); render(); }); }
-  if(k==='home')renderHome(); if(k==='money')renderMoney(); if(k==='set')renderSet(); }
+  if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); render(); }); enter(stage); enter(document.querySelector('.dock')); }
+  if(k==='home')renderHome(); if(k==='money')renderMoney(); if(k==='set')renderSet();
+  const sc=$('scr-'+k).querySelector('.scroll'); if(sc){ sc.scrollTop=0; enter(sc,true); } }
+/* 화면 진입 모션: 자식들을 순서대로 떠오르게(스태거). 25초 새로고침엔 안 걸리고 탭 전환·보기 전환에만 */
+const _enterT=new WeakMap();
+function enter(el,stagger){ if(!el)return; if(stagger)[...el.children].forEach((c,i)=>c.style.setProperty('--i',Math.min(i,9))); el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); clearTimeout(_enterT.get(el)); _enterT.set(el,setTimeout(()=>el.classList.remove('enter'),900)); }
+/* 목록 끝에서 더 당기면 내용이 20px까지 따라오다 스프링으로 돌아온다 (cardInfo 홈의 탄성 오버스크롤) */
+function elastic(el){ const MAX=20; let y0=0, pull=0, raf=0, on=false;
+  const apply=()=>{ el.style.transform=pull?`translateY(${pull.toFixed(2)}px)`:''; };
+  el.addEventListener('touchstart',e=>{ cancelAnimationFrame(raf); y0=e.touches[0].clientY; on=true; },{passive:true});
+  el.addEventListener('touchmove',e=>{ if(!on)return; const y=e.touches[0].clientY, dy=y-y0; y0=y;
+    const atTop=el.scrollTop<=0, atBot=el.scrollTop+el.clientHeight>=el.scrollHeight-1;
+    if(!((dy>0&&atTop)||(dy<0&&atBot)||pull))return;
+    const remaining=1-Math.min(.82,Math.abs(pull)/MAX); pull=Math.max(-MAX,Math.min(MAX,pull+dy*0.10*remaining));
+    if((pull>0&&!atTop)||(pull<0&&!atBot))pull=0; apply(); },{passive:true});
+  const settle=()=>{ on=false; if(!pull)return; let v=0; const step=()=>{ v+=-pull*0.2; v*=0.6; pull+=v; if(Math.abs(pull)<0.25&&Math.abs(v)<0.25){ pull=0; apply(); return; } apply(); raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); };
+  el.addEventListener('touchend',settle,{passive:true}); el.addEventListener('touchcancel',settle,{passive:true}); }
+['homeBody','moneyBody','setBody','dBody','shows'].forEach(id=>{ const el=$(id); if(el)elastic(el); });
 $('nav').addEventListener('click',e=>{ const d=e.target.closest('[data-scr]'); if(d){ hap(8); showScreen(d.dataset.scr); } });
 function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; render(); }
 
 /* ===== 홈 ===== */
 function applyHomeAmb(v){ homeAmb=v; localStorage.setItem('tm_homeamb',v?'1':'0'); app.classList.toggle('home-amb',v); $('homeBgBtn').classList.toggle('on',v); const nx=UP[0]; const ha=$('homeamb'); if(ha&&nx) ha.style.background=`radial-gradient(80% 60% at 50% 30%, ${colorFor(nx.vendor)} 0%, ${colorFor(nx.vendor)}00 100%)`; }
 $('homeBgBtn').addEventListener('click',()=>applyHomeAmb(!homeAmb));
-function setHomeView(v){ homeView=v; localStorage.setItem('tm_homeview',v); renderHome(); }
+function setHomeView(v){ homeView=v; localStorage.setItem('tm_homeview',v); renderHome(); enter($('homeBody'),true); }
 function renderPendBanner(){
   const el=$('pendBanner'); const ps=D.getState().pendings; if(!ps.length){ el.hidden=true; return; }
   const pend=ps.filter(p=>p.status==='pending').length, errs=ps.filter(p=>p.status==='error').length;
