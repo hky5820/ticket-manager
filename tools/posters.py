@@ -9,7 +9,7 @@
   2. 네이버 통합검색 '공연' 카드 (끝난 공연도 있음, csearch-phinf 포스터)
   3. 네이버 이미지검색 (제목에 공연명+장르 포함, 세로 비율만) — 최후 수단
 브라우저에서 못 하는 이유: 이 사이트들은 CORS 헤더가 없어 정적 웹앱(GitHub Pages)이 직접 읽을 수 없음.
-예매처 자체 사이트(티켓링크·멜론·YES24·세종·LG아트센터)는 JS 렌더링/차단이라 서버에서도 검색 불가 → 위 3단계로 대체."""
+예매처 자체 사이트(멜론·세종·LG아트센터·인터파크)는 tools/posters-browser.mjs(Playwright 브라우저)가 먼저 돌고, 이 스크립트는 그 뒤 빈 것을 채움. 티켓링크·YES24는 봇 차단이라 어디서도 불가."""
 import json, re, sys, io, difflib, urllib.request, urllib.parse
 BASE='https://ydqabdlwzseommowiupw.supabase.co/rest/v1'
 KEY='sb_publishable_t5MlvS1Ea8ftD7IkfzqaiA_BCrzU80J'
