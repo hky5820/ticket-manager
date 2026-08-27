@@ -1,6 +1,6 @@
 /* 티켓 보관함 서비스워커 — 앱 셸 캐시(오프라인 지원) */
-const CACHE='tm-shell-v18';
-const ASSETS=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png','./icon-maskable-512.png'];
+const CACHE='tm-shell-v20';
+const ASSETS=['./','./index.html','./app.css','./app.js','./data.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png','./icon-maskable-512.png'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()).catch(()=>{}));
@@ -21,6 +21,6 @@ self.addEventListener('fetch',e=>{
       const copy=res.clone();
       caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{});
       return res;
-    }).catch(()=>caches.match(req).then(r=>r||caches.match('./index.html')))
+    }).catch(()=>caches.match(req,{ignoreSearch:true}).then(r=>r||(req.mode==='navigate'?caches.match('./index.html'):new Response('',{status:503}))))
   );
 });

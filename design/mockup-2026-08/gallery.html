@@ -1,0 +1,25 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>티켓 보관함 — 화면 갤러리</title>
+<style>
+body{margin:0;background:#1b1b1f;color:#ddd;font-family:Pretendard,"Noto Sans KR",sans-serif}
+.bar{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid #2a2a30;flex-wrap:wrap}
+.bar b{font-size:14px;margin-right:6px}
+.bar label{font-size:12px;color:#aaa;display:flex;gap:6px;align-items:center}
+select,button{background:#2a2a31;color:#eee;border:1px solid #3a3a42;border-radius:8px;padding:6px 10px;font-size:12px}
+.row{display:flex;gap:18px;padding:18px;overflow-x:auto}
+.ph{flex:none;display:flex;flex-direction:column;gap:8px}
+.ph small{font-size:12px;color:#999}
+iframe{width:390px;height:844px;border:0;border-radius:28px;background:#000;box-shadow:0 20px 50px rgba(0,0,0,.5)}
+</style></head><body>
+<div class="bar"><b>티켓 보관함 프로토타입</b>
+<label>다크 <select id="dark"><option value="0">끄기</option><option value="1">켜기</option></select></label>
+<label>보관함 배경 <select id="imm"><option value="vignette">비네트</option><option value="ambient">포스터 배경</option></select></label>
+<label>홈 배경 <select id="homeamb"><option value="0">끄기</option><option value="1">포스터 배경</option></select></label>
+<label>홈 보기 <select id="home"><option value="list">일정순</option><option value="shows">공연별</option><option value="grid">포스터</option></select></label>
+<button id="reload">적용</button>
+<small style="margin-left:auto;color:#777">각 화면은 실제로 동작함 (드래그·탭 가능)</small></div>
+<div class="row" id="row"></div>
+<script>
+const shots=[['home','홈'],['vault','보관함'],['money','결산'],['set','설정']];
+function build(){ const q=`theme=sniper&dark=${dark.value}&imm=${imm.value}&home=${home.value}&homeamb=${homeamb.value}`; row.innerHTML=shots.map(([k,n])=>`<div class="ph"><small>${n}</small><iframe src="drum.html#screen=${k}&${q}"></iframe></div>`).join(''); }
+document.getElementById('reload').onclick=build; build();
+</script></body></html>

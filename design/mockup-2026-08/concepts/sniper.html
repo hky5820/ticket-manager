@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=390">
+<title>Concept · Sniper (캐치테이블 라이트)</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;800;900&display=swap">
+<style>
+  :root{--bg:#f7f7f8;--card:#fff;--line:#ececef;--ink:#16161a;--mute:#8b8b95;--soft:#f4f4f6;--accent:#ff5a1f;--ok:#12b76a;--warn:#f79009;--err:#e5484d;--r:20px}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard","Noto Sans KR",sans-serif;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+  .app{width:390px;min-height:1120px;margin:0 auto;padding:18px 16px 100px;display:grid;gap:10px;align-content:start}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 6px}
+  .top h1{margin:0;font-size:22px;font-weight:900;letter-spacing:-.04em}
+  .top span{font-size:12px;color:var(--mute);font-weight:600}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 1px 2px rgba(22,22,26,.03);padding:14px}
+  .stat3{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line);border-radius:14px;overflow:hidden;margin:-14px -14px 12px}
+  .stat3 div{background:var(--card);padding:16px 8px 14px;text-align:center}
+  .stat3 .dot{width:8px;height:8px;border-radius:50%;background:#c9c9d0;margin:0 auto 8px}
+  .stat3 .dot.on{background:var(--ok);box-shadow:0 0 0 3px rgba(18,183,106,.18)}
+  .stat3 .dot.warn{background:var(--warn);box-shadow:0 0 0 3px rgba(247,144,9,.18)}
+  .stat3 b{display:block;font-size:16px;font-weight:900;letter-spacing:-.03em}
+  .stat3 small{display:block;font-size:11px;color:var(--mute);margin-top:3px;font-weight:600}
+  .btns{display:flex;gap:8px}
+  .btn{height:44px;padding:0 16px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:800;display:inline-flex;align-items:center;gap:6px}
+  .btn.pri{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .tabs{display:grid;grid-template-columns:1fr 1fr 1fr;background:var(--soft);border-radius:16px;padding:4px}
+  .tabs div{height:44px;display:grid;place-items:center;border-radius:12px;font-size:14px;font-weight:800;color:var(--mute)}
+  .tabs div.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(22,22,26,.08)}
+  .months{display:flex;gap:8px;overflow:hidden}
+  .mo{flex:0 0 auto;width:64px;height:64px;border-radius:14px;border:1.5px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+  .mo small{font-size:11px;font-weight:700;color:var(--mute)}
+  .mo b{font-size:20px;font-weight:900;letter-spacing:-.04em}
+  .mo.on{background:var(--ink);border-color:var(--ink);color:#fff} .mo.on small{color:rgba(255,255,255,.7)}
+  .mo.today{border-style:dashed} .mo.today b{color:var(--accent);font-size:13px}
+  .sec{display:flex;align-items:baseline;justify-content:space-between;padding:8px 4px 2px}
+  .sec b{font-size:15px;font-weight:900;letter-spacing:-.03em}
+  .sec span{font-size:12px;color:var(--mute);font-weight:600}
+  .res{display:grid;grid-template-columns:52px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+  .res:first-child{border-top:0;padding-top:2px}
+  .res img{width:52px;height:68px;object-fit:cover;border-radius:10px}
+  .res .nm{font-size:14px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .res .lo{font-size:12px;color:var(--mute);margin-top:3px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .res .dt{font-size:12.5px;font-weight:700;margin-top:4px}
+  .res .rt{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+  .badge{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;font-size:11.5px;font-weight:800;background:var(--soft);color:var(--mute)}
+  .badge.dday{background:var(--ink);color:#fff}
+  .badge.soon{background:var(--accent);color:#fff}
+  .badge.ok{background:rgba(18,183,106,.12);color:var(--ok)}
+  .res .pr{font-size:12px;font-weight:700;color:var(--mute)}
+  .run{background:var(--ink);color:#fff;border-radius:var(--r);padding:16px;display:grid;grid-template-columns:1fr auto;align-items:center;gap:12px}
+  .run small{font-size:11px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:.02em}
+  .run b{display:block;font-size:30px;font-weight:900;letter-spacing:-.04em;margin-top:2px;font-variant-numeric:tabular-nums}
+  .run .pulse{width:10px;height:10px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(18,183,106,.25)}
+  .bar{height:6px;border-radius:3px;background:rgba(255,255,255,.15);grid-column:1/-1;overflow:hidden}
+  .bar i{display:block;height:100%;width:18%;background:var(--ok);border-radius:3px}
+  .nav{position:fixed;left:50%;bottom:12px;transform:translateX(-50%);width:358px;height:64px;display:grid;grid-template-columns:repeat(4,1fr);padding:6px;border-radius:22px;background:#fff;border:1px solid var(--line);box-shadow:0 10px 30px rgba(22,22,26,.12)}
+  .nav div{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;border-radius:14px;color:var(--mute);font-size:11px;font-weight:800}
+  .nav div.on{color:var(--ink);background:var(--soft)}
+  .nav svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+</style></head><body>
+<div class="app">
+  <div class="top"><h1>티켓 보관함</h1><span>동기화 2분 전</span></div>
+
+  <div class="card">
+    <div class="stat3">
+      <div><div class="dot on"></div><b>12장</b><small>다가오는</small></div>
+      <div><div class="dot warn"></div><b>D-9</b><small>다음 공연</small></div>
+      <div><div class="dot on"></div><b>+₩1.86M</b><small>양도차익</small></div>
+    </div>
+    <div class="btns"><div class="btn pri">＋ 캡처로 추가</div><div class="btn">수기 입력</div></div>
+  </div>
+
+  <div class="run"><div><small>● 다음 공연 · 임영웅 콘서트</small><b>9일 뒤 · 9.5 토</b></div><div class="pulse"></div><div class="bar"><i></i></div></div>
+
+  <div class="tabs"><div class="on">다가오는 12</div><div>지난 17</div><div>양도 18</div></div>
+
+  <div class="months">
+    <div class="mo today"><small>오늘</small><b>8.27</b></div>
+    <div class="mo on"><small>9월</small><b>4</b></div>
+    <div class="mo"><small>10월</small><b>5</b></div>
+    <div class="mo"><small>11월</small><b>1</b></div>
+    <div class="mo"><small>12월</small><b>2</b></div>
+    <div class="mo"><small>1월</small><b>1</b></div>
+  </div>
+
+  <div class="sec"><b>9월</b><span>4장 · 7매 · ₩1,337,400</span></div>
+  <div class="card">
+    <div class="res"><img src="../posters/imhero_s.jpg" alt=""><div><div class="nm">2026 임영웅 콘서트</div><div class="lo">고양종합운동장 · NOL</div><div class="dt">9.5 토 18:30 · 들꽃 F3 10열 14·15</div></div><div class="rt"><span class="badge soon">D-9</span><span class="pr">2매 · ₩407,700</span></div></div>
+    <div class="res"><img src="../posters/dracula_s.jpg" alt=""><div><div class="nm">뮤지컬 드라큘라</div><div class="lo">LG아트센터 서울 · 기타</div><div class="dt">9.5 토 19:00 · OP 4열 29·30</div></div><div class="rt"><span class="badge soon">D-9</span><span class="pr">2매 · ₩360,000</span></div></div>
+    <div class="res"><img src="../posters/elisabeth_s.jpg" alt=""><div><div class="nm">뮤지컬 〈엘리자벳〉</div><div class="lo">블루스퀘어 · 멜론</div><div class="dt">9.6 일 15:00 · VIP 3열 16·17</div></div><div class="rt"><span class="badge dday">D-10</span><span class="pr">2매 · ₩364,000</span></div></div>
+    <div class="res"><img src="../posters/imhero_s.jpg" alt=""><div><div class="nm">2026 임영웅 콘서트</div><div class="lo">고양종합운동장 · NOL</div><div class="dt">9.6 일 18:30 · 들꽃석 F8 15열 26</div></div><div class="rt"><span class="badge dday">D-10</span><span class="pr">1매 · ₩205,700</span></div></div>
+  </div>
+
+  <div class="sec"><b>10월</b><span>5장 · 9매 · ₩1,601,800</span></div>
+  <div class="card">
+    <div class="res"><img src="../posters/dracula_s.jpg" alt=""><div><div class="nm">뮤지컬 드라큘라</div><div class="lo">LG아트센터 서울 · LG아트</div><div class="dt">10.1 목 19:00 · OP 5열 26·27</div></div><div class="rt"><span class="badge">D-35</span><span class="pr">2매 · ₩356,000</span></div></div>
+    <div class="res"><img src="../posters/dracula_s.jpg" alt=""><div><div class="nm">뮤지컬 드라큘라</div><div class="lo">LG아트센터 서울 · NOL</div><div class="dt">10.4 일 13:00 · VIP 1열 10·11</div></div><div class="rt"><span class="badge">D-38</span><span class="pr">2매 · ₩364,000</span></div></div>
+    <div class="res"><img src="../posters/weeknd_s.jpg" alt=""><div><div class="nm">현대카드 슈퍼콘서트 위켄드</div><div class="lo">고양종합운동장 · NOL</div><div class="dt">10.8 목 19:45 · 지정석 P E2 8열 28</div></div><div class="rt"><span class="badge ok">양도 +₩148,200</span><span class="pr">1매 · ₩265,800</span></div></div>
+  </div>
+
+  <div class="nav">
+    <div class="on"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>홈</div>
+    <div><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>일정</div>
+    <div><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-8M22 19H2"/></svg>결산</div>
+    <div><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>설정</div>
+  </div>
+</div>
+</body></html>

@@ -12,3 +12,6 @@ scratch*tmp/
 
 # vendored skill-repo payloads (backs hooks; skills/commands live in .claude/skills & .claude/commands)
 .claude/plugins/
+design/mockup-2026-08/*.png
+design/mockup-2026-08/*-backup.html
+design/mockup-2026-08/posters/*_full*
