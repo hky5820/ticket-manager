@@ -97,7 +97,8 @@ async function processOne(id: string) {
   if (b64.length < 1000) { await rest(`/pending_uploads?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "error", result: "empty image" }) }); return { id, error: "empty image" }; }
   let p: Parsed;
   try { p = await recognize(b64); }
-  catch (e) { await rest(`/pending_uploads?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "error", result: "인식 실패: " + String(e).slice(0, 120) }) }); return { id, error: String(e) }; }
+  catch (e) { // API 장애·크레딧 부족 등 일시 실패: pending 그대로 두고 사유만 남긴다 → PC 루틴이 6시간마다 재시도
+    await rest(`/pending_uploads?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ result: "서버 인식 실패: " + String(e).slice(0, 160) }) }); return { id, error: String(e) }; }
   if (!p.name) { await rest(`/pending_uploads?id=eq.${id}`, { method: "PATCH", headers: { Prefer: "return=minimal" }, body: JSON.stringify({ status: "error", result: "not a readable ticket" }) }); return { id, error: "no name" }; }
   const unit = /^(층|구역|열|번)$/;   // 모델이 단위어만 넣은 칸은 비움
   const seats = (p.seats ?? []).map((s) => { const o: Seat = { grade: normGrade(s.grade ?? ""), floor: (s.floor ?? "").replace(/층$/, ""), zone: (s.zone ?? "").replace(/구역$/, ""), row: (s.row ?? "").replace(/열$/, ""), no: (s.no ?? "").replace(/번$/, "") }; for (const k of ["floor", "zone", "row", "no"] as const) if (unit.test(o[k] ?? "")) o[k] = ""; if (s.x) o.x = true; return o; });
