@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v39 · 2026-08-27';
+const BUILD='v40 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -13,7 +13,7 @@ const sysDark=matchMedia('(prefers-color-scheme: dark)');
 let dark=false;
 function applyTheme(pref){ themePref=pref; localStorage.setItem('tm_theme',pref); applyDark(pref==='dark'||(pref==='system'&&sysDark.matches)); }
 sysDark.addEventListener('change',()=>{ if(themePref==='system'){ applyTheme('system'); if(screen==='set')renderSet(); } });
-function applyDark(v){ dark=v; app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#000000':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
+function applyDark(v){ dark=v; app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#17171a':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
 let imm=localStorage.getItem('tm_imm')||'vignette';
 function applyImm(v){ imm=v; localStorage.setItem('tm_imm',v); app.classList.remove('imm-dark','imm-ambient','imm-vignette'); if(v!=='off')app.classList.add('imm-'+v); $('bgBtn').classList.toggle('on',v==='ambient'); }
 let homeAmb=localStorage.getItem('tm_homeamb')==='1';

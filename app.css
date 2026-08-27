@@ -1,7 +1,7 @@
 /* 티켓 보관함 — 뷰 스타일 (design/mockup-2026-08/drum.html 프로토타입에서 이식, Sniper 톤 기본) */
 
   :root{
-    --bg:#000000; --sur:#141418; --line:rgba(255,255,255,.08);
+    --bg:#17171a; --sur:#232327; --line:rgba(255,255,255,.08);
     --ink:#f2f3f5; --ink-2:rgba(242,243,245,.68); --ink-3:rgba(242,243,245,.42);
     --accent:#ff6a3d; --good:#3ddc84; --card-w:252px; --card-h:326px;
     --r:16px; --r-s:6px; --fd:inherit; --fn:inherit; --badge-bg:#fff; --badge-ink:#0b0b0e; --card-shadow:0 20px 40px -18px rgba(0,0,0,.8);
@@ -322,20 +322,20 @@
 
   /* ── 몰입 모드 (라이트 테마에서 보관함만 분위기 전환) ── */
   /* A. 보관함만 다크: 극장 조명 꺼지듯 */
-  .app.imm-dark #scr-vault{--bg:#000000;--sur:#141418;--line:rgba(255,255,255,.08);--ink:#f2f3f5;--ink-2:rgba(242,243,245,.68);--ink-3:rgba(242,243,245,.42);background:#000;color:#f2f3f5}
-  .app.imm-dark #scr-vault .art .dim{background:#000}
+  .app.imm-dark #scr-vault{--bg:#17171a;--sur:#232327;--line:rgba(255,255,255,.08);--ink:#f2f3f5;--ink-2:rgba(242,243,245,.68);--ink-3:rgba(242,243,245,.42);background:#17171a;color:#f2f3f5}
+  .app.imm-dark #scr-vault .art .dim{background:#17171a}
   .app.imm-dark #scr-vault .fan{background:#1d1e23}
-  .app.imm-dark #scr-vault .vmode{background:#141418;border-color:rgba(255,255,255,.1);color:#f2f3f5}
-  .app.imm-dark #scr-vault .gate{background:#141418;border-color:rgba(255,255,255,.1)} .app.imm-dark #scr-vault .gate b{color:#f2f3f5} .app.imm-dark #scr-vault .gate span{color:rgba(242,243,245,.6)}
+  .app.imm-dark #scr-vault .vmode{background:#232327;border-color:rgba(255,255,255,.1);color:#f2f3f5}
+  .app.imm-dark #scr-vault .gate{background:#232327;border-color:rgba(255,255,255,.1)} .app.imm-dark #scr-vault .gate b{color:#f2f3f5} .app.imm-dark #scr-vault .gate span{color:rgba(242,243,245,.6)}
   .app.imm-dark #scr-vault .gate.today{background:#fff;border-color:#fff} .app.imm-dark #scr-vault .gate.today b,.app.imm-dark #scr-vault .gate.today span{color:#101114}
   .app.imm-dark #scr-vault .grp .th{box-shadow:0 0 0 1px rgba(255,255,255,.12)} .app.imm-dark #scr-vault .grp .th.on{box-shadow:0 0 0 2px #fff}
   .app.imm-dark #scr-vault .grp .n{background:#fff;color:#101114}
   .app.imm-dark #scr-vault .grp small{color:rgba(242,243,245,.45)} .app.imm-dark #scr-vault .grp.exp small{color:#fff}
-  .app.imm-dark #scr-vault .prog .trk{background:rgba(255,255,255,.14)} .app.imm-dark #scr-vault .prog .fill{background:#fff} .app.imm-dark #scr-vault .prog .mk{background:#fff;box-shadow:0 0 0 3px #000}
+  .app.imm-dark #scr-vault .prog .trk{background:rgba(255,255,255,.14)} .app.imm-dark #scr-vault .prog .fill{background:#fff} .app.imm-dark #scr-vault .prog .mk{background:#fff;box-shadow:0 0 0 3px #17171a}
   .app.imm-dark #scr-vault .msum b{color:#f2f3f5} .app.imm-dark #scr-vault .msum .r{color:rgba(242,243,245,.6)} .app.imm-dark #scr-vault .msum .r em{color:#fff}
   .app.imm-dark #scr-vault .shows{color:#f2f3f5}
-  .app.imm-dark.on-vault .nav{background:#000;border-color:rgba(255,255,255,.08);box-shadow:none} .app.imm-dark.on-vault .nav div{color:rgba(242,243,245,.45)} .app.imm-dark.on-vault .nav div.on{background:#1d1e23;color:#fff}
-  .app.imm-dark #scr-vault .sheet{background:#141418;color:#f2f3f5}
+  .app.imm-dark.on-vault .nav{background:#17171a;border-color:rgba(255,255,255,.08);box-shadow:none} .app.imm-dark.on-vault .nav div{color:rgba(242,243,245,.45)} .app.imm-dark.on-vault .nav div.on{background:#1d1e23;color:#fff}
+  .app.imm-dark #scr-vault .sheet{background:#232327;color:#f2f3f5}
   /* B. 포스터 앰비언트: 현재 포스터 색이 보관함 배경에 번짐 (흰 톤 유지) */
   .app.imm-ambient.on-vault .ambient{opacity:.42;filter:blur(40px) saturate(1.2)}
   .app.imm-ambient #scr-vault .vmode{background:rgba(255,255,255,.7);backdrop-filter:blur(10px)}
@@ -410,13 +410,13 @@
   .card .art{box-shadow:0 30px 60px -26px rgba(0,0,0,.5),0 0 calc(64px * var(--glow,0)) calc(-8px + 8px * var(--glow,0)) color-mix(in srgb,var(--tone,#888) 60%,transparent),0 0 0 1px var(--line) inset}
   /* 1. Soft = Sniper 구조 + Candy 부드러움 */
   /* 7. 전체 다크 모드 (라이트 테마 위에 덮어쓰기) */
-  .app.dark{--bg:#000000;--sur:#141418;--line:rgba(255,255,255,.09);--ink:#f2f2f4;--ink-2:rgba(242,242,244,.66);--ink-3:rgba(242,242,244,.42);--badge-bg:#f2f2f4;--badge-ink:#111114;background:#000!important}
+  .app.dark{--bg:#17171a;--sur:#232327;--line:rgba(255,255,255,.09);--ink:#f2f2f4;--ink-2:rgba(242,242,244,.66);--ink-3:rgba(242,242,244,.42);--badge-bg:#f2f2f4;--badge-ink:#111114;background:#17171a!important}
   .app.dark .tile,.app.dark .ib,.app.dark .vmode,.app.dark .gate,.app.dark .nav,.app.dark .sheet,.app.dark .mo,.app.dark .btns2 div{background:var(--sur);border-color:var(--line);box-shadow:none}
   .app.dark .ib.on,.app.dark .gate.today,.app.dark .mo.on{background:#f2f2f4;border-color:#f2f2f4;color:#111114} .app.dark .ib.on svg{stroke:#111114} .app.dark .gate.today b,.app.dark .gate.today span{color:#111114}
-  .app.dark .art .dim{background:#000!important} .app.dark .fan{background:#22222a!important;box-shadow:none}
+  .app.dark .art .dim{background:#17171a!important} .app.dark .fan{background:#22222a!important;box-shadow:none}
   .app.dark .bdg.dday{background:#f2f2f4;color:#111114} .app.dark .kv div,.app.dark .pills span,.app.dark .chain>div{background:rgba(255,255,255,.06)}
   .app.dark .grp .th{box-shadow:0 0 0 1px rgba(255,255,255,.14)} .app.dark .grp .th.on{box-shadow:0 0 0 2px #fff} .app.dark .grp .n{background:#fff;color:#111114}
-  .app.dark .prog .trk{background:rgba(255,255,255,.14)} .app.dark .prog .fill{background:#fff} .app.dark .prog .mk{background:#fff;border-color:#fff;box-shadow:0 0 0 3px #000}
+  .app.dark .prog .trk{background:rgba(255,255,255,.14)} .app.dark .prog .fill{background:#fff} .app.dark .prog .mk{background:#fff;border-color:#fff;box-shadow:0 0 0 3px #17171a}
   .app.dark .runbox{background:#f2f2f4;color:#111114} .app.dark .seg2,.app.dark .tabs3,.app.dark .immseg,.app.dark .hsec .vt{background:rgba(255,255,255,.08)} .app.dark .seg2 div.on,.app.dark .tabs3 div.on,.app.dark .immseg div.on,.app.dark .hsec .vt div.on{background:#2a2a31;color:#fff}
   .app.dark .stat3{background:var(--line)} .app.dark .stat3 div{background:var(--sur)} .app.dark .btns2 .pri{background:#f2f2f4;color:#111114}
   .app.dark .srow .sw.off{background:rgba(255,255,255,.2)}
@@ -454,7 +454,7 @@
   .scr{position:relative}
   .tb{position:absolute;left:0;right:0;top:0;z-index:6;border-bottom:0!important;padding-bottom:18px;background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px) saturate(1.2);-webkit-mask-image:linear-gradient(180deg,#000 0,#000 62%,transparent 100%);mask-image:linear-gradient(180deg,#000 0,#000 62%,transparent 100%)}
   .scroll{padding-top:72px!important}
-  .app.dark .tb{background:color-mix(in srgb,#000 72%,transparent)}
+  .app.dark .tb{background:color-mix(in srgb,#17171a 72%,transparent)}
 
   /* 결산 chunk 정렬 규격화 */
   .bigs .tile{padding:16px 18px;display:flex;flex-direction:column;gap:6px;min-height:108px;justify-content:center}
