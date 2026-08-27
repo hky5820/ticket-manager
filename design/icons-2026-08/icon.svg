@@ -1,54 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="티켓 보관함">
-  <!-- ticket-bots(KTX) 아이콘 결: 전면 그라데이션 바탕 + 큰 티켓 + 광택·그림자로 깊이. 이 파일이 단일 원본.
-       tools/build-icons.mjs 가 icon-512/192/180 + maskable(글리프 0.86 축소) 을 굽는다. -->
+  <!-- ticket-bots(KTX) 아이콘 결: 전면 그라데이션 바탕 + 큰 오브젝트 + 광택·그림자. 티켓은 온전한 한 장(절취선은 점선 구멍만).
+       뒤에 살구색 한 장 더 겹쳐 "보관함". 이 파일이 단일 원본 — tools/build-icons.mjs 가 512/192/180 + maskable 을 굽는다. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#ff9a4a"/><stop offset=".55" stop-color="#ff5a1f"/><stop offset="1" stop-color="#f0300c"/>
-    </linearGradient>
-    <radialGradient id="glow" cx="22%" cy="14%" r="70%">
-      <stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#eeeef3"/>
-    </linearGradient>
-    <linearGradient id="stub" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#fff2ea"/><stop offset="1" stop-color="#f6dccd"/>
-    </linearGradient>
-    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".55"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/>
-    </linearGradient>
-    <filter id="shadow" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="16"/></filter>
-    <filter id="shadow2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="6"/></filter>
-    <!-- 본문: 왼쪽 가장자리 위·아래 노치(절취 흔적) -->
-    <mask id="body"><rect x="-96" y="-98" width="266" height="196" rx="30" fill="#fff"/><circle cx="-96" cy="-98" r="20" fill="#000"/><circle cx="-96" cy="98" r="20" fill="#000"/></mask>
-    <!-- 스텁: 오른쪽 가장자리 위·아래 노치 + 점선 구멍 -->
-    <mask id="stubm"><rect x="-118" y="-98" width="118" height="196" rx="30" fill="#fff"/><circle cx="0" cy="-98" r="20" fill="#000"/><circle cx="0" cy="98" r="20" fill="#000"/>
-      <circle cx="-6" cy="-58" r="5" fill="#000"/><circle cx="-6" cy="-29" r="5" fill="#000"/><circle cx="-6" cy="0" r="5" fill="#000"/><circle cx="-6" cy="29" r="5" fill="#000"/><circle cx="-6" cy="58" r="5" fill="#000"/></mask>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a4a"/><stop offset=".55" stop-color="#ff5a1f"/><stop offset="1" stop-color="#f0300c"/></linearGradient>
+    <radialGradient id="glow" cx="22%" cy="14%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".34"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ececf2"/></linearGradient>
+    <linearGradient id="peach" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe3d4"/><stop offset="1" stop-color="#ffc9b0"/></linearGradient>
+    <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".42" stop-color="#fff" stop-opacity=".6"/><stop offset=".58" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="ink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a2622"/><stop offset="1" stop-color="#16161a"/></linearGradient>
+    <filter id="sh" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
+    <filter id="sh2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
+    <mask id="tkH"><rect x="-150" y="-95" width="300" height="190" rx="28" fill="#fff"/><circle cx="-150" cy="0" r="20" fill="#000"/><circle cx="150" cy="0" r="20" fill="#000"/>
+      <circle cx="-52" cy="-66" r="4.5" fill="#000"/><circle cx="-52" cy="-44" r="4.5" fill="#000"/><circle cx="-52" cy="-22" r="4.5" fill="#000"/><circle cx="-52" cy="0" r="4.5" fill="#000"/><circle cx="-52" cy="22" r="4.5" fill="#000"/><circle cx="-52" cy="44" r="4.5" fill="#000"/><circle cx="-52" cy="66" r="4.5" fill="#000"/></mask>
+    <mask id="tkHb"><rect x="-150" y="-95" width="300" height="190" rx="28" fill="#fff"/><circle cx="-150" cy="0" r="20" fill="#000"/><circle cx="150" cy="0" r="20" fill="#000"/></mask>
   </defs>
   <rect width="512" height="512" fill="url(#bg)"/>
   <rect width="512" height="512" fill="url(#glow)"/>
-  <g id="glyph" transform="translate(266 262) scale(.9)">
-    <!-- 바닥 그림자 -->
-    <g transform="rotate(-8)"><rect x="-120" y="-82" width="270" height="196" rx="30" fill="#7a1c05" opacity=".38" filter="url(#shadow)"/></g>
-    <!-- 뜯어낸 스텁: 살짝 더 기울고 떨어져 있음 -->
-    <g transform="translate(-118 6) rotate(-16)">
-      <rect x="-118" y="-90" width="118" height="196" rx="30" fill="#7a1c05" opacity=".35" filter="url(#shadow2)"/>
-      <g mask="url(#stubm)"><rect x="-118" y="-98" width="118" height="196" fill="url(#stub)"/></g>
-      <circle cx="-62" cy="-30" r="17" fill="#ff5a1f"/>
-      <rect x="-90" y="10" width="56" height="12" rx="6" fill="#ff5a1f" opacity=".45"/>
-      <rect x="-90" y="34" width="36" height="12" rx="6" fill="#ff5a1f" opacity=".3"/>
+  <g id="glyph" transform="translate(262 262) scale(.92)">
+    <!-- 뒤 장 -->
+    <g transform="translate(-14 -22) rotate(-22)">
+      <rect x="-150" y="-80" width="300" height="190" rx="28" fill="#7a1c05" opacity=".3" filter="url(#sh2)"/>
+      <g mask="url(#tkHb)"><rect x="-150" y="-95" width="300" height="190" fill="url(#peach)"/></g>
     </g>
-    <!-- 본문 -->
-    <g transform="translate(-10 0) rotate(-8)">
-      <g mask="url(#body)">
-        <rect x="-96" y="-98" width="266" height="196" fill="url(#paper)"/>
-        <rect x="-96" y="-98" width="266" height="196" fill="url(#sheen)"/>
-      </g>
-      <rect x="-56" y="-54" width="128" height="18" rx="9" fill="#16161a"/>
-      <rect x="-56" y="-16" width="176" height="16" rx="8" fill="#c9c9d2"/>
-      <rect x="-56" y="16" width="96" height="16" rx="8" fill="#c9c9d2"/>
-      <rect x="-56" y="52" width="58" height="24" rx="12" fill="#ff5a1f"/>
-      <rect x="10" y="52" width="24" height="24" rx="12" fill="#ffe0d1"/>
+    <!-- 앞 장 -->
+    <g transform="rotate(-8)">
+      <rect x="-148" y="-72" width="300" height="190" rx="28" fill="#7a1c05" opacity=".42" filter="url(#sh)"/>
+      <g mask="url(#tkH)"><rect x="-150" y="-95" width="300" height="190" fill="url(#paper)"/><rect x="-150" y="-95" width="300" height="190" fill="url(#sheen)"/></g>
+      <circle cx="-101" cy="-28" r="17" fill="#ff5a1f"/>
+      <rect x="-124" y="8" width="46" height="11" rx="5.5" fill="#ff5a1f" opacity=".42"/><rect x="-124" y="30" width="30" height="11" rx="5.5" fill="#ff5a1f" opacity=".28"/>
+      <rect x="-24" y="-52" width="120" height="18" rx="9" fill="url(#ink)"/>
+      <rect x="-24" y="-16" width="150" height="15" rx="7.5" fill="#c9c9d4"/>
+      <rect x="-24" y="14" width="86" height="15" rx="7.5" fill="#c9c9d4"/>
+      <rect x="-24" y="48" width="56" height="22" rx="11" fill="#ff5a1f"/><rect x="40" y="48" width="22" height="22" rx="11" fill="#ffe0d1"/>
     </g>
   </g>
 </svg>

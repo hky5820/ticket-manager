@@ -8,7 +8,7 @@ const require = createRequire('C:/Users/Hong/Desktop/ticket-bots/node_modules/')
 const { chromium } = require('playwright-core');
 const ROOT='C:/Users/Hong/Desktop/TicketManager/';
 const svg=await fs.readFile(ROOT+'design/icons-2026-08/icon.svg','utf8');
-const maskable=svg.replace('<g id="glyph" transform="translate(266 262) scale(.9)">','<g id="glyph" transform="translate(262 262) scale(.78)">');
+const maskable=svg.replace('<g id="glyph" transform="translate(262 262) scale(.92)">','<g id="glyph" transform="translate(258 262) scale(.78)">');
 const OUT=[[512,'icon-512.png',svg],[512,'icon-maskable-512.png',maskable],[192,'icon-192.png',svg],[180,'icon-180.png',svg]];
 const b=await chromium.launch();
 try{
