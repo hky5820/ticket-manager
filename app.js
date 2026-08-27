@@ -3,6 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
+const BUILD='v34 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -334,12 +335,13 @@ function renderSet(){
       <div class="srow" data-set="export"><div><b>백업 내보내기</b><small>JSON 파일로 저장</small></div><span class="v">›</span></div>
       <div class="srow" data-set="import"><div><b>백업 불러오기</b><small>같은 id는 건너뜀</small></div><span class="v">›</span></div>
       <div class="srow" data-set="bulk"><div><b>여러 장 삭제</b><small>홈 목록에서 선택</small></div><span class="v">›</span></div>
-      <div class="srow"><div><b>버전</b><small>티켓 보관함 v2</small></div><span class="v">2.0</span></div>
+      <div class="srow" data-set="update"><div><b>버전</b><small>새 버전 확인 · 탭하면 지금 가져옴</small></div><span class="v">${BUILD}${navigator.serviceWorker&&navigator.serviceWorker.controller?'':' · sw 없음'} ›</span></div>
     </div>`;
   $('darkRow').addEventListener('click',()=>{ applyDark(!dark); renderSet(); });
   $('setBody').querySelectorAll('[data-imm]').forEach(el=>el.addEventListener('click',()=>{ applyImm(el.dataset.imm); renderSet(); }));
   $('setBody').querySelectorAll('[data-set]').forEach(el=>el.addEventListener('click',()=>{ const k=el.dataset.set;
     if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
+    if(k==='update'){ toast('새 버전 확인 중…'); navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).finally(()=>setTimeout(()=>location.reload(),600)); }
     if(k==='export'){ D.exportBackup(); toast('백업 저장됨'); } if(k==='import')$('importFile').click(); if(k==='bulk'){ selectMode=true; showScreen('home'); renderSelectBar(); } }));
 }
 $('importFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f)return; try{ const d=D.parseBackup(await f.text()); if(!confirm('백업을 현재 데이터에 합칠까요?'))return; const r=await D.importBackup(d); toast(`불러오기 완료 · ${r.added}건 추가`); }catch(err){ toast(err.message||'올바른 백업 파일이 아니에요'); } });
@@ -515,4 +517,6 @@ applyDark(dark); applyImm(imm);
 rebuildData(); buildVault(); pos=HOME; showScreen('home');
 D.init().then(()=>{ pos=HOME; render(); });
 D.startSync({paused:()=>isSheetOpen()||dragging});
-if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{})); }
+if('serviceWorker' in navigator){ window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  /* 새 서비스워커가 넘겨받으면 한 번 새로고침 — 백그라운드에서 갱신돼도 옛 파일로 계속 도는 일 방지 */
+  let reloaded=false; navigator.serviceWorker.addEventListener('controllerchange',()=>{ if(reloaded||!navigator.serviceWorker.controller)return; reloaded=true; if(!isSheetOpen()&&!dragging)location.reload(); }); }
