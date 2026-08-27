@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v35 · 2026-08-27';
+const BUILD='v36 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
