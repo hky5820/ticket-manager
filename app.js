@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v43 · 2026-08-27';
+const BUILD='v44 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -478,6 +478,7 @@ sub.addEventListener('click',async e=>{
   const b=e.target.closest('[data-s]'); if(!b)return; const act=b.dataset.s; const t=curTicket();
   if(act==='cancel'){ closeSub(); return; }
   if(act==='timeok'){ closeSub(); renderEdit(t); return; }
+  if(act==='ingest'){ closeSub(); toast('AI 인식 요청 중…'); await ingestNow([]); return; }
   closeSub();
   if(act==='del'){ if(confirm(`"${t.name||'이 티켓'}"을(를) 삭제할까요?`)){ try{ await D.deleteTicket(t.id); toast('삭제되었어요'); closeDetail(); }catch(err){ toast('삭제 실패: '+(err.message||err)); } } }
   else if(act==='share')openSub('share');
@@ -489,7 +490,18 @@ sub.addEventListener('click',async e=>{
   else if(act==='manual')openNew();
 });
 $('imgFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; const t=curTicket(); if(!f||!t||!t.id)return; try{ toast('사진 올리는 중…'); await D.setTicketImage(t.id,f); toast('예매내역 사진이 등록되었어요'); t.hasImg=true; t._img=null; renderDetail(); }catch(err){ toast('업로드 실패: '+(err.message||err)); } });
-$('aiFile').addEventListener('change',async e=>{ const files=[...e.target.files]; e.target.value=''; if(!files.length)return; toast(`캡처 ${files.length}장 처리 중…`); try{ const r=await D.queueCaptures(files); toast(`${r.ok}장 접수됨${r.fail?` · ${r.fail}장 실패`:''} · AI가 곧 인식해요`); }catch(err){ toast(err.message||'업로드 실패'); } });
+$('aiFile').addEventListener('change',async e=>{ const files=[...e.target.files]; e.target.value=''; if(!files.length)return; toast(`캡처 ${files.length}장 올리는 중…`);
+  let r; try{ r=await D.queueCaptures(files); }catch(err){ toast(err.message||'업로드 실패'); return; }
+  if(!r.ok){ toast(`업로드 실패 ${r.fail}장`); return; }
+  toast(`${r.ok}장 접수 · AI 인식 중…`); await ingestNow(r.ids); });
+/* 서버 인식: 결과를 토스트로. 함수가 아직 없으면 PC 루틴 안내 */
+async function ingestNow(ids){
+  try{ const res=await D.runIngest(ids); const ok=res.filter(x=>x.ticketId), bad=res.filter(x=>!x.ticketId);
+    if(ok.length)toast(`${ok.length}장 등록됨: ${ok.map(x=>(x.name||'').slice(0,14)+(x.date?' '+x.date.slice(5).replace('-','.'):'')).join(', ')}`);
+    if(bad.length)toast(`${bad.length}장 인식 실패 — 대기열에서 사진 교체`);
+    if(!res.length)toast('처리할 캡처 없음'); }
+  catch(err){ toast(err.message==='NO_FUNCTION'?'서버 인식 미설정 · PC가 6시간마다 처리해요':'인식 요청 실패: '+(err.message||err)); }
+}
 $('addBtn').addEventListener('click',()=>openSub('add'));
 /* 피커 */
 let pkY=0, pkM=0;
@@ -507,7 +519,7 @@ $('viewerX').addEventListener('click',()=>{ $('viewer').classList.remove('on'); 
 let colorTarget=null;
 function openVColorMgr(){ subT.innerHTML='예매처 색'; subB.innerHTML=`<div class="menu" style="padding:0">${D.allVendors().concat(D.allPlatforms().filter(p=>!D.allVendors().includes(p))).map(v=>`<div data-vc="${esc(v)}"><i style="width:14px;height:14px;border-radius:50%;background:${colorFor(v)};display:inline-block;margin-right:6px"></i>${esc(v)}<span style="margin-left:auto;color:var(--ink-3)">›</span></div>`).join('')}</div>`; subF.innerHTML='<div data-s="cancel">닫기</div>'; subB.querySelectorAll('[data-vc]').forEach(el=>el.addEventListener('click',()=>openColorPick(el.dataset.vc))); sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); }); }
 function openColorPick(v){ colorTarget=v; subT.innerHTML=`<span>${esc(v)}</span><small>색 선택</small>`; subB.innerHTML=`<div class="swatches">${D.PICK_PALETTE.map(h=>`<span data-hex="${h}" class="${h.toLowerCase()===colorFor(v).toLowerCase()?'on':''}" style="background:${h}"></span>`).join('')}</div><div style="display:flex;gap:8px;align-items:center;margin-top:12px"><input type="color" id="colorCustom" value="${colorFor(v)}" style="width:44px;height:36px;padding:0;border:0;background:none"><span style="font-size:12px;color:var(--ink-3)">직접 고르기</span><span data-hex="" style="margin-left:auto;font-size:12px;font-weight:700;color:var(--ink-2);cursor:pointer">기본색으로</span></div>`; subF.innerHTML='<div data-s="cancel">닫기</div>'; subB.querySelectorAll('[data-hex]').forEach(el=>el.addEventListener('click',()=>{ D.setVendorColor(v,el.dataset.hex||null); toast(el.dataset.hex?'색 변경됨':'기본색으로 되돌림'); rebuildAll(true); openVColorMgr(); })); subB.querySelector('#colorCustom').addEventListener('change',e=>{ D.setVendorColor(v,e.target.value); toast('색 변경됨'); rebuildAll(true); }); }
-async function openPendManage(){ subT.innerHTML='AI 캡처 대기열'; subB.innerHTML='<div class="spinner"></div>'; subF.innerHTML='<div data-s="cancel">닫기</div>'; sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); }); const rows=await D.fetchPendingsFull(); subB.innerHTML=rows.length?`<div class="pendlist">${rows.map(p=>`<div class="pitem" data-pid="${p.id}"><img src="data:image/jpeg;base64,${p.image_b64}" alt=""><div><b>${p.status==='error'?'⚠️ 인식 실패'+(p.result?' · '+esc(p.result):''):'AI가 인식 중…'}</b><div class="pb"><span data-pa="replace">사진 교체</span><span data-pa="del" class="danger">삭제</span></div></div></div>`).join('')}</div>`:'<div class="empty"><b>대기 중인 캡처가 없어요</b></div>'; subB.querySelectorAll('[data-pa]').forEach(el=>el.addEventListener('click',async()=>{ const id=el.closest('.pitem').dataset.pid; if(el.dataset.pa==='del'){ if(!confirm('이 캡처를 삭제할까요?'))return; await D.removePending(id); toast('삭제됨'); openPendManage(); } else { pendReplaceId=id; $('pendFile').click(); } })); }
+async function openPendManage(){ subT.innerHTML='AI 캡처 대기열'; subB.innerHTML='<div class="spinner"></div>'; subF.innerHTML='<div data-s="cancel">닫기</div><div class="pri" data-s="ingest">지금 인식</div>'; sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); }); const rows=await D.fetchPendingsFull(); subB.innerHTML=rows.length?`<div class="pendlist">${rows.map(p=>`<div class="pitem" data-pid="${p.id}"><img src="data:image/jpeg;base64,${p.image_b64}" alt=""><div><b>${p.status==='error'?'⚠️ 인식 실패'+(p.result?' · '+esc(p.result):''):'AI가 인식 중…'}</b><div class="pb"><span data-pa="replace">사진 교체</span><span data-pa="del" class="danger">삭제</span></div></div></div>`).join('')}</div>`:'<div class="empty"><b>대기 중인 캡처가 없어요</b></div>'; subB.querySelectorAll('[data-pa]').forEach(el=>el.addEventListener('click',async()=>{ const id=el.closest('.pitem').dataset.pid; if(el.dataset.pa==='del'){ if(!confirm('이 캡처를 삭제할까요?'))return; await D.removePending(id); toast('삭제됨'); openPendManage(); } else { pendReplaceId=id; $('pendFile').click(); } })); }
 let pendReplaceId=null; $('pendFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f||!pendReplaceId)return; try{ await D.replacePending(pendReplaceId,f); toast('사진 교체됨 · 다시 인식해요'); openPendManage(); }catch(err){ toast('교체 실패: '+(err.message||err)); } pendReplaceId=null; });
 function openSync(){ const st=D.getState(), dirty=D.dirtyCount(); subT.innerHTML='동기화'; subB.innerHTML=`<div class="tile" style="padding:14px"><b style="font-size:14px">${st.mode==='cloud'?'✅ 클라우드에 자동 저장 중':'⚠️ 서버에 연결할 수 없어 이 기기에 임시 저장 중'}</b><div class="nudge" style="margin-top:6px">${st.mode==='cloud'?'폰·PC 어디서 열어도 같은 목록. 25초마다 자동 갱신. AI 인식은 6시간마다 — 급하면 컴퓨터의 Claude에게 "큐 처리해줘".':`서버가 돌아오면 자동으로 다시 연결하고 변경분을 올려요.${dirty?` 미전송 ${dirty}건.`:''}`}</div></div>`; subF.innerHTML='<div data-s="cancel">닫기</div><div class="pri" data-s="refresh">지금 새로고침</div>'; sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); }); subF.querySelector('[data-s=refresh]').addEventListener('click',()=>{ D.fetchTickets().then(()=>toast('새로고침됨')); },{once:true}); }
 

@@ -38,3 +38,14 @@ git push          # 1~2분 뒤 라이브 주소 자동 갱신
 ## ⚠️ 프라이버시 참고
 로그인을 없앤 대신, **주소를 아는 사람은 티켓 데이터를 보거나 수정할 수 있는 공개 구조**입니다
 (공연명·좌석 등, 민감도는 낮음). 비공개가 필요해지면 로그인(1회) 방식으로 되돌릴 수 있어요.
+
+## 서버 자동 인식 (Supabase Edge Function `ingest`)
+폰에서 캡처를 올리면 앱이 곧바로 `POST /functions/v1/ingest` 를 불러 Claude 비전으로 티켓을 만든다. PC 를 켤 필요 없음.
+코드: `supabase/functions/ingest/index.ts`. 배포·비밀 설정(한 번만):
+```
+npx supabase@latest login                      # 또는 SUPABASE_ACCESS_TOKEN=sbp_... 환경변수
+npx supabase@latest functions deploy ingest --project-ref ydqabdlwzseommowiupw --no-verify-jwt
+npx supabase@latest secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref ydqabdlwzseommowiupw
+```
+대시보드로도 가능: Edge Functions → Deploy new function → 이름 `ingest` 에 index.ts 붙여넣기 → Secrets 에 `ANTHROPIC_API_KEY`.
+함수가 없으면 앱은 "서버 인식 미설정" 토스트를 띄우고, PC 의 `ticket-capture-ingest` 루틴이 6시간마다 처리한다(변함없음).

@@ -212,9 +212,17 @@ export async function fetchTicketImage(id){
 export async function queueCaptures(files){
   if(mode!=='cloud'||!sb)throw new Error('오프라인이라 지금은 안 돼요');
   let ok=0, fail=0;
-  for(const f of files){ try{ const b64=await fileToB64(f); const {error}=await sb.from('pending_uploads').insert({image_b64:b64,status:'pending'}); if(error)throw error; ok++; }catch(e){ fail++; } }
+  const ids=[];
+  for(const f of files){ try{ const b64=await fileToB64(f); const {data,error}=await sb.from('pending_uploads').insert({image_b64:b64,status:'pending'}).select('id'); if(error)throw error; if(data&&data[0])ids.push(data[0].id); ok++; }catch(e){ fail++; } }
   fetchTickets();
-  return {ok,fail};
+  return {ok,fail,ids};
+}
+/* 서버(Edge Function ingest)에 즉시 인식 요청. 배포 전이면 404 → 호출자가 "PC 루틴이 처리" 안내 */
+export async function runIngest(ids){
+  const cfg=getCfg(); const r=await fetch(cfg.url+'/functions/v1/ingest',{method:'POST',headers:{'Content-Type':'application/json',apikey:cfg.key,Authorization:'Bearer '+cfg.key},body:JSON.stringify({ids:ids||[]})});
+  if(r.status===404)throw new Error('NO_FUNCTION');
+  const j=await r.json().catch(()=>({})); if(!r.ok)throw new Error(j.error||('HTTP '+r.status));
+  fetchTickets(); return j.results||[];
 }
 export async function fetchPendingsFull(){
   if(!(mode==='cloud'&&sb))return [];
