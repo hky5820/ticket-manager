@@ -40,6 +40,7 @@ def score(tn,it_name):
     a=difflib.SequenceMatcher(None,tn,norm(it_name)).ratio()
     toks=[x for x in tn.split() if len(x)>1]; itn=norm(it_name)
     b=sum(1 for x in toks if x in itn)/len(toks) if toks else 0
+    if len(toks)<2: b=0.9 if (toks and itn.startswith(toks[0])) else 0   # 한 단어 제목은 상품명이 그 단어로 시작할 때만
     return max(a,b*0.9)
 
 def pick(t,items):
@@ -55,7 +56,7 @@ def pick(t,items):
         if treg and not ireg: s-=0.1
         for g in ('뮤지컬','콘서트','연극'):
             if g in t['name'] and g not in it['name']: s-=0.5
-        if venue and it['place'] and (it['place'][:4] in venue or venue[:4] in it['place']): s+=0.3
+        if s>=0.5 and venue and it['place'] and (it['place'][:4] in venue or venue[:4] in it['place']): s+=0.3   # 이름이 맞을 때만 공연장 가산
         if best is None or s>best[0]: best=(s,it)
     return best[1] if best and best[0]>=0.5 else None
 
@@ -78,8 +79,8 @@ for r in rows:
     if items is None: items=cache[kw]=search(kw)
     hit=pick(t,items)
     print(f"{r['name'][:36]:38} → {(hit['name'][:36]+' @'+hit['place']) if hit else '없음'}")
-    if not hit or DRY: continue
-    b['poster']=hit['img']
+    if DRY or (not hit and not b.get('poster')): continue
+    b['poster']=hit['img'] if hit else ''   # --all 재검색에서 못 찾으면 잘못 붙은 것 제거
     if not b.get('venue') and hit['place']: b['venue']=hit['place']
     req=urllib.request.Request(f"{BASE}/tickets?id=eq.{r['id']}",data=json.dumps({'seats':b},ensure_ascii=False).encode(),headers={**H,'Prefer':'return=minimal'},method='PATCH')
     urllib.request.urlopen(req,timeout=25); done+=1

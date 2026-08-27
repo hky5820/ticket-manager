@@ -117,7 +117,7 @@ function buildVault(){
     }else{
       const t=it, dd=dday(t.date), past=isPast(t), soon=(ddayN(t.date)!==null&&ddayN(t.date)<=9&&ddayN(t.date)>=0);
       el.className='card mid'+(past?' isPast':''); el.style.setProperty('--tone',colorFor(t.vendor));
-      const chip = isSold(t) ? `<span class="chip xf">양도완료</span>` : past ? `<span class="chip past">관람완료</span>` : `<span class="chip ${soon?'dd':''}">${dd}</span>`;
+      const chip = isSold(t) ? `<span class="chip xf">양도</span>` : past ? `<span class="chip past">관람</span>` : `<span class="chip ${soon?'dd':''}">${dd}</span>`;
       const hi=holdInfo(t);
       el.innerHTML = `${t.n>1?'<div class="fan f2"></div><div class="fan f1"></div>':''}
         <div class="art"${t.poster?'':` style="${posterStyle(t)}"`}>${t.poster?`<img src="${esc(t.poster)}" alt="" onerror="this.remove()">`:''}<div class="fx"></div><div class="dim"></div><div class="sheen"></div></div>
@@ -160,7 +160,7 @@ let scrub=null;
 progEl.addEventListener('pointerdown',e=>{ progEl.setPointerCapture(e.pointerId); scrub=true; target=null; vel=0; scrubTo(e); });
 progEl.addEventListener('pointermove',e=>{ if(scrub)scrubTo(e); });
 progEl.addEventListener('pointerup',()=>{ scrub=null; target=Math.round(pos); kick(); });
-let scrubIdx=-1; function scrubTo(e){ const r=progEl.getBoundingClientRect(); const fr=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); pos=posOf(fr); const i=Math.round(pos); if(i!==scrubIdx){ scrubIdx=i; hap(5); } render(); }
+function scrubTo(e){ const r=progEl.getBoundingClientRect(); const fr=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); pos=posOf(fr); render(); }
 function renderDock(){
   const cur=Math.max(0,Math.min(N()-1,Math.round(pos)));
   groups.forEach(g=>{
@@ -198,8 +198,10 @@ $('shows').addEventListener('click',e=>{ const g=e.target.closest('.sg'); if(!g)
 function setMode(m){ mode=m; app.classList.remove('m-grid','m-shows'); if(m!=='flow')app.classList.add('m-'+m); stage.classList.add('anim'); setTimeout(()=>stage.classList.remove('anim'),600); if(m==='grid'){ buildOv(); const i=Math.round(pos); ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),(ovPos[i]||{y:0}).y-80)); ovVel=0; } if(m==='shows')renderShows(); renderBar(); target=null; vel=0; kick(); }
 
 /* 물리 */
+let lastIdx=-1;
 function render(){
   tilt+=(tiltV-tilt)*0.18; tiltV*=0.9;
+  if(mode!=='grid'){ const ci=Math.round(Math.max(0,Math.min(N()-1,pos))); if(ci!==lastIdx){ if(lastIdx>=0)hap(7); lastIdx=ci; } }
   const H=stage.clientHeight, n=N();
   for(let i=0;i<n;i++){
     const d=i-pos, el=els[i], it=ITEMS[i], a=Math.abs(d); if(!el)continue;
@@ -223,19 +225,19 @@ function tick(){
   const n=N();
   if(!dragging){
     if(mode==='grid'){ ovScroll+=ovVel; ovVel*=0.93; const max=Math.max(0,OV.total-380); if(ovScroll<0)ovScroll+=(0-ovScroll)*0.25; if(ovScroll>max)ovScroll+=(max-ovScroll)*0.25; if(Math.abs(ovVel)<0.05&&ovScroll>=0&&ovScroll<=max){ render(); return; } }
-    else if(target==null){ pos+=vel; vel*=0.95; if(pos<0){ vel*=0.6; pos+=(0-pos)*0.25; } if(pos>n-1){ vel*=0.6; pos+=(n-1-pos)*0.25; } if(Math.abs(vel)<0.004)target=Math.round(Math.max(0,Math.min(n-1,pos))); }
+    else if(target==null){ pos+=vel; vel*=0.94; if(Math.abs(vel)<0.12){ pos+=(Math.round(pos)-pos)*0.08; } /* 디텐트: 느려지면 가까운 카드로 */ if(pos<0){ vel*=0.6; pos+=(0-pos)*0.25; } if(pos>n-1){ vel*=0.6; pos+=(n-1-pos)*0.25; } if(Math.abs(vel)<0.012)target=Math.round(Math.max(0,Math.min(n-1,pos))); }
     else{ const diff=target-pos; pos+=diff*0.12; if(Math.abs(diff)<0.0005&&Math.abs(tilt)<0.05){ pos=target; target=null; vel=0; tilt=0; render(); return; } }
   }
   render(); raf=requestAnimationFrame(tick);
 }
 function kick(){ cancelAnimationFrame(raf); raf=requestAnimationFrame(tick); }
-const PITCH=140; let base=0, dragAcc=0;
+const PITCH=140; let base=0;
 const clampI=i=>Math.max(0,Math.min(N()-1,i));
-function snapTo(i){ i=clampI(i); const cur=target!=null?target:Math.round(pos); if(i!==cur)hap(8); target=i; vel=0; kick(); }
-stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return; dragging=true; base=clampI(Math.round(target!=null?target:pos)); target=null; vel=0; ovVel=0; dragAcc=0; lastY=e.clientY; lastT=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
+function snapTo(i){ target=clampI(i); vel=0; kick(); }
+stage.addEventListener('pointerdown',e=>{ if(e.target.closest('.ask span'))return; dragging=true; base=clampI(Math.round(target!=null?target:pos)); target=null; vel=0; ovVel=0; lastY=e.clientY; lastT=performance.now(); stage.setPointerCapture(e.pointerId); moved=0; });
 stage.addEventListener('pointermove',e=>{ if(!dragging)return; const dy=e.clientY-lastY, now=performance.now(), dt=Math.max(1,now-lastT);
   if(mode==='grid'){ ovScroll-=dy; ovVel=-dy*(16/dt); }
-  else { dragAcc+=dy; const raw=dragAcc/PITCH; /* 아래로 끌면 다음 카드. 한 제스처 = 한 장, 그 이상은 고무줄 */ const a=Math.abs(raw), r=a>1?1+(a-1)*0.22:a; let np=base+Math.sign(raw)*r; if(np<0)np*=0.35; if(np>N()-1)np=N()-1+(np-(N()-1))*0.35; pos=np; vel=(dy/PITCH)*(16/dt); tiltV=Math.max(-5,Math.min(5,-vel*28)); }
+  else { let step=dy/PITCH; /* 아래로 끌면 다음 카드 */ if(pos<0||pos>N()-1)step*=0.35; pos+=step; vel=(dy/PITCH)*(16/dt); tiltV=Math.max(-5,Math.min(5,-vel*28)); }
   lastY=e.clientY; lastT=now; moved+=Math.abs(dy); render(); });
 stage.addEventListener('pointerup',e=>{ dragging=false;
   if(moved<6){ const hit=document.elementFromPoint(e.clientX,e.clientY); const c=hit&&hit.closest('.card,.gate'); const onAsk=hit&&hit.closest('.ask span');
@@ -244,8 +246,8 @@ stage.addEventListener('pointerup',e=>{ dragging=false;
     else { target=base; kick(); }
     return; }
   if(mode==='grid'){ ovVel=Math.max(-40,Math.min(40,ovVel)); kick(); return; }
-  const d=pos-base; let t2=base; if(d>0.22||vel>0.25)t2=base+1; else if(d<-0.22||vel<-0.25)t2=base-1; snapTo(t2); });
-stage.addEventListener('pointercancel',()=>{ dragging=false; target=base; kick(); });
+  vel=Math.max(-0.4,Math.min(0.4,vel)); if(Math.abs(vel)<0.03){ target=clampI(Math.round(pos)); vel=0; } kick(); });
+stage.addEventListener('pointercancel',()=>{ dragging=false; target=clampI(Math.round(pos)); kick(); });
 let wheelAcc=0, wheelAt=0;
 stage.addEventListener('wheel',e=>{ e.preventDefault(); if(mode==='grid'){ ovScroll=Math.max(0,Math.min(Math.max(0,OV.total-380),ovScroll+e.deltaY*0.8)); render(); return; }
   wheelAcc+=e.deltaY; const now=performance.now(); if(Math.abs(wheelAcc)>50&&now-wheelAt>200){ snapTo((target!=null?target:Math.round(pos))+Math.sign(wheelAcc)); tiltV=Math.max(-5,Math.min(5,-wheelAcc/40)); wheelAcc=0; wheelAt=now; } },{passive:false});
