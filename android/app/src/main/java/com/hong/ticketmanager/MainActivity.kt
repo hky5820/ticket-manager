@@ -11,6 +11,7 @@ import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.addCallback
@@ -44,15 +45,18 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
+        // WebView 는 자기 padding 을 무시하므로 컨테이너에 인셋을 준다.
+        val root = FrameLayout(this).apply { setBackgroundColor(Color.WHITE) }
         web = WebView(this)
         web.setBackgroundColor(Color.WHITE)
-        setContentView(web)
+        root.addView(web, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
+        setContentView(root)
 
         // 시스템 바·키보드만큼 안쪽으로. 바 뒤에는 창 배경(흰색)이 그대로 보여 앱 배경과 이어진다.
-        ViewCompat.setOnApplyWindowInsetsListener(web) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
             val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime())
             v.setPadding(0, bars.top, 0, bars.bottom)
-            insets
+            WindowInsetsCompat.CONSUMED
         }
 
         web.settings.apply {
