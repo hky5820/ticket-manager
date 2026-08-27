@@ -1,11 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="티켓 보관함">
-  <!-- 흰 바탕(종이 그라데이션) 위에 오렌지 티켓 두 장. 절취선은 점선 구멍 + 좌우 노치, 뒤 장은 살구색.
+  <!-- 3안: 흰 바탕 위 흰 종이 티켓(테두리·그림자로 띄움) + 뒤에 연회색 한 장. 절취선은 점선 구멍 + 좌우 노치.
        이 파일이 단일 원본 — tools/build-icons.mjs 가 512/192/180 + maskable(글리프 0.78 축소) 을 굽는다. -->
   <defs>
     <linearGradient id="bgW" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#ebebf1"/></linearGradient>
     <radialGradient id="glowW" cx="24%" cy="12%" r="70%"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient>
-    <linearGradient id="orange" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9a4a"/><stop offset=".55" stop-color="#ff5a1f"/><stop offset="1" stop-color="#f0300c"/></linearGradient>
-    <linearGradient id="peach" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd9c6"/><stop offset="1" stop-color="#ffbfa3"/></linearGradient>
+    <linearGradient id="greyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e2e8"/><stop offset="1" stop-color="#cfcfd8"/></linearGradient>
+    <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#f1f1f5"/></linearGradient>
     <linearGradient id="sheen" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".42" stop-color="#fff" stop-opacity=".5"/><stop offset=".58" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <filter id="sh" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="14"/></filter>
     <filter id="sh2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="7"/></filter>
@@ -16,21 +16,22 @@
   <rect width="512" height="512" fill="url(#bgW)"/>
   <rect width="512" height="512" fill="url(#glowW)"/>
   <g id="glyph" transform="translate(262 262) scale(.92)">
-    <!-- 뒤 장 -->
+    <!-- 뒤 장: 연회색 -->
     <g transform="translate(-14 -22) rotate(-22)">
-      <rect x="-150" y="-80" width="300" height="190" rx="28" fill="#2a1a12" opacity=".16" filter="url(#sh2)"/>
-      <g mask="url(#tkHb)"><rect x="-150" y="-95" width="300" height="190" fill="url(#peach)"/></g>
+      <rect x="-150" y="-80" width="300" height="190" rx="28" fill="#1a1a22" opacity=".14" filter="url(#sh2)"/>
+      <g mask="url(#tkHb)"><rect x="-150" y="-95" width="300" height="190" fill="url(#greyG)"/></g>
     </g>
-    <!-- 앞 장 -->
+    <!-- 앞 장: 흰 종이 + 테두리 -->
     <g transform="rotate(-8)">
-      <rect x="-148" y="-70" width="300" height="190" rx="28" fill="#7a1c05" opacity=".34" filter="url(#sh)"/>
-      <g mask="url(#tkH)"><rect x="-150" y="-95" width="300" height="190" fill="url(#orange)"/><rect x="-150" y="-95" width="300" height="190" fill="url(#sheen)" opacity=".8"/></g>
-      <circle cx="-101" cy="-28" r="17" fill="#fff"/>
-      <rect x="-124" y="8" width="46" height="11" rx="5.5" fill="#fff" opacity=".6"/><rect x="-124" y="30" width="30" height="11" rx="5.5" fill="#fff" opacity=".4"/>
-      <rect x="-24" y="-52" width="120" height="18" rx="9" fill="#fff"/>
-      <rect x="-24" y="-16" width="150" height="15" rx="7.5" fill="#fff" opacity=".55"/>
-      <rect x="-24" y="14" width="86" height="15" rx="7.5" fill="#fff" opacity=".55"/>
-      <rect x="-24" y="48" width="56" height="22" rx="11" fill="#16161a"/><rect x="40" y="48" width="22" height="22" rx="11" fill="#fff" opacity=".7"/>
+      <rect x="-148" y="-66" width="300" height="190" rx="28" fill="#1a1a22" opacity=".3" filter="url(#sh)"/>
+      <g mask="url(#tkH)"><rect x="-150" y="-95" width="300" height="190" fill="url(#paper)"/><rect x="-150" y="-95" width="300" height="190" fill="url(#sheen)"/></g>
+      <path d="M-122-95h244a28 28 0 0 1 28 28v47a20 20 0 0 0 0 40v47a28 28 0 0 1-28 28h-244a28 28 0 0 1-28-28v-47a20 20 0 0 0 0-40v-47a28 28 0 0 1 28-28z" fill="none" stroke="#d9d9e2" stroke-width="2"/>
+      <circle cx="-101" cy="-28" r="17" fill="#ff5a1f"/>
+      <rect x="-124" y="8" width="46" height="11" rx="5.5" fill="#ff5a1f" opacity=".42"/><rect x="-124" y="30" width="30" height="11" rx="5.5" fill="#ff5a1f" opacity=".28"/>
+      <rect x="-24" y="-52" width="120" height="18" rx="9" fill="#16161a"/>
+      <rect x="-24" y="-16" width="150" height="15" rx="7.5" fill="#c9c9d4"/>
+      <rect x="-24" y="14" width="86" height="15" rx="7.5" fill="#c9c9d4"/>
+      <rect x="-24" y="48" width="56" height="22" rx="11" fill="#ff5a1f"/><rect x="40" y="48" width="22" height="22" rx="11" fill="#ffe0d1"/>
     </g>
   </g>
 </svg>
