@@ -3,7 +3,7 @@
 import * as D from './data.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v42 · 2026-08-27';
+const BUILD='v43 · 2026-08-27';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -15,7 +15,7 @@ let dark=false;
 function applyTheme(pref){ themePref='light'; localStorage.setItem('tm_theme','light'); applyDark(false); }
 sysDark.addEventListener('change',()=>{ if(themePref==='system'){ applyTheme('system'); if(screen==='set')renderSet(); } });
 function applyDark(v){ dark=v; app.classList.toggle('dark',v); document.documentElement.setAttribute('data-theme',v?'dark':'light'); const m=$('metaTheme'); if(m)m.content=v?'#17171a':'#ffffff'; const cs=$('metaScheme'); if(cs)cs.content=v?'dark':'only light'; }
-let imm=localStorage.getItem('tm_imm')||'vignette'; if(imm==='dark')imm='vignette';   /* '어둡게'는 설정에서 뺐음 */
+let imm=localStorage.getItem('tm_imm')||'vignette'; if(imm!=='ambient')imm='vignette';   /* 설정에서 뺐음: 보관함 상단 '배경' 버튼으로 비네트↔포스터 색만 */
 function applyImm(v){ imm=v; localStorage.setItem('tm_imm',v); app.classList.remove('imm-dark','imm-ambient','imm-vignette'); if(v!=='off')app.classList.add('imm-'+v); $('bgBtn').classList.toggle('on',v==='ambient'); }
 let homeAmb=localStorage.getItem('tm_homeamb')==='1';
 let homeView=localStorage.getItem('tm_homeview')||'list';
@@ -337,8 +337,6 @@ $('moneyBody').addEventListener('click',e=>{ const s=e.target.closest('[data-mt]
 function renderSet(){
   const st=D.getState(), dirty=D.dirtyCount();
   $('setBody').innerHTML=`
-    <div class="hsec"><h2>보관함 배경</h2><small>포스터 뒤</small></div>
-    <div class="immseg">${[['vignette','비네트'],['ambient','포스터 색'],['off','없음']].map(([k,n])=>`<div data-imm="${k}" class="${k===imm?'on':''}">${n}</div>`).join('')}</div>
     <div class="tile" style="padding:2px 14px">
 
       <div class="srow" data-set="vcolor"><div><b>예매처 색 관리</b><small>${D.allVendors().slice(0,5).map(esc).join(' · ')}</small></div><span class="v">${D.allVendors().length} ›</span></div>
@@ -350,7 +348,6 @@ function renderSet(){
       <div class="srow" data-set="update"><div><b>버전</b><small>새 버전 확인 · 탭하면 지금 가져옴</small></div><span class="v">${BUILD}${navigator.serviceWorker&&navigator.serviceWorker.controller?'':' · sw 없음'} ›</span></div>
     </div>`;
 
-  $('setBody').querySelectorAll('[data-imm]').forEach(el=>el.addEventListener('click',()=>{ applyImm(el.dataset.imm); renderSet(); }));
   $('setBody').querySelectorAll('[data-set]').forEach(el=>el.addEventListener('click',()=>{ const k=el.dataset.set;
     if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
     if(k==='update'){ toast('새 버전 확인 중…'); navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).finally(()=>setTimeout(()=>location.reload(),600)); }
