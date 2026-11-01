@@ -66,7 +66,7 @@ try{
  for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert(!await page.locator('#homeBody').evaluate(e=>e.scrollWidth>e.clientWidth));await page.screenshot({path:`design/implementation/suit-${width}.png`});}
  await page.setViewportSize({width:390,height:844});await page.locator('[data-mg-vendor]').click();await page.waitForTimeout(400);await page.screenshot({path:'design/implementation/vendor-picker.png'});await page.locator('.vendor-close').click();
  const client=await context.newCDPSession(page);await client.send('DOM.enable');await client.send('CSS.enable');const {root}=await client.send('DOM.getDocument');const {nodeId}=await client.send('DOM.querySelector',{nodeId:root.nodeId,selector:'.mg-ticket h3'});const {fonts}=await client.send('CSS.getPlatformFontsForNode',{nodeId});assert(fonts.some(f=>f.isCustomFont&&f.familyName.includes('SUIT')));
- assert((await page.evaluate(()=>caches.keys())).includes('tm-shell-v47'));
+ assert((await page.evaluate(()=>caches.keys())).includes('tm-shell-v48'));
  await context.setOffline(true);await page.reload();await page.locator('#homeBody .mg-ticket').first().waitFor();assert.equal(await page.locator('#homeBody .mg-ticket').count(),3);assert.equal(await page.evaluate(()=>document.fonts.load('16px SUIT').then(f=>f.length)),1);
  await context.setOffline(false);
  const empty=await context.newPage();await empty.goto(base);await empty.evaluate(()=>{localStorage.setItem('tm_tickets_v1','[]')});await empty.reload();assert.equal(await empty.locator('#homeBody .mg-ticket').count(),0);assert.match(await empty.locator('#homeBody').innerText(),/첫 티켓/);

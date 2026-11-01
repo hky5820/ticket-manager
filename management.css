@@ -56,3 +56,37 @@ html.tm-native .viewer .vx { top:calc(14px + var(--safe-top)); }
 .vendor-options button[aria-pressed=true] svg{visibility:visible}
 .vendor-options button[aria-pressed=true] small{color:#6a8eb9}
 .app .vendor-sheet .foot{display:none}
+
+/* Stronger schedule hierarchy: blue dates, solid D-day, distinct card surfaces. */
+:root,.app{--accent:#2463db;--ink-2:#40536d;--ink-3:#61728a;--line:#dce4ef}
+#scr-home{background:#f3f6fb}
+#scr-home .tb{background:#f3f6fb}
+.mg-heading{margin-bottom:20px}
+.mg-heading h1{color:#172b49}
+.app .res.mg-ticket{border-color:#d2ddeb;box-shadow:0 3px 10px #1d42750a;margin-bottom:12px;overflow:hidden}
+.app .res.mg-featured{background:#fff;border:1.5px solid #9cbcf1;box-shadow:0 4px 14px #2455a00d}
+.mg-next-label{color:#2658a4;font-size:13px;font-weight:700;margin-bottom:15px}
+.mg-next-label b{background:#2463db;color:#fff;border-radius:7px;padding:6px 10px;font-size:14px;font-weight:750;line-height:1.2;font-variant-numeric:tabular-nums}
+.mg-provider{color:#536b88;font-weight:600}
+.mg-ticket h3{color:#1c2c43}
+.app .mg-ticket .mg-when{font-size:14px;font-weight:700;color:#2457a8;margin-top:8px;font-variant-numeric:tabular-nums;line-height:1.4}
+.app .mg-featured .mg-when{font-size:16px;color:#2055b1}
+.mg-when strong{font-weight:750}
+.mg-when span{color:#91a7c6;margin:0 3px}
+.app .mg-ticket .mg-venue{font-size:12px;color:#61728a;margin-top:4px}
+.mg-ticket-foot{background:#f7f9fc;border-top:1px solid #e1e7f0;margin:14px -16px 0;padding:11px 16px;color:#506580}
+.mg-featured .mg-ticket-foot{background:#edf4ff;border-top-color:#d5e3f9}
+.mg-ticket-foot b{color:#28569a;font-weight:700}
+.mg-date-group{margin-top:26px}
+.mg-date-group>h2{font-size:16px;font-weight:750;color:#243e63;gap:9px;margin-bottom:12px;font-variant-numeric:tabular-nums}
+.mg-date-group>h2::after{content:'';height:1px;background:#d4dfed;flex:1;margin-left:3px}
+.mg-date-group>h2 span{background:#2463db;color:#fff;font-size:11px;font-weight:700;padding:5px 7px;border-radius:6px;line-height:1.2}
+.mg-status{border-bottom-color:#cbd8e8}
+.mg-status button{color:#61728a;font-weight:550}
+.mg-status button[aria-pressed=true]{color:#2057bc;border-bottom:3px solid #2463db;font-weight:750}
+.mg-filter>span{color:#61728a}
+.mg-vendor{color:#304d73;font-weight:650}
+.mg-view{background:#e4ecf8}
+.mg-view button[aria-pressed=true]{box-shadow:0 1px 4px #1d42751a}
+.mg-add{background:#e4edfc;color:#285caf;border:1px solid #cfddf4;font-weight:650}
+@media(max-width:360px){.app .mg-featured .mg-when{font-size:14px}.mg-date-group>h2{font-size:15px}}
