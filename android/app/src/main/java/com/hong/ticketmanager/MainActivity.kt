@@ -1,6 +1,10 @@
 package com.hong.ticketmanager
 
 import android.annotation.SuppressLint
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
+import org.json.JSONObject
+import android.provider.CalendarContract
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -22,6 +26,18 @@ import androidx.core.view.WindowInsetsCompat
 
 /** 웹앱을 바닥까지 그리는 얇은 껍데기. 상태 바·내비 바는 투명, 그 밑은 창 배경(흰색)이라 경계가 없다. */
 class MainActivity : ComponentActivity() {
+    private val calendar by lazy { CalendarSyncManager(applicationContext) }
+    private val calendarPermission = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (calendar.hasPermission()) calendar.enable() else calendar.recordError("캘린더 권한을 허용해야 연동할 수 있어요")
+        calendarStatus()
+    }
+    private fun trusted() = ::web.isInitialized && web.url?.let { val u = Uri.parse(it); u.scheme == "https" && u.host == HOST && u.path?.startsWith("/ticket-manager/") == true } == true
+    private fun calendarStatus() {
+        if (trusted()) web.evaluateJavascript("window.dispatchEvent(new CustomEvent('ticket-calendar-status',{detail:${calendar.status()}}));", null)
+    }
+    override fun onStart() { super.onStart(); CalendarSyncManager.foreground = true }
+    override fun onStop() { CalendarSyncManager.foreground = false; super.onStop() }
+    override fun onResume() { super.onResume(); calendarStatus() }
     private lateinit var web: WebView
     private var safeTop = 0
     private var safeBottom = 0
@@ -78,12 +94,36 @@ class MainActivity : ComponentActivity() {
             builtInZoomControls = false
             textZoom = 100
             cacheMode = WebSettings.LOAD_DEFAULT
-            userAgentString = "$userAgentString TicketManagerApp/1.1"
+            userAgentString = "$userAgentString TicketManagerApp/1.2"
+        }
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_MESSAGE_LISTENER)) {
+            WebViewCompat.addWebMessageListener(web, "TicketCalendar", setOf("https://$HOST")) { _, message, _, mainFrame, _ ->
+                if (mainFrame && trusted()) runCatching {
+                    val payload = JSONObject(message.data ?: "{}")
+                    when (payload.optString("type")) {
+                        "status" -> calendarStatus()
+                        "enable" -> if (calendar.hasPermission()) { calendar.enable(); calendarStatus() }
+                            else calendarPermission.launch(CalendarSyncManager.permissions)
+                        "open" -> runCatching { startActivity(Intent(Intent.ACTION_VIEW, CalendarContract.CONTENT_URI.buildUpon().appendPath("time").appendPath(System.currentTimeMillis().toString()).build())) }
+                        "sync", "disable", "duration" -> CalendarSyncManager.executor.execute {
+                            runCatching {
+                                when (payload.getString("type")) {
+                                    "sync" -> calendar.accept(payload)
+                                    "disable" -> calendar.disable()
+                                    "duration" -> calendar.duration(payload.getInt("minutes"))
+                                }
+                            }.onFailure { calendar.recordError(it.message ?: "연동 실패") }
+                            runOnUiThread { if (!isDestroyed) calendarStatus() }
+                        }
+                    }
+                }.onFailure { calendar.recordError("캘린더 요청을 처리하지 못했습니다"); calendarStatus() }
+            }
         }
         web.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView, url: String) {
                 super.onPageFinished(view, url)
                 applySafeInsets()
+                calendarStatus()
             }
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url

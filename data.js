@@ -25,12 +25,13 @@ let vendors=load(LS_VENDORS,DEFAULT_VENDORS.slice());
 let grades=load(LS_GRADES,DEFAULT_GRADES.slice());
 let platforms=load(LS_PLATFORMS,DEFAULT_PLATFORMS.slice());
 let vcolors=load(LS_VCOLORS,{});
-let sb=null, mode='local', loading=false;
+let sb=null, mode='local', loading=false, calendarReady=false, fetchSeq=0, realtime=null;
+export function calendarSource(){ return {...getCfg()}; }
 
 const listeners=[];
 export function onChange(fn){ listeners.push(fn); }
 function emit(type,payload){ listeners.forEach(fn=>{ try{ fn(type,payload); }catch(e){ console.error(e); } }); }
-export function getState(){ return {tickets,pendings,vendors,grades,platforms,vcolors,mode,loading,dataVer}; }
+export function getState(){ return {tickets,pendings,vendors,grades,platforms,vcolors,mode,loading,dataVer,calendarReady}; }
 
 /* ===== 순수 헬퍼 ===== */
 export function load(k,def){try{const v=JSON.parse(localStorage.getItem(k));return v??def;}catch(e){return def;}}
@@ -126,17 +127,27 @@ export async function init(){
 export async function fetchTickets(){
   if(mode!=='cloud'||!sb)return;
   loading=true; emit('loading',true);
-  const ver=dataVer;
-  const {data,error}=await sb.from('tickets').select('id,vendor,name,show_date,qty,price,memo,seats,created_at').order('created_at',{ascending:true});
+  const ver=dataVer, seq=++fetchSeq;
+  const {data,error,count}=await sb.from('tickets').select('id,vendor,name,show_date,qty,price,memo,seats,created_at',{count:'exact'}).order('created_at',{ascending:true});
   loading=false; emit('loading',false);
   if(error){ if(isNetErr(error)){ goOffline(); return; } emit('toast','불러오기 실패: '+error.message); return; }
-  if(ver!==dataVer)return; // 조회 도중 로컬 변경 → 오래된 스냅샷 적용 스킵
-  tickets=(data||[]).map(rowToTicket);
+  if(ver!==dataVer||seq!==fetchSeq)return;
+  if(count!=null && count!==(data||[]).length){ emit('toast','전체 티켓을 받지 못해 기존 데이터를 유지합니다'); return; } // 조회 도중 로컬 변경 → 오래된 스냅샷 적용 스킵
+  tickets=(data||[]).map(rowToTicket); calendarReady=true; saveLocal();
   try{ const {data:pd}=await sb.from('pending_uploads').select('id,status,result').neq('status','done').order('created_at',{ascending:false}); pendings=pd||[]; }catch(e){}
   emit('tickets'); emit('pendings');
 }
 // 25초 주기 동기화. paused()가 true면 건너뜀(팝업 열림·탭 숨김 등은 뷰가 판단)
 export function startSync({paused}={paused:()=>false}){
+  let timer;
+  const refresh=()=>{clearTimeout(timer);timer=setTimeout(()=>{if(!document.hidden&&mode==='cloud'&&!dirtyCount())fetchTickets().catch(()=>{});},250);};
+  const connect=()=>{
+    if(!sb||realtime)return;
+    realtime=sb.channel('ticket-calendar-updates').on('broadcast',{event:'changed'},refresh).subscribe();
+    sb.channel('ticket-database-updates').on('postgres_changes',{event:'*',schema:'public',table:'tickets'},refresh).subscribe();
+  };
+  connect(); onChange(type=>{if(type==='mode')connect();});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
   setInterval(async()=>{
     if(!sb||document.hidden||(paused&&paused()))return;
     if(mode==='cloud'){ fetchTickets(); return; }
@@ -147,6 +158,8 @@ export function startSync({paused}={paused:()=>false}){
     fetchTickets();
   },25000);
 }
+
+function announceChange(){ realtime?.send({type:'broadcast',event:'changed',payload:{}}).catch(()=>{}); }
 
 /* ===== 티켓 CRUD ===== */
 // data = 앱 shape(id 제외). 반환: 저장된 티켓. 실패 시 throw
@@ -164,19 +177,19 @@ export async function saveTicket(data,id=null){
     else{ id='t'+Date.now()+Math.floor(Math.random()*1000); saved={id,...data}; tickets.push(saved); }
     saveLocal(); markDirty(id);
   }
-  dataVer++; emit('tickets'); return saved;
+  dataVer++; saveLocal(); emit('tickets',{changed:[String(saved.id)]}); announceChange(); return saved;
 }
 export async function deleteTicket(id){
   if(mode==='cloud'&&sb){ try{ const {error}=await sb.from('tickets').delete().eq('id',id); if(error)throw error; }catch(e){ if(!isNetErr(e))throw e; goOffline(); } }
   tickets=tickets.filter(x=>String(x.id)!==String(id)); dataVer++;
   if(mode!=='cloud'){ markDirty(id,true); saveLocal(); }
-  emit('tickets');
+  saveLocal(); emit('tickets',{deleted:[String(id)]}); announceChange();
 }
 export async function deleteTickets(ids){
   if(mode==='cloud'&&sb){ try{ const {error}=await sb.from('tickets').delete().in('id',ids); if(error)throw error; }catch(e){ if(!isNetErr(e))throw e; goOffline(); } }
   const set=new Set(ids.map(String)); tickets=tickets.filter(x=>!set.has(String(x.id))); dataVer++;
   if(mode!=='cloud'){ ids.forEach(i=>markDirty(i,true)); saveLocal(); }
-  emit('tickets');
+  saveLocal(); emit('tickets',{deleted:ids.map(String)}); announceChange();
 }
 export async function duplicateTicket(id){
   const t=tickets.find(x=>String(x.id)===String(id)); if(!t)return null;

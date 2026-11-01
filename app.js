@@ -1,11 +1,12 @@
 /* 티켓 보관함 — 뷰 레이어 (ES module). 데이터는 data.js만 통해 접근.
    구조: 홈(다음 공연 + 목록) · 보관함(포스터 스택 타임라인 + 월 묶음 독) · 결산 · 설정 · 상세/수정 시트 */
 import * as D from './data.js';
+import {calendarState,calendarLabel,calendarCommand,syncCalendar,onCalendarChange} from './calendar-sync.js';
 import {posterFor} from './poster-catalog.js';
-import {renderManager} from './management-view.js?v=49';
+import {renderManager} from './management-view.js?v=50';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v49 · 2026-11-01';
+const BUILD='v50 · 2026-11-01';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -334,6 +335,7 @@ function renderSet(){
   $('setBody').innerHTML=`
     <div class="tile" style="padding:2px 14px">
 
+      <div class="srow" data-set="calendar"><div><b>로컬 캘린더</b><small>${esc(calendarLabel())}</small></div><span class="v">›</span></div>
       <div class="srow" data-set="vcolor"><div><b>예매처 색 관리</b><small>${D.allVendors().slice(0,5).map(esc).join(' · ')}</small></div><span class="v">${D.allVendors().length} ›</span></div>
       <div class="srow" data-set="pend"><div><b>AI 캡처 대기열</b><small>인식 대기 중인 캡처</small></div><span class="v">${st.pendings.length}장 ›</span></div>
       <div class="srow" data-set="sync"><div><b>동기화</b><small>${st.mode==='cloud'?'Supabase · 25초마다 자동':'오프라인 · 이 기기에 임시 저장'}${dirty?` · 미전송 ${dirty}건`:''}</small></div><span class="v" style="color:${st.mode==='cloud'?'var(--good)':'#e5484d'}">● ${st.mode==='cloud'?'연결됨':'끊김'}</span></div>
@@ -344,10 +346,27 @@ function renderSet(){
     </div>`;
 
   $('setBody').querySelectorAll('[data-set]').forEach(el=>el.addEventListener('click',()=>{ const k=el.dataset.set;
-    if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
+    if(k==='calendar')openCalendarSync(); if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
     if(k==='update'){ toast('새 버전 확인 중…'); navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).finally(()=>setTimeout(()=>location.reload(),600)); }
     if(k==='export'){ D.exportBackup(); toast('백업 저장됨'); } if(k==='import')$('importFile').click(); if(k==='bulk'){ selectMode=true; managerStates.home.status='all';managerStates.home.vendor='';managerStates.home.view='list'; showScreen('home'); renderSelectBar(); } }));
 }
+function paintCalendarSync(){
+  const c=calendarState();
+  subT.textContent='로컬 캘린더';
+  subB.innerHTML=`<div style="padding:4px 4px 20px"><p style="font-size:18px;font-weight:800;color:var(--accent,#2463db)">${esc(calendarLabel())}</p><p style="line-height:1.7">휴대폰 캘린더에 <b>티켓함</b>을 만들어요.<br>보유한 공연을 예매 건별로 추가하고, 수정·양도·취소도 자동 반영해요.</p><p style="font-size:13px;line-height:1.7;color:#637086">앱에서 변경하면 즉시 반영됩니다. 앱을 닫은 동안에는 15분 주기로 확인하며, 배터리 설정에 따라 늦어질 수 있어요.</p>${c.supported?`<label style="display:block;margin:20px 0">예상 공연 시간 <select id="calendarDuration" style="margin-left:12px;padding:10px;border:1px solid #cbd7eb;border-radius:10px;font:inherit">${[60,120,180,240].map(n=>`<option value="${n}" ${c.durationMinutes===n?'selected':''}>${n/60}시간</option>`).join('')}</select></label><p style="font-size:12px;color:#637086">시간 미정은 종일 일정으로 표시해요. 연동을 꺼도 이미 추가한 일정은 유지돼요.</p><div class="menu" style="padding:0">${c.enabled&&c.permission?'<div data-calendar="refresh">지금 동기화</div><div data-calendar="open">휴대폰 캘린더 열기</div><div data-calendar="disable">자동 연동 끄기</div>':'<div data-calendar="enable">권한 허용하고 연동하기</div>'}</div>`:'<p>캘린더 연동은 Android 앱 1.2 이상에서 사용할 수 있어요.</p>'}${c.lastSync?`<p style="font-size:12px;color:#637086">마지막 반영 ${new Date(c.lastSync).toLocaleString('ko-KR')}</p>`:''}</div>`;
+  subF.innerHTML='<div data-s="cancel">닫기</div>';
+  subB.querySelectorAll('[data-calendar]').forEach(b=>b.onclick=()=>{
+    if(b.dataset.calendar==='refresh'){syncCalendar(true);return;}
+    calendarCommand(b.dataset.calendar);
+  });
+  subB.querySelector('#calendarDuration')?.addEventListener('change',e=>calendarCommand('duration',{minutes:+e.target.value}));
+}
+function openCalendarSync(){
+  sub.dataset.calendarSync='true'; paintCalendarSync(); sub.classList.add('on');subscrim.classList.add('on');
+  pushOv('sub',()=>{sub.classList.remove('on');subscrim.classList.remove('on');delete sub.dataset.calendarSync;});
+  calendarCommand('status');
+}
+onCalendarChange(()=>{if(screen==='set')renderSet();if(sub.classList.contains('on')&&sub.dataset.calendarSync)paintCalendarSync();});
 $('importFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f)return; try{ const d=D.parseBackup(await f.text()); if(!confirm('백업을 현재 데이터에 합칠까요?'))return; const r=await D.importBackup(d); toast(`불러오기 완료 · ${r.added}건 추가`); }catch(err){ toast(err.message||'올바른 백업 파일이 아니에요'); } });
 
 /* 여러 장 삭제 (홈 목록 선택 모드) */
@@ -493,7 +512,7 @@ function openSub(kind){
   else if(kind==='share'){ subT.innerHTML=`공유`; subB.innerHTML=`<div class="menu" style="padding:0"><div data-s="share-txt">텍스트로 공유</div>${t.hasImg?'<div data-s="share-img">예매내역 사진 + 텍스트</div>':''}<div data-s="share-copy">텍스트 복사</div></div><pre class="sharePrev">${esc(D.ticketText(t))}</pre>`; subF.innerHTML=`<div data-s="cancel">닫기</div>`; }
   sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); });
 }
-function closeSub(fromPop){ if(!sub.classList.contains('on'))return; if(sub.classList.contains('vendor-sheet'))finishVendorPicker(); sub.classList.remove('on'); subscrim.classList.remove('on'); if(!fromPop)popOv('sub'); }
+function closeSub(fromPop){ delete sub.dataset.calendarSync; if(!sub.classList.contains('on'))return; if(sub.classList.contains('vendor-sheet'))finishVendorPicker(); sub.classList.remove('on'); subscrim.classList.remove('on'); if(!fromPop)popOv('sub'); }
 subscrim.addEventListener('click',()=>closeSub());
 sub.addEventListener('click',async e=>{
   const vendorOption=e.target.closest('[data-vendor-choice]');

@@ -11,8 +11,8 @@ android {
         applicationId = "com.hong.ticketmanager"
         minSdk = 26
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1"
+        versionCode = 3
+        versionName = "1.2"
     }
     buildTypes {
         release {
@@ -28,6 +28,9 @@ android {
 }
 
 dependencies {
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    testImplementation("junit:junit:4.13.2")
+    testImplementation("org.json:json:20240303")
     implementation("androidx.core:core-ktx:1.15.0")
     implementation("androidx.activity:activity-ktx:1.9.3")
     implementation("androidx.webkit:webkit:1.12.1")

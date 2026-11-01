@@ -1,80 +1,46 @@
-# Android 로컬 캘린더 연동 검토
+# Android 로컬 캘린더 연동
 
-2026-11-01. 구현안이며 아직 캘린더에 일정을 쓰거나 권한을 요청하지 않는다.
+2026-11-01 · 웹 v50 / Android 1.2 (versionCode 3)
 
-## 권장: 티켓함 전용 로컬 캘린더, 단방향 동기화
+## 사용
 
-현재 앱은 `MainActivity.kt`의 WebView로 웹앱을 표시한다. Android의
-Calendar Provider를 이용하면 기기 캘린더 저장소에 `티켓함` 캘린더를 만들 수 있다.
-`CalendarContract.ACCOUNT_TYPE_LOCAL`을 사용하면 Google 계정 없이도 저장 가능하다.
-캘린더 생성은 공식 문서의 sync-adapter URI 경로와 필수 계정·소유자 필드를 사용한다.
-삼성 캘린더 등 기기 캘린더를 읽는 앱에서 표시할 수 있다. 실제 삼성 캘린더의
-캘린더 목록 노출·알림·색상은 해당 폰에서 검증해야 한다.
+설정 → 로컬 캘린더 → 권한 허용하고 연동하기. Android READ_CALENDAR,
+WRITE_CALENDAR 런타임 권한을 요청하고 기기에 `티켓함` 로컬 캘린더를 생성한다.
+권한 거절 시 연동하지 않으며 설정 화면에서 재시도할 수 있다.
 
-- 설정에 `캘린더 연동` 스위치, `지금 동기화`, 최근 성공 시각·대상 건수 표시.
-- 사용자가 켜는 시점에 `READ_CALENDAR`, `WRITE_CALENDAR` 런타임 권한 요청.
-- 앱이 만든 캘린더 ID와 이벤트 ID만 관리한다. 다른 개인 캘린더는 변경하지 않는다.
-- 방향은 티켓함 → 캘린더. 캘린더에서 바꾼 내용은 티켓 원본으로 역반영하지 않는다.
-- 최초 범위는 날짜가 있는 예정 티켓 중 `ticketAcct(t).kept > 0`인 건.
-- 전량 취소·전량 양도·삭제는 앱이 만든 해당 일정만 제거한다. 부분 양도는 잔여 좌석 갱신.
-- 시간이 없으면 종일 일정으로 내보내고, 날짜도 없으면 제외 사유를 표시한다.
-- 종료 시간 데이터는 현재 없다. 실제 공연 종료로 추정해서 저장하지 않는다.
-  사용자에게 기본 소요 시간(예: 2시간, 추정)을 설정하게 하거나 개별 지정 UI를 추가한다.
-- 시간대는 `Asia/Seoul`. 종일 일정은 Android Calendar Provider의 UTC 자정 및
-  배타적 종료 날짜 규칙에 맞춘다.
-- 제목·공연장·잔여 좌석·예매처를 전달한다. 가격·개인 메모·양도 상대 정보는 기본 제외.
-- 동일 공연/같은 회차를 여러 예매처에서 보유한 경우 한 일정에 좌석을 모으는 방식 권장.
-  제목 문자열만으로 합치지 않고 공연 식별자·일시·장소를 비교하며, 불확실하면 합치지 않는다.
+- 보유 좌석이 있는 오늘 이후 공연을 예매 건별로 등록한다. 예매 ID가 일정의 안정적인 식별자다.
+- 제목, 공연장, 날짜, 시간, 보유 좌석을 갱신한다. 전석 양도·취소 또는 티켓 삭제 시 연결 일정만 삭제한다.
+- 지난 일정은 보존한다. 앱에서 해당 예매를 명시적으로 삭제하거나 전석 양도·취소하면 제거한다.
+- 시간 미정은 UTC 자정 기준 종일 일정, 시간이 있으면 Asia/Seoul 기준이다.
+- 종료 시각은 선택한 1/2/3/4시간 후의 예상 시각임을 일정 설명에 표시한다.
+- 금액, 메모, 양도 상대방은 복사하지 않는다.
+- 연동을 끄면 기존 일정은 남는다. 다른 캘린더나 사용자가 직접 만든 일정은 수정하지 않는다.
+- 단방향 연동이다. 캘린더에서 직접 수정·삭제한 연결 일정은 다음 연동 때 앱 데이터로 복원될 수 있다.
 
-## 중복·변경 처리
+## 갱신 경로
 
-이벤트에 대응하는 내부 식별자와 티켓 ID 목록을 별도 저장한다. 일정 날짜가 바뀌어도
-기존 티켓 ID로 같은 이벤트를 찾아 수정하므로 중복 삽입하지 않는다. 회차 묶음이
-분리되거나 합쳐지는 경우에도 이전 매핑과 겹치는 티켓 ID를 비교한다.
+앱의 저장·수정·삭제 이벤트 → 신뢰된 WebView 메시지 → 직렬 실행기 → Calendar Provider 원자적 배치.
+전체 조회를 확인하기 전에는 초기 캐시로 일정을 정리하지 않는다. 오프라인 변경은 변경한 예매만 전달한다.
+일정의 CUSTOM_APP_PACKAGE / CUSTOM_APP_URI로 소유권과 예매 ID를 확인하여 중복 삽입을 방지한다.
 
-동기화는 직렬 처리하고 `ContentProviderOperation` 배치와 재시도용 작업 기록을 둔다.
-이벤트 등록 후 매핑 저장 전에 앱이 종료되어도, 전용 캘린더 안의 관리 식별자로
-기존 이벤트를 찾아 중복을 방지해야 한다. 식별자 저장 필드는 Provider 지원 범위를
-확인하며, sync-adapter 전용 필드를 일반 앱 쓰기로 사용할 수 있다고 가정하지 않는다.
+Supabase `public.tickets`의 `supabase_realtime` publication을 운영 대시보드에서 활성화했다.
+WebSocket 응답 `Subscribed to PostgreSQL` / `status: ok`를 확인했다.
+앱 실행 중 서버 변경은 Realtime으로 조회하고, 25초 폴링도 복구용으로 유지한다.
+앱 사이 Broadcast는 별도 채널을 사용한다.
 
-서버 조회 실패·권한 취소·부분 응답을 빈 티켓 목록으로 처리해 일정을 삭제하면 안 된다.
-성공한 완전한 스냅샷 및 확인된 삭제만 반영한다. 사용자가 캘린더에서 직접 삭제한
-일정은 제외 목록으로 존중하고, 명시적 재동기화 때 복구 여부를 선택하게 한다.
+앱이 닫힌 동안은 WorkManager의 네트워크 연결 조건부 15분 주기 작업으로 갱신한다.
+Android 배터리 최적화/Doze에 따라 늦어질 수 있으며, 강제 종료 상태의 즉시 반영을 보장하지 않는다.
+종료 상태에서도 즉시 깨우려면 별도 FCM 토큰 등록·서버 푸시 구성이 필요하며 이번 구현에는 포함되지 않았다.
+백그라운드 조회는 기본 프로젝트의 공개 키만 사용한다. 미전송 로컬 변경이 있으면 서버 조회로 덮어쓰지 않는다.
+조회 오류, 불완전한 페이지, 잘못된 날짜는 기존 일정을 삭제하지 않고 오류 상태로 남긴다.
 
-## 갱신 시점과 Android 변경
+## 검증
 
-첫 단계는 앱 실행/복귀, 티켓 저장·양도·취소 이후, `지금 동기화`에서 실행한다.
-현재 25초 갱신은 웹앱이 실행 중일 때만 돌아가므로 백그라운드 연동을 보장하지 않는다.
+- `node tools/check-calendar.mjs`: 모의 네이티브 브리지, 권한 활성화/해제, 초기 캐시 보호, 로컬 변경/삭제, 개인정보 제외, 예상 시간 변경.
+- `node tools/check-management.mjs`, `node tools/check-secondary.mjs`: 기존 관리/결산/보관함 회귀 검사.
+- `android/gradlew.bat -p android testDebugUnitTest assembleDebug`: 날짜/시간대/종일/양도/취소/서버 매핑 단위 테스트와 APK 빌드.
+- 실제 기기 권한 팝업, Calendar Provider 쓰기, 삼성 캘린더 표시, 백그라운드 실행은 USB 재연결 후 확인 필요.
 
-백그라운드까지 원하면 WorkManager와 네이티브 데이터 조회 계층이 추가로 필요하다.
-주기 작업 최소 간격은 15분이며 실행 시각은 배터리·네트워크·OS 정책에 따라 늦어질 수 있다.
-앱이 닫힌 상태에서 다른 기기의 수정까지 즉시 반영된다고 표시하면 안 된다.
-
-WebView → Android 전달은 허용된 HTTPS 출처와 메인 프레임만 받는
-`WebViewCompat.addWebMessageListener` 등으로 제한한다. 웹의 임의 calendar/event ID를
-신뢰하지 않고 네이티브가 소유한 매핑만 사용한다. 이전 APK에는 연결 UI를 숨기고,
-지원 버전에서만 연동 설정을 제공한다.
-
-필요 파일: Android manifest 권한, `MainActivity.kt` 메시지 연결,
-새 `CalendarSyncManager.kt` 및 매핑 저장소, 웹 설정 UI 및 동기화 payload 생성기.
-
-## 대안
-
-| 방식 | 권한 | 동작 | 제한 |
-|---|---|---|---|
-| `ACTION_INSERT` | 직접 캘린더 읽기/쓰기 권한 불필요 | 티켓 상세에서 캘린더 작성 화면을 열고 사용자가 저장 | 1건씩, 취소·변경 자동 반영 불가 |
-| 전용 로컬 캘린더 | 읽기/쓰기 권한 필요 | 여러 일정 추가·변경·삭제 자동 반영 | Android 구현 및 기기 검증 필요, 다른 기기로 자체 동기화되지 않음 |
-| `.ics` 파일 내보내기 | Android 캘린더 권한 불필요 | 앱/PC에서 파일 가져오기 | 재가져오기 중복 여부는 대상 앱 의존, 자동 연동 아님 |
-
-권장 순서: 전용 로컬 캘린더 + 앱 실행 시 동기화 → 실기기 반복/취소/권한 테스트 →
-필요하면 백그라운드 갱신. 파일 내보내기는 보조 수단으로 둔다.
-
-## 공식 근거
-
-- [Calendar Provider와 권한·일정 Intent](https://developer.android.com/identity/providers/calendar-provider)
-- [로컬 캘린더 생성 필드와 ACCOUNT_TYPE_LOCAL](https://developer.android.com/reference/android/provider/CalendarContract.Calendars)
-- [출처를 제한하는 WebView 메시지 연결](https://developer.android.com/reference/androidx/webkit/WebViewCompat)
-- [WorkManager 주기 작업 제한](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work)
-
-검증 범위: 코드 구조·공식 API 문서 확인. 로컬 캘린더 생성, Samsung Calendar 표시,
-권한 거부, 재설치, 삭제/재시도 시 중복 방지, 실제 알림은 아직 미구현·미검증.
+참고: [Calendar Provider](https://developer.android.com/identity/providers/calendar-provider),
+[WorkManager 주기 작업](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work),
+[Supabase Postgres Changes](https://supabase.com/docs/guides/realtime/postgres-changes).
