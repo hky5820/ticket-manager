@@ -90,3 +90,71 @@ html.tm-native .viewer .vx { top:calc(14px + var(--safe-top)); }
 .mg-view button[aria-pressed=true]{box-shadow:0 1px 4px #1d42751a}
 .mg-add{background:#e4edfc;color:#285caf;border:1px solid #cfddf4;font-weight:650}
 @media(max-width:360px){.app .mg-featured .mg-when{font-size:14px}.mg-date-group>h2{font-size:15px}}
+/* Archive: retain timeline and grid gestures with light ticket surfaces. */
+#scr-vault,#scr-money{background:#f3f6fb}
+.app #scr-vault .stage{background:none!important}
+.app #scr-vault .vtop{padding:calc(10px + var(--safe-top)) 22px 10px;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.vault-heading{display:flex;align-items:baseline;gap:10px;color:#172b49}
+.vault-heading b{font-size:18px;font-weight:740}
+.vault-heading small{font-size:11px;color:#61728a}
+#scr-vault #bgBtn{display:none}
+#scr-vault .vmode{background:#e4edfc;border:1px solid #cfddf4;color:#285caf;font-weight:650}
+#scr-vault .card .art{background:linear-gradient(#eaf1fc 0 164px,#fff 164px);border:1px solid #c9d9ef;border-radius:16px;box-shadow:0 7px 20px #23436d12;transform:none}
+#scr-vault .card .art img{inset:12px auto auto 50%;transform:translateX(-50%);width:104px;height:140px;object-fit:contain;border-radius:5px}
+#scr-vault .card .art img.vault-placeholder{width:44px;height:44px;top:58px;opacity:.4}
+#scr-vault .card .fx,#scr-vault .card .sheen,#scr-vault .card .fan{display:none}
+#scr-vault .card .info{top:177px;left:14px;right:14px;color:#203654;text-shadow:none;transform:none;gap:2px}
+#scr-vault .card .info .ttl{font:700 14px/1.3 SUIT;white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#scr-vault .card .chip{background:#e7effc;color:#2457aa;border-radius:5px;padding:3px 5px;font-weight:700;font-size:10px;flex-shrink:0}
+#scr-vault .card .chip.dd{background:#2463db;color:#fff}
+#scr-vault .card .chip.xf{background:#e5f3ee;color:#21785e}
+#scr-vault .card .chip.past{background:#e9edf3;color:#53647b}
+#scr-vault .card .when{font:750 19px/1.35 SUIT;color:#2055b1;margin-top:4px;font-variant-numeric:tabular-nums}
+#scr-vault .card .seat{color:#536782;font-size:11px;margin-top:2px}
+#scr-vault .card .hold{font-size:10px;font-weight:650;color:#285caf}
+#scr-vault .card .bt{left:14px;right:14px;bottom:10px;transform:none;text-shadow:none;border-top:1px solid #e0e8f3;padding-top:7px;color:#536782}
+#scr-vault .card .bt b{color:#203654;font-weight:700;font-size:12px}
+#scr-vault .card .bt .chip{background:none;padding:0;color:#536782}
+#scr-vault .card .bt .ptxt{color:#21785e}
+#scr-vault .card .bt .ptxt.neg{color:#c14750}
+#scr-vault .gate{background:#fff;border:1px solid #c9d9ef;box-shadow:none;color:#203654}
+#scr-vault .gate.today{background:#e7effc}
+#scr-vault .dock{margin:0 16px calc(80px + var(--safe-bottom));padding:12px 14px!important;background:#fff;border:1px solid #d2ddeb;border-radius:15px;gap:10px}
+#scr-vault .prog .trk{background:#e0e8f4}
+#scr-vault .prog .fill,#scr-vault .prog .mk{background:#2463db}
+#scr-vault .msum{color:#536782}
+#scr-vault .msum b{color:#244c8b}
+#scr-vault .grp.today small{color:#2463db}
+#scr-vault .shows{background:#f3f6fb;padding-bottom:calc(88px + var(--safe-bottom))}
+#scr-vault .shows .sg{background:#fff;border:1px solid #d2ddeb;border-radius:14px;padding:14px;margin-bottom:12px}
+#scr-vault .shows .sg .ds span{background:#e7effc;color:#2457aa}
+/* Settlement totals and ledger use the same blue hierarchy. */
+#scr-money .tb{background:#f3f6fb}
+#moneyBody .bigs{gap:12px;margin-top:8px}
+#moneyBody .tile{border:1px solid #d2ddeb;border-radius:15px;background:#fff;box-shadow:0 3px 10px #1d42750a}
+#moneyBody .bigs .tile{padding:16px;gap:8px;min-width:0}
+#moneyBody .bigs .tile small{font-size:12px;font-weight:600;color:#526985;line-height:1.4}
+#moneyBody .bigs .tile b{font-size:clamp(16px,5vw,22px);font-weight:750;font-variant-numeric:tabular-nums}
+#moneyBody .bigs .tile .subl{font-size:11px;color:#61728a;line-height:1.7;white-space:normal}
+#moneyBody .bigs .money-primary{background:#edf4ff;border-color:#a9c4ef;padding:20px}
+#moneyBody .bigs .money-primary small{color:#285ba9}
+#moneyBody .bigs .money-primary b{font-size:30px;color:#2055b1;letter-spacing:-.03em}
+#moneyBody .seg2{background:#e3ebf7;padding:4px;margin:20px 0 18px}
+#moneyBody .seg2 div{font-weight:600;color:#526985;cursor:pointer}
+#moneyBody .seg2 div.on{color:#2057bc;font-weight:750;box-shadow:0 2px 5px #23436d12}
+#moneyBody .hsec h2{color:#243e63;font-size:15px}
+#moneyBody .hsec small{color:#61728a}
+#moneyBody .ledger{margin:0}
+#moneyBody .ledger>div{grid-template-columns:44px minmax(0,1fr);gap:6px 10px;padding:16px 0;cursor:pointer}
+#moneyBody .ledger .d{align-self:start;color:#2457aa;font-size:12px;font-weight:750;background:#edf4ff;border-radius:6px;padding:6px 2px;text-align:center}
+#moneyBody .ledger b{color:#203654;white-space:normal;font-size:14px;line-height:1.5}
+#moneyBody .ledger span:not(.d){white-space:normal;color:#61728a;font-size:12px;line-height:1.5}
+#moneyBody .ledger em{grid-column:2;justify-self:end;font-size:16px;font-weight:750;color:#244c8b}
+#moneyBody .ledger em.g{color:#21785e}#moneyBody .ledger em.r{color:#c14750}
+#moneyBody .mb .b{background:#e5edf9}#moneyBody .mb .b i{background:#3475e6}
+#moneyBody .mb div{grid-template-columns:44px 1fr 26px;margin-bottom:10px}
+@media(max-width:360px){.vault-heading small{display:none}#moneyBody .bigs .tile{padding:12px}#moneyBody .bigs .money-primary{padding:18px}}
+.app #scr-vault .card .art{box-shadow:0 7px 20px #23436d12!important}
+#scr-vault .gate.today b,#scr-vault .gate.today span{color:#2457aa}
+#scr-vault .bt .btr .ptxt,#scr-vault .msum .ptxt{color:#21785e!important}
+#scr-vault .bt .btr .ptxt.neg,#scr-vault .msum .ptxt.neg{color:#c14750!important}

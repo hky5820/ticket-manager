@@ -1,10 +1,11 @@
 /* 티켓 보관함 — 뷰 레이어 (ES module). 데이터는 data.js만 통해 접근.
    구조: 홈(다음 공연 + 목록) · 보관함(포스터 스택 타임라인 + 월 묶음 독) · 결산 · 설정 · 상세/수정 시트 */
 import * as D from './data.js';
-import {renderManager} from './management-view.js?v=48';
+import {posterFor} from './poster-catalog.js';
+import {renderManager} from './management-view.js?v=49';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v48 · 2026-11-01';
+const BUILD='v49 · 2026-11-01';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -33,8 +34,8 @@ const profitTxt=t=>{ const pr=itemProfit(t); return pr===null?'':`<span class="p
 function soldCost(t){ const a=ticketAcct(t); return Math.round(a.recv-a.profit); }
 function ddCls(t){ const d=ddayN(t.date); return isSold(t)?'ok':(d!==null&&d<=9)?'soon':'dday'; }
 const toneOf=t=>t.tone||colorFor(t.vendor);   /* 포스터 대표색(서버에서 계산해 둔 것) → 없으면 예매처 색 */
-function posterStyle(t){ return t.poster?'':`background:linear-gradient(160deg,${colorFor(t.vendor)}66,#111 90%)`; }
-function posterImg(t,cls){ return t.poster?`<img class="${cls||''}" src="${esc(t.poster)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:`<div class="${cls||''} noposter" style="${posterStyle(t)}"><span>${esc(short(t.name).slice(0,12))}</span></div>`; }
+function posterStyle(t){ return posterFor(t)?'':'background:#e7effc;color:#315a95'; }
+function posterImg(t,cls){ const poster=posterFor(t);return poster?`<img class="${cls||''}" src="${esc(poster)}" alt="" loading="lazy" onerror="this.style.visibility='hidden'">`:`<div class="${cls||''} noposter" style="${posterStyle(t)}"><span>${esc(short(t.name).slice(0,12))}</span></div>`; }
 
 /* ===== 데이터 → 화면 시퀀스 ===== */
 let T=[], UP=[], ITEMS=[], HOME=0, TODAY_I=0, groups=[], showGroups={};
@@ -132,12 +133,12 @@ function buildVault(){
       else if(it.gate==='today'){ const n=new Date(); el.innerHTML=`<b>오늘</b><span>${n.getMonth()+1}.${n.getDate()} ${WD[n.getDay()]}${UP[0]?` · 다음 공연 ${dday(UP[0].date)}`:''}</span>`; }
       else { el.innerHTML=`<b>지난 ${it.n}건</b><span>양도차익 <i style="font-style:normal;color:var(--good)">${signMoney(it.profit)}</i></span>`; }
     }else{
-      const t=it, dd=dday(t.date), past=isPast(t), soon=(ddayN(t.date)!==null&&ddayN(t.date)<=9&&ddayN(t.date)>=0);
+      const t=it, poster=posterFor(t), dd=dday(t.date), past=isPast(t), soon=(ddayN(t.date)!==null&&ddayN(t.date)<=9&&ddayN(t.date)>=0);
       el.className='card mid'+(past?' isPast':''); el.style.setProperty('--tone',toneOf(t));
       const chip = isSold(t) ? `<span class="chip xf">양도</span>` : past ? `<span class="chip past">관람</span>` : `<span class="chip ${soon?'dd':''}">${dd}</span>`;
       const hi=holdInfo(t);
       el.innerHTML = `${t.n>1?'<div class="fan f2"></div><div class="fan f1"></div>':''}
-        <div class="art"${t.poster?'':` style="${posterStyle(t)}"`}>${t.poster?`<img src="${esc(t.poster)}" alt="" onerror="this.remove()">`:''}<div class="fx"></div><div class="dim"></div><div class="sheen"></div></div>
+        <div class="art">${poster?`<img src="${esc(poster)}" alt="" onerror="this.remove()">`:'<img class="vault-placeholder" src="assets/ui/ticket.svg" alt="">'}<div class="fx"></div><div class="dim"></div><div class="sheen"></div></div>
         <div class="info"><div class="r1">${chip}<span class="ttl">${esc(t.name)}</span></div><div class="when">${fmtDate(t.date,t.time)}</div><div class="seat">${esc(seatLine(t)||'좌석 미입력')}</div>${(hi.partial||isSold(t))?`<div class="hold">${hi.label}</div>`:''}</div>
         <div class="ask"><span><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>상세 보기</span></div>
         <div class="bt"><span class="chip"><i style="--c:${colorFor(t.vendor)}"></i>${esc(vendorShort(t.vendor))}</span><span class="btr"><b>${won(t.price)}</b>${itemProfit(t)!==null?' '+profitTxt(t):''}</span></div>`;
@@ -311,18 +312,18 @@ let moneyTab='xfer';
 function renderMoney(){
   const all=T, a=all.map(t=>({t,a:ticketAcct(t)}));
   const spend=a.reduce((s,x)=>s+x.a.spend,0), profit=a.reduce((s,x)=>s+(x.a.hasXfer?x.a.profit:0),0), qty=a.reduce((s,x)=>s+(Number(x.t.qty)||0),0), kept=a.reduce((s,x)=>s+x.a.kept,0), sold=a.reduce((s,x)=>s+x.a.xfer,0), canceled=a.reduce((s,x)=>s+x.a.canceled,0), recv=a.reduce((s,x)=>s+x.a.recv,0);
-  const upPay=UP.reduce((s,t)=>s+(Number(t.price)||0),0);
+  const upPay=UP.reduce((s,t)=>s+ticketAcct(t).spend,0);
   let body='';
   if(moneyTab==='xfer'){ const xs=a.filter(x=>x.a.hasXfer).sort((p,q)=>(p.t.date||'')<(q.t.date||'')?1:-1);
     body=`<div class="hsec"><h2>티켓별 산출</h2><small>양도 ${xs.length}건</small></div><div class="tile" style="padding:4px 14px"><div class="ledger">${xs.map(({t,a})=>`<div data-id="${esc(t.id)}"><span class="d">${t.date?(+t.date.slice(5,7))+'.'+(+t.date.slice(8,10)):'—'}</span><div><b>${esc(short(t.name))}</b><span>${a.xfer}석 원가 ${won(Math.round(a.recv-a.profit))} · 수령 ${won(a.recv)}</span></div><em class="${a.profit>=0?'g':'r'}">${signMoney(a.profit)}</em></div>`).join('')||'<div class="empty"><b>양도 내역이 없어요</b></div>'}</div></div>`; }
   else if(moneyTab==='spend'){ const xs=a.filter(x=>x.a.kept>0).sort((p,q)=>(p.t.date||'')<(q.t.date||'')?1:-1);
     body=`<div class="hsec"><h2>관람 좌석 원가</h2><small>${xs.length}건</small></div><div class="tile" style="padding:4px 14px"><div class="ledger">${xs.map(({t,a})=>`<div data-id="${esc(t.id)}"><span class="d">${t.date?(+t.date.slice(5,7))+'.'+(+t.date.slice(8,10)):'—'}</span><div><b>${esc(short(t.name))}</b><span>관람 ${a.kept}석 × ${won(Math.round(a.spend/a.kept))}</span></div><em>${won(Math.round(a.spend))}</em></div>`).join('')}</div></div>`; }
   else { const byM={}; a.forEach(x=>{ const k=(x.t.date||'').slice(0,7)||'미정'; const m=byM[k]=byM[k]||{pay:0,spend:0,profit:0,n:0}; m.pay+=Number(x.t.price)||0; m.spend+=x.a.spend; m.profit+=x.a.hasXfer?x.a.profit:0; m.n++; }); const ks=Object.keys(byM).sort().reverse(); const mx=Math.max(1,...ks.map(k=>byM[k].pay));
-    body=`<div class="hsec"><h2>월별</h2><small>결제 기준</small></div><div class="tile"><div class="mb">${ks.map(k=>`<div><span>${k==='미정'?'미정':(+k.slice(5))+'월'}</span><div class="b"><i style="width:${byM[k].pay/mx*100}%"></i></div><em>${byM[k].n}</em></div><div style="grid-template-columns:34px 1fr;margin:-4px 0 6px"><span></span><small style="font-size:11px;color:var(--ink-3);font-weight:600">결제 ${won(byM[k].pay)} · 실지출 ${won(Math.round(byM[k].spend))}${byM[k].profit?` · 차익 <span class="ptxt${byM[k].profit<0?' neg':''}">${signMoney(byM[k].profit)}</span>`:''}</small></div>`).join('')}</div></div>`; }
+    body=`<div class="hsec"><h2>월별 내역</h2><small>공연 월 기준</small></div><div class="tile"><div class="mb">${ks.map(k=>`<div><span>${k==='미정'?'미정':k.slice(2,4)+'.'+k.slice(5)}</span><div class="b"><i style="width:${byM[k].pay/mx*100}%"></i></div><em>${byM[k].n}</em></div><div style="grid-template-columns:34px 1fr;margin:-4px 0 6px"><span></span><small style="font-size:11px;color:var(--ink-3);font-weight:600">결제 ${won(byM[k].pay)} · 실지출 ${won(Math.round(byM[k].spend))}${byM[k].profit?` · 차익 <span class="ptxt${byM[k].profit<0?' neg':''}">${signMoney(byM[k].profit)}</span>`:''}</small></div>`).join('')}</div></div>`; }
   $('moneyBody').innerHTML=`
-    <div class="bigs"><div class="tile" style="grid-column:1/-1"><small>실지출 · 관람 좌석 원가</small><b>${won(Math.round(spend))}</b><div class="subl">매수 ${qty}매 · 관람 ${kept}석 · 양도 ${sold}석${canceled?` · 취소 ${canceled}석`:''}</div></div>
+    <div class="bigs"><div class="tile money-primary" style="grid-column:1/-1"><small>실지출 · 관람 좌석 원가</small><b>${won(Math.round(spend))}</b><div class="subl">매수 ${qty}매 · 관람 ${kept}석 · 양도 ${sold}석${canceled?` · 취소 ${canceled}석`:''}</div></div>
       <div class="tile"><small>양도차익</small><b style="color:${profit>=0?'var(--good)':'#e5484d'}">${signMoney(profit)}</b><div class="subl">수령 ${won(recv)} − 원가 ${won(Math.round(recv-profit))}</div></div>
-      <div class="tile"><small>보유 티켓 결제액</small><b>${won(upPay)}</b><div class="subl">관람 예정 ${UP.length}장 · ${UP.reduce((s,t)=>s+ticketAcct(t).held,0)}매</div></div></div>
+      <div class="tile"><small>예정 관람 원가</small><b>${won(Math.round(upPay))}</b><div class="subl">관람 예정 ${UP.length}건 · ${UP.reduce((s,t)=>s+ticketAcct(t).kept,0)}매</div></div></div>
     <div class="seg2">${[['xfer','양도'],['spend','실지출'],['month','월별']].map(([k,n])=>`<div data-mt="${k}" class="${moneyTab===k?'on':''}">${n}</div>`).join('')}</div>${body}`;
 }
 $('moneyBody').addEventListener('click',e=>{ const s=e.target.closest('[data-mt]'); if(s){ moneyTab=s.dataset.mt; renderMoney(); return; } const r=e.target.closest('[data-id]'); if(r){ const i=ITEMS.findIndex(x=>String(x.id)===String(r.dataset.id)); if(i>=0)openDetail(i); } });

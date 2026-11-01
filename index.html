@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="app.css?v=48">
-<link rel="stylesheet" href="management.css?v=48">
+<link rel="stylesheet" href="app.css?v=49">
+<link rel="stylesheet" href="management.css?v=49">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -33,7 +33,7 @@
 
   <!-- 보관함 -->
   <section class="scr" id="scr-vault" hidden>
-    <div class="vtop"><span class="vbg" id="bgBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>배경</span><span class="vmode" id="modeBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><em id="modeLbl">타임라인</em></span></div>
+    <div class="vtop"><div class="vault-heading"><b>보관함</b><small>공연별 티켓 기록</small></div><span class="vbg" id="bgBtn"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path></svg>배경</span><span class="vmode" id="modeBtn"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg><em id="modeLbl">타임라인</em></span></div>
     <div class="stage" id="stage"></div>
     <div class="dock"><div class="tl"><div class="tlin" id="tl"></div></div><div class="prog" id="prog"><div class="trk" id="trk"></div><div class="fill" id="fill"></div><div class="mk" id="mk"></div></div><div class="msum" id="msum"></div></div>
     <div class="shows" id="shows"></div>
@@ -71,6 +71,6 @@
   <input type="file" id="pendFile" accept="image/*" hidden>
   <input type="file" id="importFile" accept="application/json,.json" hidden>
 </div>
-<script type="module" src="app.js?v=48"></script>
+<script type="module" src="app.js?v=49"></script>
 </body>
 </html>
