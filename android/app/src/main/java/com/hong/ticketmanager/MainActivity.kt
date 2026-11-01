@@ -23,6 +23,10 @@ import androidx.core.view.WindowInsetsCompat
 /** 웹앱을 바닥까지 그리는 얇은 껍데기. 상태 바·내비 바는 투명, 그 밑은 창 배경(흰색)이라 경계가 없다. */
 class MainActivity : ComponentActivity() {
     private lateinit var web: WebView
+    private var safeTop = 0
+    private var safeBottom = 0
+    private var safeLeft = 0
+    private var safeRight = 0
     private var fileCallback: ValueCallback<Array<Uri>>? = null
 
     private val pickFiles = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -45,17 +49,22 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.light(Color.TRANSPARENT, Color.TRANSPARENT),
         )
         super.onCreate(savedInstanceState)
-        // WebView 는 자기 padding 을 무시하므로 컨테이너에 인셋을 준다.
+        // Keep the WebView full-screen; CSS applies safe insets to controls only.
         val root = FrameLayout(this).apply { setBackgroundColor(Color.WHITE) }
         web = WebView(this)
         web.setBackgroundColor(Color.WHITE)
         root.addView(web, FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT))
         setContentView(root)
 
-        // 시스템 바·키보드만큼 안쪽으로. 바 뒤에는 창 배경(흰색)이 그대로 보여 앱 배경과 이어진다.
         ViewCompat.setOnApplyWindowInsetsListener(root) { v, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime())
-            v.setPadding(0, bars.top, 0, bars.bottom)
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            safeTop = bars.top
+            safeBottom = if (insets.isVisible(WindowInsetsCompat.Type.ime())) 0 else bars.bottom
+            safeLeft = bars.left
+            safeRight = bars.right
+            v.setPadding(0, 0, 0, ime.bottom)
+            applySafeInsets()
             WindowInsetsCompat.CONSUMED
         }
 
@@ -69,9 +78,13 @@ class MainActivity : ComponentActivity() {
             builtInZoomControls = false
             textZoom = 100
             cacheMode = WebSettings.LOAD_DEFAULT
-            userAgentString = "$userAgentString TicketManagerApp/1.0"
+            userAgentString = "$userAgentString TicketManagerApp/1.1"
         }
         web.webViewClient = object : WebViewClient() {
+            override fun onPageFinished(view: WebView, url: String) {
+                super.onPageFinished(view, url)
+                applySafeInsets()
+            }
             override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                 val url = request.url
                 if (url.host == HOST) return false
@@ -97,6 +110,21 @@ class MainActivity : ComponentActivity() {
         }
 
         if (savedInstanceState == null) web.loadUrl(START_URL) else web.restoreState(savedInstanceState)
+    }
+
+    private fun applySafeInsets() {
+        if (!::web.isInitialized) return
+        val density = resources.displayMetrics.density
+        web.evaluateJavascript("""
+            (() => {
+                const root = document.documentElement;
+                root.classList.add('tm-native');
+                root.style.setProperty('--native-safe-top', '${safeTop / density}px');
+                root.style.setProperty('--native-safe-bottom', '${safeBottom / density}px');
+                root.style.setProperty('--native-safe-left', '${safeLeft / density}px');
+                root.style.setProperty('--native-safe-right', '${safeRight / density}px');
+            })();
+        """.trimIndent(), null)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

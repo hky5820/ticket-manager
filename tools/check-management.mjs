@@ -7,7 +7,7 @@ const context=await browser.newContext({viewport:{width:390,height:844},reducedM
 const base=process.env.APP_URL||'http://127.0.0.1:8846';
 await context.route('**/*',route=>{const u=new URL(route.request().url());return u.origin===base?route.continue():route.fulfill({status:200,body:'',contentType:'application/javascript'});});
 const fixtures=[
- {id:'partial',name:'뮤지컬 알라딘',vendor:'NOL 인터파크',date:'2026-11-07',time:'14:00',qty:2,price:280000,venue:'샤롯데씨어터',seats:[{grade:'R',floor:'1',zone:'B',row:'5',no:'12'},{grade:'R',no:'13',t:true,tp:150000}]},
+ {id:'partial',name:'뮤지컬 알라딘',poster:'assets/posters/26007416.gif',vendor:'NOL 인터파크',date:'2026-11-07',time:'14:00',qty:2,price:280000,venue:'샤롯데씨어터',seats:[{grade:'R',floor:'1',zone:'B',row:'5',no:'12'},{grade:'R',no:'13',t:true,tp:150000}]},
  {id:'canceled',name:'모두 취소한 공연',vendor:'NOL 인터파크',date:'2026-11-08',qty:1,price:100000,seats:[{grade:'R',x:true}]},
  {id:'sold',name:'전체 양도한 공연',vendor:'NOL 인터파크',date:'2026-11-09',qty:1,price:100000,seats:[],transfer:{done:true,price:110000}},
  {id:'past',name:'지난 공연',vendor:'티켓링크',date:'2026-10-12',qty:1,price:50000,seats:[]},
@@ -20,7 +20,14 @@ try{
  await page.goto(base);await page.locator('#homeBody .mg-ticket').first().waitFor();
  await page.evaluate(async()=>{await navigator.serviceWorker.ready;await document.fonts.ready});
  await page.waitForTimeout(500);
- assert.equal(await page.locator('#homeBody .mg-ticket').count(),3);
+ assert(await page.locator('.mg-next .mg-poster').evaluate(i=>i.complete&&i.naturalWidth>0));
+ assert(await page.evaluate(async()=>{
+   const {posterFor}=await import('./poster-catalog.js');
+   const t={name:'뮤지컬 <겨울왕국>',venue:'샤롯데씨어터',date:'2026-11-28'};
+   return posterFor(t).includes('26007416')&&!posterFor({...t,date:'2025-11-28'})&&!posterFor({...t,venue:'다른 공연장'})&&posterFor({...t,poster:'custom.jpg'})==='custom.jpg';
+ }));
+
+ assert.equal(await page.locator('#homeBody .mg-ticket').count(),3);assert.equal(await page.locator('#homeBody .mg-next .mg-ticket').count(),1);assert.equal(await page.locator('#homeBody .mg-date-group [data-id=partial]').count(),0);
  assert.match(await page.locator('#hdSum').innerText(),/3건 · 3매/);
  assert.match(await page.locator('#homeBody [data-id="partial"]').innerText(),/보유 1매 · 양도 1매/);
  assert.equal(await page.locator('#homeBody [data-id="canceled"]').count(),0);
@@ -44,7 +51,7 @@ try{
  await mkdir('design/implementation',{recursive:true});
  for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert(!await page.locator('#homeBody').evaluate(e=>e.scrollWidth>e.clientWidth));await page.screenshot({path:`design/implementation/suit-${width}.png`});}
  const client=await context.newCDPSession(page);await client.send('DOM.enable');await client.send('CSS.enable');const {root}=await client.send('DOM.getDocument');const {nodeId}=await client.send('DOM.querySelector',{nodeId:root.nodeId,selector:'.mg-ticket h3'});const {fonts}=await client.send('CSS.getPlatformFontsForNode',{nodeId});assert(fonts.some(f=>f.isCustomFont&&f.familyName.includes('SUIT')));
- assert((await page.evaluate(()=>caches.keys())).includes('tm-shell-v45'));
+ assert((await page.evaluate(()=>caches.keys())).includes('tm-shell-v46'));
  await context.setOffline(true);await page.reload();await page.locator('#homeBody .mg-ticket').first().waitFor();assert.equal(await page.locator('#homeBody .mg-ticket').count(),3);assert.equal(await page.evaluate(()=>document.fonts.load('16px SUIT').then(f=>f.length)),1);
  await context.setOffline(false);
  const empty=await context.newPage();await empty.goto(base);await empty.evaluate(()=>{localStorage.setItem('tm_tickets_v1','[]')});await empty.reload();assert.equal(await empty.locator('#homeBody .mg-ticket').count(),0);assert.match(await empty.locator('#homeBody').innerText(),/첫 티켓/);

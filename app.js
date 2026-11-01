@@ -1,10 +1,10 @@
 /* 티켓 보관함 — 뷰 레이어 (ES module). 데이터는 data.js만 통해 접근.
    구조: 홈(다음 공연 + 목록) · 보관함(포스터 스택 타임라인 + 월 묶음 독) · 결산 · 설정 · 상세/수정 시트 */
 import * as D from './data.js';
-import {renderManager} from './management-view.js';
+import {renderManager} from './management-view.js?v=46';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v45 · 2026-11-01';
+const BUILD='v46 · 2026-11-01';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
