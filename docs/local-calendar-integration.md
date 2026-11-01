@@ -39,7 +39,10 @@ Android 배터리 최적화/Doze에 따라 늦어질 수 있으며, 강제 종�
 - `node tools/check-calendar.mjs`: 모의 네이티브 브리지, 권한 활성화/해제, 초기 캐시 보호, 로컬 변경/삭제, 개인정보 제외, 예상 시간 변경.
 - `node tools/check-management.mjs`, `node tools/check-secondary.mjs`: 기존 관리/결산/보관함 회귀 검사.
 - `android/gradlew.bat -p android testDebugUnitTest assembleDebug`: 날짜/시간대/종일/양도/취소/서버 매핑 단위 테스트와 APK 빌드.
-- 실제 기기 권한 팝업, Calendar Provider 쓰기, 삼성 캘린더 표시, 백그라운드 실행은 USB 재연결 후 확인 필요.
+- 실제 기기 SM_F971N에서 APK 1.2 업데이트 설치와 시스템 캘린더 권한 팝업 허용 완료. READ_CALENDAR/WRITE_CALENDAR granted=true 확인.
+- Calendar Provider의 티켓함(calendar_id=26)에 예정 예매 8건 기록 확인. 수동 재동기화 후 이벤트 ID 1410~1417 유지, 중복 삽입 없음.
+- 삼성 캘린더에서 겨울왕국 11월 28일 14:00~16:00, 샤롯데씨어터, 좌석, 티켓함 캘린더 표시 확인.
+- 백그라운드 WorkManager 주기 작업 등록 확인. 강제 JobScheduler 실행은 주기 도래를 보장하지 않으므로 자연 주기 서버 재조회와 Doze 지연은 별도 장시간 확인 대상.
 
 참고: [Calendar Provider](https://developer.android.com/identity/providers/calendar-provider),
 [WorkManager 주기 작업](https://developer.android.com/develop/background-work/background-tasks/persistent/getting-started/define-work),
