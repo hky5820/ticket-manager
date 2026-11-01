@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'file:///C:/Users/Hong/Desktop/blindtesting/blind-tasting-compact/node_modules/playwright-core/index.mjs');
 const b=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH||'C:/Program Files/Google/Chrome/Application/chrome.exe'});
 try{
- const c=await b.newContext({viewport:{width:390,height:844}}),base=process.env.APP_URL||'http://127.0.0.1:8846';
+ const c=await b.newContext({serviceWorkers:'block',viewport:{width:390,height:844}}),base=process.env.APP_URL||'http://127.0.0.1:8846';
  await c.route('**/*',r=>new URL(r.request().url()).origin===new URL(base).origin?r.continue():r.fulfill({status:200,body:'',contentType:'application/javascript'}));
  await c.addInitScript(()=>localStorage.setItem('tm_tickets_v1',JSON.stringify([{id:'one',name:'뮤지컬 겨울왕국 한국 초연 FROZEN The Musical',vendor:'클립서비스',date:'2026-11-28',time:'14:00',venue:'샤롯데씨어터',qty:2,price:300000,seats:[{grade:'VIP',no:'1'},{grade:'VIP',no:'2',t:true,tp:160000}]}])));
  const p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.clock.setFixedTime(new Date('2026-11-01T12:00:00+09:00'));await p.goto(base);await p.locator('.mg-next').waitFor();await p.waitForTimeout(600);
