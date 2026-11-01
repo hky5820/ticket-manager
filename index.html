@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="app.css?v=46">
-<link rel="stylesheet" href="management.css?v=46">
+<link rel="stylesheet" href="app.css?v=47">
+<link rel="stylesheet" href="management.css?v=47">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -30,7 +30,6 @@
     <div class="selectbar" id="selectBar" hidden></div>
   </section>
 
-  <section class="scr" id="scr-providers" hidden><div class="tb"><div class="logo"><b>예매처</b><small>내가 예매한 티켓</small></div></div><div class="scroll" id="providerBody"></div></section>
 
   <!-- 보관함 -->
   <section class="scr" id="scr-vault" hidden>
@@ -54,7 +53,6 @@
 
   <div class="nav" id="nav">
     <div class="on" data-scr="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg><span>내 티켓</span></div>
-    <div data-scr="providers"><svg viewBox="0 0 24 24"><path d="M3 9h18l-2-6H5zM5 9v12h14V9M9 21v-7h6v7"/></svg><span>예매처</span></div>
     <div data-scr="vault"><svg viewBox="0 0 24 24"><path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 0 0 4v3a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3a2 2 0 0 0 0-4z"></path></svg><span>보관함</span></div>
     <div data-scr="money"><svg viewBox="0 0 24 24"><path d="M4 19V9M10 19V5M16 19v-8M22 19H2"></path></svg><span>결산</span></div>
     <div data-scr="set"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg><span>설정</span></div>
@@ -73,6 +71,6 @@
   <input type="file" id="pendFile" accept="image/*" hidden>
   <input type="file" id="importFile" accept="application/json,.json" hidden>
 </div>
-<script type="module" src="app.js?v=46"></script>
+<script type="module" src="app.js?v=47"></script>
 </body>
 </html>

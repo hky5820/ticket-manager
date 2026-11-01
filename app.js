@@ -1,10 +1,10 @@
 /* 티켓 보관함 — 뷰 레이어 (ES module). 데이터는 data.js만 통해 접근.
    구조: 홈(다음 공연 + 목록) · 보관함(포스터 스택 타임라인 + 월 묶음 독) · 결산 · 설정 · 상세/수정 시트 */
 import * as D from './data.js';
-import {renderManager} from './management-view.js?v=46';
+import {renderManager} from './management-view.js?v=47';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v46 · 2026-11-01';
+const BUILD='v47 · 2026-11-01';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -56,9 +56,9 @@ const monthOf=i=>{ for(let k=i;k>=0;k--) if(ITEMS[k]&&ITEMS[k].gate==='month') r
 
 /* ===== 화면 전환 ===== */
 let screen='home';
-function showScreen(k){ screen=k; closeDetail(); ['home','providers','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
+function showScreen(k){ screen=k; closeDetail(); ['home','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
   if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); pv=pvb=pos; grab=0; render(); }); enter(stage); enter(document.querySelector('.dock')); }
-  if(k==='home')renderHome(); if(k==='providers')renderProviders(); if(k==='money')renderMoney(); if(k==='set')renderSet();
+  if(k==='home')renderHome(); if(k==='money')renderMoney(); if(k==='set')renderSet();
   const sc=$('scr-'+k).querySelector('.scroll'); if(sc){ sc.scrollTop=0; enter(sc,true); } }
 /* 화면 진입 모션: 자식들을 순서대로 떠오르게(스태거). 25초 새로고침엔 안 걸리고 탭 전환·보기 전환에만 */
 const _enterT=new WeakMap();
@@ -74,7 +74,7 @@ function elastic(el){ const MAX=20; let y0=0, pull=0, raf=0, on=false;
     if((pull>0&&!atTop)||(pull<0&&!atBot))pull=0; apply(); },{passive:true});
   const settle=()=>{ on=false; if(!pull)return; let v=0; const step=()=>{ v+=-pull*0.2; v*=0.6; pull+=v; if(Math.abs(pull)<0.25&&Math.abs(v)<0.25){ pull=0; apply(); return; } apply(); raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); };
   el.addEventListener('touchend',settle,{passive:true}); el.addEventListener('touchcancel',settle,{passive:true}); }
-['homeBody','providerBody','moneyBody','setBody','dBody','shows'].forEach(id=>{ const el=$(id); if(el)elastic(el); });
+['homeBody','moneyBody','setBody','dBody','shows'].forEach(id=>{ const el=$(id); if(el)elastic(el); });
 $('nav').addEventListener('click',e=>{ const d=e.target.closest('[data-scr]'); if(d){ hap(8); showScreen(d.dataset.scr); } });
 function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; pv=pvb=i; render(); }
 
@@ -88,10 +88,10 @@ function renderPendBanner(){
   el.hidden=false; el.innerHTML=`<span class="dot ${pend?'spin':''}"></span><b>${pend?`AI 인식 중 ${pend}장`:''}${pend&&errs?' · ':''}${errs?`실패 ${errs}장`:''}</b><span class="mng">관리 ›</span>`;
 }
 $('pendBanner').addEventListener('click',()=>openPendManage());
-const managerStates={home:{vendor:'',status:'held',view:'list',month:D.ymd(new Date()).slice(0,7),day:'',providers:false},providers:{vendor:'',status:'all',view:'list',month:D.ymd(new Date()).slice(0,7),day:'',providers:true}};
+const managerStates={home:{vendor:'',status:'held',view:'list',month:D.ymd(new Date()).slice(0,7),day:''}};
 function paintManager(key){
-  const el=$(key==='home'?'homeBody':'providerBody');
-  const html=renderManager(T,D.allVendors(),managerStates[key],selected);
+  const el=$('homeBody');
+  const html=renderManager(T,managerStates[key],selected);
   if(el._managerHTML!==html){el.innerHTML=html;el._managerHTML=html;}
 }
 function renderHome(){
@@ -99,13 +99,12 @@ function renderHome(){
   $('syncPill').textContent=st.mode==='cloud'?'동기화 됨':'오프라인';$('syncPill').classList.toggle('off',st.mode!=='cloud');
   renderPendBanner();paintManager('home');
 }
-function renderProviders(){paintManager('providers');}
-for(const key of ['home','providers']){
-  const el=$(key==='home'?'homeBody':'providerBody'),state=managerStates[key];
-  el.addEventListener('change',e=>{if(e.target.matches('[data-mg-vendor]')){state.vendor=e.target.value;state.day='';paintManager(key);}});
+for(const key of ['home']){
+  const el=$('homeBody'),state=managerStates[key];
   el.addEventListener('click',e=>{
-    const control=e.target.closest('[data-mg-view],[data-mg-status],[data-mg-month],[data-mg-day],[data-mg-add]');
+    const control=e.target.closest('[data-mg-view],[data-mg-status],[data-mg-month],[data-mg-day],[data-mg-add],[data-mg-vendor]');
     if(control){
+      if(control.hasAttribute('data-mg-vendor')){openVendorPicker();return;}
       if(control.hasAttribute('data-mg-add')){openSub('add');return;}
       if(control.dataset.mgView)state.view=control.dataset.mgView;
       if(control.dataset.mgStatus){state.status=control.dataset.mgStatus;state.day='';}
@@ -454,6 +453,36 @@ async function saveForm(){
   try{ const saved=await D.saveTicket(data,dIdx>=0?t.id:null); toast(dIdx>=0?'수정되었어요':'추가되었어요'); dEdit=false; form=null; rebuildAll(); const i=ITEMS.findIndex(x=>String(x.id)===String(saved.id)); if(i>=0){ dIdx=i; dTicket=null; renderDetail(); } else closeDetail(); }
   catch(err){ toast('저장 실패: '+(err.message||err)); }
 }
+/* Provider filter: same ticket statuses, one compact themed picker. */
+function finishVendorPicker(){
+  sub.classList.remove('vendor-sheet');sub.removeAttribute('role');sub.removeAttribute('aria-modal');sub.removeAttribute('aria-labelledby');
+  $('scr-home').inert=false;$('nav').inert=false;
+  const trigger=$('homeBody').querySelector('[data-mg-vendor]');
+  if(trigger){trigger.setAttribute('aria-expanded','false');trigger.focus({preventScroll:true});}
+}
+function openVendorPicker(){
+  const counts=new Map();T.forEach(t=>{if(t.vendor)counts.set(t.vendor,(counts.get(t.vendor)||0)+1)});
+  const options=[['','모든 예매처',T.length],...[...counts].sort(([a],[b])=>a.localeCompare(b,'ko')).map(([name,count])=>[name,name,count])];
+  subT.innerHTML='<span id="vendorPickerTitle">예매처 선택</span><button class="vendor-close" data-s="cancel" aria-label="닫기">×</button>';
+  subB.innerHTML='<p class="vendor-caption">전체 티켓 기준</p><div class="vendor-options">'+options.map(([value,label,count])=>`<button type="button" data-vendor-choice="${esc(value)}" aria-pressed="${value===managerStates.home.vendor}"><span>${esc(label)}</span><small>${count}건</small><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m4 10 4 4 8-8"/></svg></button>`).join('')+'</div>';
+  subF.innerHTML='';subB.scrollTop=0;
+  sub.classList.add('vendor-sheet','on');subscrim.classList.add('on');
+  sub.setAttribute('role','dialog');sub.setAttribute('aria-modal','true');sub.setAttribute('aria-labelledby','vendorPickerTitle');
+  $('homeBody').querySelector('[data-mg-vendor]').setAttribute('aria-expanded','true');
+  $('scr-home').inert=true;$('nav').inert=true;
+  pushOv('sub',()=>closeSub(true));
+  subB.querySelector('[aria-pressed="true"]').focus({preventScroll:true});
+}
+document.addEventListener('keydown',e=>{
+  if(!sub.classList.contains('vendor-sheet')||!sub.classList.contains('on'))return;
+  if(e.key==='Escape'){e.preventDefault();closeSub();}
+  if(e.key==='Tab'){
+    const buttons=[...sub.querySelectorAll('button')],first=buttons[0],last=buttons.at(-1);
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
+  }
+});
+
 /* 미니 시트 */
 function openSub(kind){
   const t=curTicket();
@@ -463,9 +492,12 @@ function openSub(kind){
   else if(kind==='share'){ subT.innerHTML=`공유`; subB.innerHTML=`<div class="menu" style="padding:0"><div data-s="share-txt">텍스트로 공유</div>${t.hasImg?'<div data-s="share-img">예매내역 사진 + 텍스트</div>':''}<div data-s="share-copy">텍스트 복사</div></div><pre class="sharePrev">${esc(D.ticketText(t))}</pre>`; subF.innerHTML=`<div data-s="cancel">닫기</div>`; }
   sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); });
 }
-function closeSub(fromPop){ if(!sub.classList.contains('on'))return; sub.classList.remove('on'); subscrim.classList.remove('on'); if(!fromPop)popOv('sub'); }
+function closeSub(fromPop){ if(!sub.classList.contains('on'))return; if(sub.classList.contains('vendor-sheet'))finishVendorPicker(); sub.classList.remove('on'); subscrim.classList.remove('on'); if(!fromPop)popOv('sub'); }
 subscrim.addEventListener('click',()=>closeSub());
 sub.addEventListener('click',async e=>{
+  const vendorOption=e.target.closest('[data-vendor-choice]');
+  if(vendorOption){managerStates.home.vendor=vendorOption.dataset.vendorChoice;managerStates.home.day='';paintManager('home');closeSub();return;}
+
   const c=e.target.closest('[data-cal]'); if(c){ pkM+= +c.dataset.cal; if(pkM<0){pkM=11;pkY--;} if(pkM>11){pkM=0;pkY++;} renderCal(); return; }
   const d=e.target.closest('[data-pick]'); if(d){ form.date=d.dataset.pick; closeSub(); renderEdit(curTicket()); return; }
   const hh=e.target.closest('[data-h]'); if(hh){ form.time=String(hh.dataset.h).padStart(2,'0')+':'+(form.time.split(':')[1]||'00'); renderClock(); return; }
@@ -519,7 +551,7 @@ let pendReplaceId=null; $('pendFile').addEventListener('change',async e=>{ const
 function openSync(){ const st=D.getState(), dirty=D.dirtyCount(); subT.innerHTML='동기화'; subB.innerHTML=`<div class="tile" style="padding:14px"><b style="font-size:14px">${st.mode==='cloud'?'✅ 클라우드에 자동 저장 중':'⚠️ 서버에 연결할 수 없어 이 기기에 임시 저장 중'}</b><div class="nudge" style="margin-top:6px">${st.mode==='cloud'?'폰·PC 어디서 열어도 같은 목록. 25초마다 자동 갱신. AI 인식은 6시간마다 — 급하면 컴퓨터의 Claude에게 "큐 처리해줘".':`서버가 돌아오면 자동으로 다시 연결하고 변경분을 올려요.${dirty?` 미전송 ${dirty}건.`:''}`}</div></div>`; subF.innerHTML='<div data-s="cancel">닫기</div><div class="pri" data-s="refresh">지금 새로고침</div>'; sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); }); subF.querySelector('[data-s=refresh]').addEventListener('click',()=>{ D.fetchTickets().then(()=>toast('새로고침됨')); },{once:true}); }
 
 /* ===== 데이터 변경 → 전체 갱신 ===== */
-function rebuildAll(force){ rebuildData(); if(force)_vaultSig=null; buildVault(); if(mode==='shows')renderShows(); if(mode==='grid')buildOv(); if(screen==='home')renderHome(); if(screen==='providers')renderProviders(); if(screen==='money')renderMoney(); if(screen==='set')renderSet(); render(); }
+function rebuildAll(force){ rebuildData(); if(force)_vaultSig=null; buildVault(); if(mode==='shows')renderShows(); if(mode==='grid')buildOv(); if(screen==='home')renderHome(); if(screen==='money')renderMoney(); if(screen==='set')renderSet(); render(); }
 D.onChange((type,payload)=>{
   if(type==='toast')toast(payload);
   if(type==='tickets')rebuildAll();
