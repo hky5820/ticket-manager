@@ -1,9 +1,10 @@
 /* 티켓 보관함 — 뷰 레이어 (ES module). 데이터는 data.js만 통해 접근.
    구조: 홈(다음 공연 + 목록) · 보관함(포스터 스택 타임라인 + 월 묶음 독) · 결산 · 설정 · 상세/수정 시트 */
 import * as D from './data.js';
+import {renderManager} from './management-view.js';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v44 · 2026-08-27';
+const BUILD='v45 · 2026-11-01';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -39,7 +40,7 @@ function posterImg(t,cls){ return t.poster?`<img class="${cls||''}" src="${esc(t
 let T=[], UP=[], ITEMS=[], HOME=0, TODAY_I=0, groups=[], showGroups={};
 function rebuildData(){
   T=D.getState().tickets.slice().sort((a,b)=>(a.date||'9999')<(b.date||'9999')?-1:(a.date||'9999')>(b.date||'9999')?1:(a.time||'')<(b.time||'')?-1:1);
-  UP=T.filter(t=>!isPast(t)&&!isSold(t));
+  UP=T.filter(t=>!isPast(t)&&ticketAcct(t).kept>0);
   showGroups={}; UP.forEach(t=>{ (showGroups[t.name]=showGroups[t.name]||[]).push(t); });
   T.forEach(t=>{ const g=showGroups[t.name]; t.k=g?g.indexOf(t)+1:0; t.n=g?g.length:0; });
   ITEMS=[]; const past=T.filter(isPast), up=T.filter(t=>!isPast(t));
@@ -55,9 +56,9 @@ const monthOf=i=>{ for(let k=i;k>=0;k--) if(ITEMS[k]&&ITEMS[k].gate==='month') r
 
 /* ===== 화면 전환 ===== */
 let screen='home';
-function showScreen(k){ screen=k; closeDetail(); ['home','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
+function showScreen(k){ screen=k; closeDetail(); ['home','providers','vault','money','set'].forEach(x=>{ $('scr-'+x).hidden=(x!==k); }); document.querySelectorAll('#nav [data-scr]').forEach(d=>d.classList.toggle('on',d.dataset.scr===k)); app.classList.toggle('on-vault',k==='vault');
   if(k==='vault'){ requestAnimationFrame(()=>{ anim=null; target=null; vel=0; tilt=0; pos=clampI(Math.round(pos)); pv=pvb=pos; grab=0; render(); }); enter(stage); enter(document.querySelector('.dock')); }
-  if(k==='home')renderHome(); if(k==='money')renderMoney(); if(k==='set')renderSet();
+  if(k==='home')renderHome(); if(k==='providers')renderProviders(); if(k==='money')renderMoney(); if(k==='set')renderSet();
   const sc=$('scr-'+k).querySelector('.scroll'); if(sc){ sc.scrollTop=0; enter(sc,true); } }
 /* 화면 진입 모션: 자식들을 순서대로 떠오르게(스태거). 25초 새로고침엔 안 걸리고 탭 전환·보기 전환에만 */
 const _enterT=new WeakMap();
@@ -73,7 +74,7 @@ function elastic(el){ const MAX=20; let y0=0, pull=0, raf=0, on=false;
     if((pull>0&&!atTop)||(pull<0&&!atBot))pull=0; apply(); },{passive:true});
   const settle=()=>{ on=false; if(!pull)return; let v=0; const step=()=>{ v+=-pull*0.2; v*=0.6; pull+=v; if(Math.abs(pull)<0.25&&Math.abs(v)<0.25){ pull=0; apply(); return; } apply(); raf=requestAnimationFrame(step); }; raf=requestAnimationFrame(step); };
   el.addEventListener('touchend',settle,{passive:true}); el.addEventListener('touchcancel',settle,{passive:true}); }
-['homeBody','moneyBody','setBody','dBody','shows'].forEach(id=>{ const el=$(id); if(el)elastic(el); });
+['homeBody','providerBody','moneyBody','setBody','dBody','shows'].forEach(id=>{ const el=$(id); if(el)elastic(el); });
 $('nav').addEventListener('click',e=>{ const d=e.target.closest('[data-scr]'); if(d){ hap(8); showScreen(d.dataset.scr); } });
 function goVault(i){ showScreen('vault'); if(mode!=='flow')setMode('flow'); anim=null; pos=i; pv=pvb=i; render(); }
 
@@ -87,40 +88,34 @@ function renderPendBanner(){
   el.hidden=false; el.innerHTML=`<span class="dot ${pend?'spin':''}"></span><b>${pend?`AI 인식 중 ${pend}장`:''}${pend&&errs?' · ':''}${errs?`실패 ${errs}장`:''}</b><span class="mng">관리 ›</span>`;
 }
 $('pendBanner').addEventListener('click',()=>openPendManage());
-let _homeSig=null;
-function renderHome(){
-  const st=D.getState(); $('hdSum').textContent=`${UP.length}장 · ${UP.reduce((a,t)=>a+(ticketAcct(t).held),0)}매 · 공연 ${new Set(UP.map(t=>t.name)).size}`;
-  $('syncPill').textContent=st.mode==='cloud'?'동기화 됨':'오프라인'; $('syncPill').classList.toggle('off',st.mode!=='cloud');
-  renderPendBanner();
-  const body=$('homeBody');
-  if(!UP.length){ body.innerHTML=`<div class="homeamb" id="homeamb"></div><div class="empty"><b>아직 다가오는 티켓이 없어요</b><span>오른쪽 위 ＋ 로 캡처를 올리면 AI가 인식해서 채워줘요</span></div>`; _homeSig='empty'; return; }
-  const nx=UP[0], nxI=ITEMS.indexOf(nx);
-  const rest=T.filter(t=>!isPast(t));   /* 다음 공연(히어로)도 목록에 그대로 — 빼면 같은 공연 다른 날짜가 '날짜 틀린 것'처럼 보인다 */
-  const byM={}; rest.forEach(t=>{ const k=(t.date||'').slice(0,7)||'미정'; (byM[k]=byM[k]||[]).push(t); }); const mk=Object.keys(byM).sort();
-  const row=t=>{ const h=holdInfo(t), pr=itemProfit(t);
-    const l3 = isSold(t) ? `양도완료 · 구매 ${won(t.price)}${pr!==null?' '+profitTxt(t):''}` : h.partial ? `<em>${h.sold}/${h.total}매 양도</em> · 구매 ${won(soldCost(t))}${pr!==null?' '+profitTxt(t):''}` : `${h.total}매 · ${won(t.price)}`;
-    return `<div class="res ${isSold(t)?'sold':''}${t===nx?' isnext':''}" data-id="${esc(t.id)}">${posterImg(t)}<div class="tx"><div class="r1"><div class="nm">${esc(short(t.name))}</div><span class="bdg ${ddCls(t)}">${isSold(t)?'양도':dday(t.date)}</span></div><div class="l2">${fmtDate(t.date,t.time)}${seatLine(t)?' · '+esc(seatLine(t)):''}</div><div class="l3">${l3}</div></div></div>`; };
-  let list='';
-  if(homeView==='list'){
-    list=mk.map(k=>`<div class="hsec"><h2>${k==='미정'?'날짜 미정':(+k.slice(5))+'월'}${k!=='미정'&&k.slice(0,4)!==String(new Date().getFullYear())?` <small>${k.slice(0,4)}</small>`:''}</h2><small>${byM[k].filter(t=>!isSold(t)).length}장 · ${byM[k].reduce((a,t)=>a+(isSold(t)?0:ticketAcct(t).held),0)}매 · ${won(byM[k].reduce((a,t)=>a+(isSold(t)?0:Number(t.price)||0),0))}</small></div><div class="tile" style="padding:6px 14px">${byM[k].map(row).join('')}</div>`).join('');
-  } else if(homeView==='shows'){
-    const gs=Object.entries(showGroups).sort((a,b)=>(a[1][0].date||'')<(b[1][0].date||'')?-1:1);
-    list=`<div class="tile" style="padding:2px 14px">${gs.map(([name,g])=>{ const f=g[0],q=g.reduce((a,t)=>a+ticketAcct(t).held,0),sum=g.reduce((a,t)=>a+(Number(t.price)||0),0); const gp=g.reduce((a,t)=>a+(itemProfit(t)||0),0), anyP=g.some(t=>itemProfit(t)!==null);
-      return `<div class="sg" data-id="${esc(f.id)}"><div class="st">${g.length>2?'<div class="b2"></div>':''}${g.length>1?'<div class="b1"></div>':''}${posterImg(f)}<div class="n">${g.length}</div></div><div><h3>${esc(short(name))}</h3><div class="m">${esc(f.venue||f.vendor||'')}</div><div class="ds">${g.map(t=>`<span class="${(ddayN(t.date)!==null&&ddayN(t.date)<=9)?'soon':''}${isSold(t)?' xf':''}">${t.date?(+t.date.slice(5,7))+'.'+(+t.date.slice(8,10)):'미정'}${holdInfo(t).partial?' <i style="font-style:normal;opacity:.8">½</i>':''}</span>`).join('')}</div><div class="sum">${g.length}장 · ${q}매 · ${won(sum)}${anyP?` · <span class="ptxt${gp<0?' neg':''}">${gp>=0?'+':'−'}${won(Math.abs(gp))}</span>`:''}</div></div></div>`; }).join('')}</div>`;
-  } else {
-    list=`<div class="pgrid" style="margin-top:0">${rest.map(t=>`<div class="pg" data-id="${esc(t.id)}"><div class="im">${posterImg(t)}<span class="dd ${ddCls(t)}">${isSold(t)?'양도완료':dday(t.date)}</span>${holdInfo(t).partial?`<span class="mini" style="position:absolute;left:8px;bottom:8px;background:rgba(162,28,175,.9);color:#fff">양도 ${holdInfo(t).sold}/${holdInfo(t).total}</span>`:''}${t.n>1?`<span class="n">${t.k}/${t.n}</span>`:''}</div><b>${esc(short(t.name))}</b><span>${fmtDate(t.date,t.time)} · ${won(t.price)}${itemProfit(t)!==null?' '+profitTxt(t):''}</span></div>`).join('')}</div>`;
-  }
-  const ico={list:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>',shows:'<svg viewBox="0 0 24 24"><rect x="3" y="7" width="13" height="14" rx="2"/><path d="M8 4h11a2 2 0 0 1 2 2v11"/></svg>',grid:'<svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'};
-  const hi=holdInfo(nx);
-  const html=`<div class="homeamb" id="homeamb"></div><div class="eb" style="position:relative">다음 공연</div>
-    <div class="tile hero2" style="cursor:pointer;margin-top:6px" data-id="${esc(nx.id)}">${posterImg(nx,'pst')}<div class="hx"><div class="when">${fmtDate(nx.date,nx.time)}</div><div class="nm">${esc(nx.name)}</div><div class="ven">${esc(nx.venue||'')}${nx.venue&&nx.vendor?' · ':''}${esc(nx.vendor||'')}</div><div class="ddg">${dday(nx.date)}</div></div>
-      <div class="pills" style="grid-column:1/-1;flex-direction:column;gap:6px"><span><small>좌석</small>${esc(seatLine(nx)||'좌석 미입력')}</span><span style="display:grid;grid-template-columns:auto 1fr;gap:0 18px;background:rgba(127,127,127,.1)"><span style="background:none;padding:0"><small>보유</small>${hi.label}</span><span class="pay" style="background:none;padding:0"><small>결제</small>${won(nx.price)}${itemProfit(nx)!==null?profitTxt(nx):''}</span></span></div></div>
-    <div class="hsec"><h2>다가오는 <small>${rest.filter(t=>!isSold(t)).length}장</small></h2><div class="vt">${['list','shows','grid'].map(k=>`<div data-hv="${k}" class="${homeView===k?'on':''}">${ico[k]}</div>`).join('')}</div></div>
-    ${list}`;
-  if(html!==_homeSig){ body.innerHTML=html; _homeSig=html; } // 시그니처 dedup — 25초 새로고침 때 깜빡임 방지
-  applyHomeAmb(homeAmb);
+const managerStates={home:{vendor:'',status:'held',view:'list',month:D.ymd(new Date()).slice(0,7),day:'',providers:false},providers:{vendor:'',status:'all',view:'list',month:D.ymd(new Date()).slice(0,7),day:'',providers:true}};
+function paintManager(key){
+  const el=$(key==='home'?'homeBody':'providerBody');
+  const html=renderManager(T,D.allVendors(),managerStates[key],selected);
+  if(el._managerHTML!==html){el.innerHTML=html;el._managerHTML=html;}
 }
-$('homeBody').addEventListener('click',e=>{ const hv=e.target.closest('[data-hv]'); if(hv){ setHomeView(hv.dataset.hv); return; } const it=e.target.closest('[data-id]'); if(it){ const i=ITEMS.findIndex(x=>String(x.id)===String(it.dataset.id)); if(i>=0)openDetail(i); } });
+function renderHome(){
+  const st=D.getState(); $('hdSum').textContent=`${UP.length}건 · ${UP.reduce((n,t)=>n+ticketAcct(t).kept,0)}매`;
+  $('syncPill').textContent=st.mode==='cloud'?'동기화 됨':'오프라인';$('syncPill').classList.toggle('off',st.mode!=='cloud');
+  renderPendBanner();paintManager('home');
+}
+function renderProviders(){paintManager('providers');}
+for(const key of ['home','providers']){
+  const el=$(key==='home'?'homeBody':'providerBody'),state=managerStates[key];
+  el.addEventListener('change',e=>{if(e.target.matches('[data-mg-vendor]')){state.vendor=e.target.value;state.day='';paintManager(key);}});
+  el.addEventListener('click',e=>{
+    const control=e.target.closest('[data-mg-view],[data-mg-status],[data-mg-month],[data-mg-day],[data-mg-add]');
+    if(control){
+      if(control.hasAttribute('data-mg-add')){openSub('add');return;}
+      if(control.dataset.mgView)state.view=control.dataset.mgView;
+      if(control.dataset.mgStatus){state.status=control.dataset.mgStatus;state.day='';}
+      if(control.dataset.mgMonth){const [y,m]=state.month.split('-').map(Number);state.month=D.ymd(new Date(y,m-1+Number(control.dataset.mgMonth),1)).slice(0,7);state.day='';}
+      if(control.hasAttribute('data-mg-day'))state.day=control.dataset.mgDay;
+      paintManager(key);return;
+    }
+    const item=e.target.closest('[data-id]');if(item){const i=ITEMS.findIndex(t=>String(t.id)===item.dataset.id);if(i>=0)openDetail(i);}
+  });
+}
 
 /* ===== 보관함: 카드 스택 ===== */
 let els=[], mode='flow', pos=0, vel=0, target=null, dragging=false, lastY=0, lastT=0, raf, moved=0, ovScroll=0, ovVel=0, tilt=0;
@@ -351,7 +346,7 @@ function renderSet(){
   $('setBody').querySelectorAll('[data-set]').forEach(el=>el.addEventListener('click',()=>{ const k=el.dataset.set;
     if(k==='vcolor')openVColorMgr(); if(k==='pend')openPendManage(); if(k==='sync')openSync();
     if(k==='update'){ toast('새 버전 확인 중…'); navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).finally(()=>setTimeout(()=>location.reload(),600)); }
-    if(k==='export'){ D.exportBackup(); toast('백업 저장됨'); } if(k==='import')$('importFile').click(); if(k==='bulk'){ selectMode=true; showScreen('home'); renderSelectBar(); } }));
+    if(k==='export'){ D.exportBackup(); toast('백업 저장됨'); } if(k==='import')$('importFile').click(); if(k==='bulk'){ selectMode=true; managerStates.home.status='all';managerStates.home.vendor='';managerStates.home.view='list'; showScreen('home'); renderSelectBar(); } }));
 }
 $('importFile').addEventListener('change',async e=>{ const f=e.target.files[0]; e.target.value=''; if(!f)return; try{ const d=D.parseBackup(await f.text()); if(!confirm('백업을 현재 데이터에 합칠까요?'))return; const r=await D.importBackup(d); toast(`불러오기 완료 · ${r.added}건 추가`); }catch(err){ toast(err.message||'올바른 백업 파일이 아니에요'); } });
 
@@ -524,7 +519,7 @@ let pendReplaceId=null; $('pendFile').addEventListener('change',async e=>{ const
 function openSync(){ const st=D.getState(), dirty=D.dirtyCount(); subT.innerHTML='동기화'; subB.innerHTML=`<div class="tile" style="padding:14px"><b style="font-size:14px">${st.mode==='cloud'?'✅ 클라우드에 자동 저장 중':'⚠️ 서버에 연결할 수 없어 이 기기에 임시 저장 중'}</b><div class="nudge" style="margin-top:6px">${st.mode==='cloud'?'폰·PC 어디서 열어도 같은 목록. 25초마다 자동 갱신. AI 인식은 6시간마다 — 급하면 컴퓨터의 Claude에게 "큐 처리해줘".':`서버가 돌아오면 자동으로 다시 연결하고 변경분을 올려요.${dirty?` 미전송 ${dirty}건.`:''}`}</div></div>`; subF.innerHTML='<div data-s="cancel">닫기</div><div class="pri" data-s="refresh">지금 새로고침</div>'; sub.classList.add('on'); subscrim.classList.add('on'); pushOv('sub',()=>{ sub.classList.remove('on'); subscrim.classList.remove('on'); }); subF.querySelector('[data-s=refresh]').addEventListener('click',()=>{ D.fetchTickets().then(()=>toast('새로고침됨')); },{once:true}); }
 
 /* ===== 데이터 변경 → 전체 갱신 ===== */
-function rebuildAll(force){ rebuildData(); if(force)_vaultSig=null; buildVault(); if(mode==='shows')renderShows(); if(mode==='grid')buildOv(); if(screen==='home')renderHome(); if(screen==='money')renderMoney(); if(screen==='set')renderSet(); render(); }
+function rebuildAll(force){ rebuildData(); if(force)_vaultSig=null; buildVault(); if(mode==='shows')renderShows(); if(mode==='grid')buildOv(); if(screen==='home')renderHome(); if(screen==='providers')renderProviders(); if(screen==='money')renderMoney(); if(screen==='set')renderSet(); render(); }
 D.onChange((type,payload)=>{
   if(type==='toast')toast(payload);
   if(type==='tickets')rebuildAll();

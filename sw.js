@@ -1,6 +1,6 @@
 /* 티켓 보관함 서비스워커 — 앱 셸 캐시(오프라인 지원) */
-const CACHE='tm-shell-v44';
-const ASSETS=['./','./index.html','./app.css','./app.js','./data.js','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png','./icon-maskable-512.png'];
+const CACHE='tm-shell-v45';
+const ASSETS=['./','./index.html','./app.css','./app.js','./data.js','./management-view.js','./management.css','./assets/fonts/SUIT-Variable.woff2','./assets/ui/ticket.svg','./assets/ui/calendar-days.svg','./assets/ui/scan-line.svg','./manifest.webmanifest','./icon-192.png','./icon-512.png','./icon-180.png','./icon-maskable-512.png'];
 
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()).catch(()=>{}));
