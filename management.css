@@ -158,3 +158,13 @@ html.tm-native .viewer .vx { top:calc(14px + var(--safe-top)); }
 #scr-vault .gate.today b,#scr-vault .gate.today span{color:#2457aa}
 #scr-vault .bt .btr .ptxt,#scr-vault .msum .ptxt{color:#21785e!important}
 #scr-vault .bt .btr .ptxt.neg,#scr-vault .msum .ptxt.neg{color:#c14750!important}
+
+/* Transferred bookings stay visible and openable alongside held tickets. */
+.app .res.mg-transferred{position:relative;background:#eef1f5;border-color:#d6dce5;box-shadow:none}
+.mg-transferred .mg-ticket-main{opacity:.6;padding-right:25px}
+.mg-transferred .mg-poster{filter:grayscale(1)}
+.mg-transferred .mg-ticket-foot{background:#e7ecf2}
+.mg-transferred .mg-ticket-foot>span{opacity:.7}
+.mg-transferred .mg-ticket-foot b{color:#536478}
+.mg-transfer-ribbon{position:absolute;z-index:1;top:18px;right:-30px;width:120px;padding:6px 0;transform:rotate(40deg);background:#536478;color:#fff;font-size:11px;font-weight:750;text-align:center;line-height:1.3;pointer-events:none}
+.mg-transfer-partial{display:inline-block;margin-left:7px;padding:3px 6px;border-radius:5px;background:#e5f3ee;color:#216b55;font-size:10px;font-weight:700;line-height:1.3;vertical-align:middle}

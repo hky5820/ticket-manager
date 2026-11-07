@@ -3,10 +3,10 @@
 import * as D from './data.js';
 import {calendarState,calendarLabel,calendarCommand,syncCalendar,onCalendarChange} from './calendar-sync.js';
 import {posterFor} from './poster-catalog.js';
-import {renderManager} from './management-view.js?v=50';
+import {renderManager} from './management-view.js?v=51';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v50 · 2026-11-01';
+const BUILD='v51 · 2026-11-07';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 

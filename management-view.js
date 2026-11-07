@@ -2,7 +2,7 @@
 import {esc,ticketAcct,isPast,fmtDate,seatLabel,dday,ymd} from './data.js';
 export function matchesStatus(t,status){
   const a=ticketAcct(t);
-  if(status==='held')return a.kept>0&&!isPast(t);
+  if(status==='held')return (a.kept>0||a.xfer>0)&&!isPast(t);
   if(status==='past')return a.kept>0&&isPast(t);
   if(status==='transfer')return a.xfer>0;
   if(status==='cancel')return a.canceled>0;
@@ -10,14 +10,14 @@ export function matchesStatus(t,status){
 }
 import {posterFor} from './poster-catalog.js';
 const icon=name=>`<img class="mg-icon" src="assets/ui/${name}.svg" alt="">`;
-function seatSummary(t){return (t.seats||[]).filter(s=>!s.x&&!s.t).map(seatLabel).filter(Boolean).join(' · ')||'좌석 정보 미입력';}
+function seatSummary(t){return (t.seats||[]).filter(s=>!s.x).map(s=>seatLabel(s)+(s.t&&!t.transfer?.done?' (양도)':'')).filter(Boolean).join(' · ')||'좌석 정보 미입력';}
 function row(t,selected,featured=false){
   const poster=posterFor(t);
-  const a=ticketAcct(t),bits=[];
+  const a=ticketAcct(t),bits=[],transferred=a.xfer>0&&a.kept===0;
   if(a.kept)bits.push(`${isPast(t)?'지난 공연':'보유'} ${a.kept}매`);
   if(a.xfer)bits.push(`양도 ${a.xfer}매`);
   if(a.canceled)bits.push(`취소 ${a.canceled}매`);
-  return `<button type="button" class="res mg-ticket${featured?' mg-featured':''}${selected.has(String(t.id))?' sel':''}" data-id="${esc(t.id)}">${featured?`<div class="mg-next-label"><span>가장 가까운 공연</span><b>${esc(dday(t.date))}</b></div>`:''}<div class="mg-ticket-main">${poster?`<img class="mg-poster" src="${esc(poster)}" alt="${esc(t.name)} 포스터" loading="${featured?'eager':'lazy'}" onerror="this.hidden=true;this.nextElementSibling.hidden=false">`:''}<span class="mg-mark"${poster?' hidden':''}>${icon('ticket')}</span><div class="mg-copy"><span class="mg-provider">${esc(t.vendor||'예매처 미지정')}</span><h3>${esc(t.name||'공연명 미입력')}</h3><p class="mg-when">${featured?esc(fmtDate(t.date,''))+' <span>·</span> ':''}<strong>${esc(t.time||'시간 미정')}</strong></p>${t.venue?`<p class="mg-venue">${esc(t.venue)}</p>`:''}</div></div><div class="mg-ticket-foot"><span title="${esc(seatSummary(t))}">${esc(seatSummary(t))}</span><b>${esc(bits.join(' · ')||'매수 미입력')}</b></div></button>`;
+  return `<button type="button" class="res mg-ticket${featured?' mg-featured':''}${transferred?' mg-transferred':''}${selected.has(String(t.id))?' sel':''}" data-id="${esc(t.id)}">${transferred?'<span class="mg-transfer-ribbon">양도완료</span>':''}${featured?`<div class="mg-next-label"><span>가장 가까운 공연</span><b>${esc(dday(t.date))}</b></div>`:''}<div class="mg-ticket-main">${poster?`<img class="mg-poster" src="${esc(poster)}" alt="${esc(t.name)} 포스터" loading="${featured?'eager':'lazy'}" onerror="this.hidden=true;this.nextElementSibling.hidden=false">`:''}<span class="mg-mark"${poster?' hidden':''}>${icon('ticket')}</span><div class="mg-copy"><span class="mg-provider">${esc(t.vendor||'예매처 미지정')}</span>${a.xfer>0&&!transferred?'<span class="mg-transfer-partial">일부 양도</span>':''}<h3>${esc(t.name||'공연명 미입력')}</h3><p class="mg-when">${featured?esc(fmtDate(t.date,''))+' <span>·</span> ':''}<strong>${esc(t.time||'시간 미정')}</strong></p>${t.venue?`<p class="mg-venue">${esc(t.venue)}</p>`:''}</div></div><div class="mg-ticket-foot"><span title="${esc(seatSummary(t))}">${esc(seatSummary(t))}</span><b>${esc(bits.join(' · ')||'매수 미입력')}</b></div></button>`;
 }
 export function renderManager(tickets,state,selected=new Set()){
   const {vendor,status,view,month,day}=state;
@@ -25,7 +25,7 @@ export function renderManager(tickets,state,selected=new Set()){
   const filtered=scoped.filter(t=>matchesStatus(t,status));
   const statusNames={held:'보유',past:'지난 공연',transfer:'양도',cancel:'취소',all:'전체'};
   const title='내 티켓';
-  const next=view==='list'&&status==='held'?filtered.filter(t=>t.date&&(t.date>ymd(new Date())||!t.time||new Date(t.date+'T'+t.time)>=new Date())).sort((a,b)=>(a.date+(a.time||'23:59')).localeCompare(b.date+(b.time||'23:59')))[0]:null;
+  const next=view==='list'&&status==='held'?filtered.filter(t=>ticketAcct(t).kept>0&&t.date&&(t.date>ymd(new Date())||!t.time||new Date(t.date+'T'+t.time)>=new Date())).sort((a,b)=>(a.date+(a.time||'23:59')).localeCompare(b.date+(b.time||'23:59')))[0]:null;
   let html=`<div class="mg-heading"><div><p class="mg-kicker">공연 일정과 보유 좌석</p><h1>${esc(title)}</h1></div><div class="mg-view" aria-label="보기 방식"><button data-mg-view="list" aria-label="목록 보기" aria-pressed="${view==='list'}">${icon('ticket')}</button><button data-mg-view="calendar" aria-label="달력 보기" aria-pressed="${view==='calendar'}">${icon('calendar-days')}</button></div></div>${next?`<section class="mg-next">${row(next,selected,true)}</section>`:''}<div class="mg-filter"><button type="button" class="mg-vendor" data-mg-vendor aria-haspopup="dialog" aria-expanded="false" aria-controls="sub"><span>${esc(vendor||'모든 예매처')}</span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 6 4 4 4-4"/></svg></button><span>${filtered.length}건</span></div><div class="mg-status" aria-label="티켓 상태">${Object.entries(statusNames).map(([key,label])=>`<button data-mg-status="${key}" aria-pressed="${key===status}">${label} <small>${scoped.filter(t=>matchesStatus(t,key)).length}</small></button>`).join('')}</div>`;
   let shown=filtered.filter(t=>t!==next);
   if(view==='calendar'){
