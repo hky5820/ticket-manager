@@ -168,3 +168,8 @@ html.tm-native .viewer .vx { top:calc(14px + var(--safe-top)); }
 .mg-transferred .mg-ticket-foot b{color:#536478}
 .mg-transfer-ribbon{position:absolute;z-index:1;top:18px;right:-30px;width:120px;padding:6px 0;transform:rotate(40deg);background:#536478;color:#fff;font-size:11px;font-weight:750;text-align:center;line-height:1.3;pointer-events:none}
 .mg-transfer-partial{display:inline-block;margin-left:7px;padding:3px 6px;border-radius:5px;background:#e5f3ee;color:#216b55;font-size:10px;font-weight:700;line-height:1.3;vertical-align:middle}
+
+/* Keep seat removal visible in every edit state, including full transfers. */
+.seat3 button.del{min-width:44px;min-height:44px;flex-shrink:0;margin-left:0;padding:0 8px;border:0;border-radius:9px;background:#fff0f1;color:#b13e49;font:700 12px/1.3 SUIT;cursor:pointer}
+.seat3 button.del:hover{background:#ffe3e6}
+.seat3 button.del:focus-visible{outline:2px solid var(--accent);outline-offset:2px}

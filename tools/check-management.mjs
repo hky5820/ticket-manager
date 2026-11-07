@@ -47,7 +47,7 @@ try{
  assert.notEqual(await sold.locator('.mg-transfer-ribbon').evaluate(e=>getComputedStyle(e).transform),'none');
  await sold.click();await page.locator('#dsheet.on').waitFor();await page.locator('#dClose').click();
  assert(await page.evaluate(async()=>{
-   const {renderManager,matchesStatus}=await import('./management-view.js?v=51');
+   const {renderManager,matchesStatus}=await import('./management-view.js?v=52');
    const t={id:'seat-sold',name:'좌석별 전체 양도',date:'2026-11-04',qty:1,price:100000,seats:[{grade:'VIP',no:'9',t:true,tp:120000}]};
    const html=renderManager([t],{status:'held',view:'list',vendor:'',month:'2026-11',day:''});
    return matchesStatus(t,'held')&&html.includes('양도완료')&&html.includes('9번 (양도)')&&!html.includes('mg-next-label');
@@ -82,7 +82,7 @@ try{
  for(const width of [320,390,1280]){await page.setViewportSize({width,height:844});assert(!await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth));assert(!await page.locator('#homeBody').evaluate(e=>e.scrollWidth>e.clientWidth));await page.screenshot({path:`design/implementation/suit-${width}.png`});}
  await page.setViewportSize({width:390,height:844});await page.locator('[data-mg-vendor]').click();await page.waitForTimeout(400);await page.screenshot({path:'design/implementation/vendor-picker.png'});await page.locator('.vendor-close').click();
  const client=await context.newCDPSession(page);await client.send('DOM.enable');await client.send('CSS.enable');const {root}=await client.send('DOM.getDocument');const {nodeId}=await client.send('DOM.querySelector',{nodeId:root.nodeId,selector:'.mg-ticket h3'});const {fonts}=await client.send('CSS.getPlatformFontsForNode',{nodeId});assert(fonts.some(f=>f.isCustomFont&&f.familyName.includes('SUIT')));
- assert((await page.evaluate(()=>caches.keys())).includes('tm-shell-v51'));
+ assert((await page.evaluate(()=>caches.keys())).includes('tm-shell-v52'));
  await context.setOffline(true);await page.reload();await page.locator('#homeBody .mg-ticket').first().waitFor();assert.equal(await page.locator('#homeBody .mg-ticket').count(),4);assert.equal(await page.evaluate(()=>document.fonts.load('16px SUIT').then(f=>f.length)),1);
  await context.setOffline(false);
  const empty=await context.newPage();await empty.goto(base);await empty.evaluate(()=>{localStorage.setItem('tm_tickets_v1','[]')});await empty.reload();assert.equal(await empty.locator('#homeBody .mg-ticket').count(),0);assert.match(await empty.locator('#homeBody').innerText(),/첫 티켓/);

@@ -3,10 +3,10 @@
 import * as D from './data.js';
 import {calendarState,calendarLabel,calendarCommand,syncCalendar,onCalendarChange} from './calendar-sync.js';
 import {posterFor} from './poster-catalog.js';
-import {renderManager} from './management-view.js?v=51';
+import {renderManager} from './management-view.js?v=52';
 const {esc,won,signMoney,colorFor,vendorShort,fmtDate,ddayN,dday,isPast,isSold,seatLine,seatLabel,ticketAcct,normGrade,WD}=D;
 
-const BUILD='v51 · 2026-11-07';
+const BUILD='v52 · 2026-11-08';
 const $=id=>document.getElementById(id);
 const app=$('app'), stage=$('stage');
 
@@ -416,7 +416,7 @@ function renderEdit(t){
   dAct.innerHTML=`${dIdx>=0?'<span class="ic ghost" data-a="menu">⋯</span>':''}<span class="pri" data-a="save">저장</span>`;
   const seatRow=(x,k)=>{ const unit=D.unitOf(ft,x); const chip = x.x?'<span class="st x stbtn">취소</span>':x.t?`<span class="st t stbtn">양도 ${signMoney((Number(x.tp)||0)-unit)}</span>`:f.xferAll?'<span class="st t">양도</span>':'<span class="st stbtn">보유</span>';
     const seg=`<span class="segin"><span data-v="k" class="${!x.x&&!x.t?'on':''}">보유</span><span data-v="x" class="${x.x?'on':''}">취소</span><span data-v="t" class="${x.t?'on':''}">양도</span></span>`;
-    return `<div class="seat3" data-k="${k}"><div class="r1"><span class="nm ${x.x?'x':''}" data-act="editseat">${esc(seatLabel(x)||'좌석 입력')}</span>${f.openSeg===k?seg:chip}${f.openSeg===k?'<span class="del" data-act="delseat">삭제</span>':''}</div>
+    return `<div class="seat3" data-k="${k}"><div class="r1"><span class="nm ${x.x?'x':''}" data-act="editseat">${esc(seatLabel(x)||'좌석 입력')}</span>${f.openSeg===k?seg:chip}<button type="button" class="del" data-act="delseat" aria-label="${esc(seatLabel(x)||`좌석 ${k+1}`)} 삭제">삭제</button></div>
       ${f.editSeat===k?`<div class="fields">${[["grade","등급",x.grade],["floor","층",x.floor],["zone","구역",x.zone],["row","열",x.row],["no","번",x.no]].map(([kf,lb,vv])=>`<div><small class="flab">${lb}</small><input data-sf="${kf}" value="${esc(vv||'')}"></div>`).join('')}</div>`:''}
       ${f.perSeat?`<div class="pprow"><small>구매가</small><input type="number" class="inl num" data-sf="pp" value="${x.pp!==undefined&&x.pp!==''?x.pp:Math.round((Number(f.price)||0)/Math.max(1,seats.length))}" style="width:110px"></div>`:''}
       ${x.t&&f.xOpen===k?`<div class="xfr"><div class="row2"><div><small>수령액</small><input type="number" data-sf="tp" value="${x.tp||''}" placeholder="0"></div><div><small>대상</small><input data-sf="tto" value="${esc(x.tto||'')}" placeholder="구매자"></div></div><div><small>경로</small>${pchips(x.tvia,'pvia')}</div><div style="display:flex;justify-content:flex-end;margin-top:8px"><span class="xdone" data-act="xdone">완료</span></div></div>`:x.t?`<div class="xsum" data-act="xopen">수령 ${won(x.tp||0)}${x.tvia?' · '+esc(x.tvia):''}${x.tto?' · '+esc(x.tto):''} <b>수정</b></div>`:''}</div>`; };
@@ -443,7 +443,12 @@ dsheet.addEventListener('click',async e=>{
   else if(act==='save'){ await saveForm(); }
   else if(act==='del'){ if(dIdx<0)return; if(!confirm(`"${t.name||'이 티켓'}"을(를) 삭제할까요?`))return; try{ await D.deleteTicket(t.id); toast('삭제되었어요'); closeDetail(); }catch(err){ toast('삭제 실패: '+(err.message||err)); } }
   else if(act==='editseat'){ const k=+a.closest('.seat3').dataset.k; form.editSeat=form.editSeat===k?-1:k; form.openSeg=-1; renderEdit(t); }
-  else if(act==='delseat'){ const k=+a.closest('.seat3').dataset.k; form.seats.splice(k,1); form.openSeg=-1; renderEdit(t); }
+  else if(act==='delseat'){
+    const k=+a.closest('.seat3').dataset.k;
+    form.seats.splice(k,1); form.qty=form.seats.length; form.openSeg=-1;
+    for(const key of ['editSeat','xOpen']){ if(form[key]===k)form[key]=-1; else if(form[key]>k)form[key]--; }
+    renderEdit(t);
+  }
   else if(act==='addseat'){ const last=form.seats[form.seats.length-1]||{grade:'',floor:'',zone:'',row:''}; form.seats.push({grade:last.grade,floor:last.floor,zone:last.zone,row:last.row,no:''}); form.editSeat=form.seats.length-1; form.openSeg=-1; renderEdit(t); const fld=dBody.querySelector(`.seat3[data-k="${form.editSeat}"] [data-sf=no]`); if(fld){ fld.focus(); fld.scrollIntoView({block:'center'}); } }
   else if(act==='xferall'){ form.xferAll=form.xferAll?null:{price:form.price,via:PLATFORMS()[0]||'',to:''}; renderEdit(t); }
   else if(act==='xopen'){ form.xOpen=+a.closest('.seat3').dataset.k; renderEdit(t); }
